@@ -1,0 +1,29 @@
+/// Date dimension table
+table Calendar
+
+	column Date
+		dataType: dateTime
+		formatString: Short Date
+
+	column Year
+		dataType: int64
+		formatString: 0
+
+	column Quarter
+		dataType: string
+
+	column Month
+		dataType: int64
+		formatString: 0
+
+	column MonthName
+		dataType: string
+
+	column WeekDay
+		dataType: string
+
+	column IsWeekend
+		dataType: boolean
+
+	measure 'Selected Period' = FORMAT(MIN('Calendar'[Date]), "MMM YYYY") & " \u2013 " & FORMAT(MAX('Calendar'[Date]), "MMM YYYY")
+		displayFolder: Labels

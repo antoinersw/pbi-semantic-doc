@@ -1,0 +1,11 @@
+relationship SalesToCalendar
+	fromTable: Sales
+	fromColumn: OrderDate
+	toTable: Calendar
+	toColumn: Date
+
+relationship SalesToCustomer
+	fromTable: Sales
+	fromColumn: CustomerKey
+	toTable: Customer
+	toColumn: CustomerKey

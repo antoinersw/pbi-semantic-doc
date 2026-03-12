@@ -1,0 +1,47 @@
+table Sales
+
+	column OrderID
+		dataType: int64
+
+	column SalesAmount
+		dataType: double
+		formatString: #,0.00
+
+	column Quantity
+		dataType: int64
+
+	column OrderDate
+		dataType: dateTime
+
+	column CustomerKey
+		dataType: int64
+
+	/// Total net sales amount across all orders
+	measure 'Total Sales' = SUM(Sales[SalesAmount])
+		formatString: #,0.00
+		displayFolder: Revenue
+
+	measure 'Total Quantity' = SUM(Sales[Quantity])
+		formatString: #,0
+		displayFolder: Volume
+
+	measure 'Average Order Value' = DIVIDE([Total Sales], DISTINCTCOUNT(Sales[OrderID]))
+		description: 'Average revenue per unique order'
+		formatString: #,0.00
+		displayFolder: Revenue
+
+	measure 'Sales YTD' = TOTALYTD([Total Sales], 'Calendar'[Date])
+		formatString: #,0.00
+		displayFolder: Time Intelligence
+
+	measure 'Sales vs LY' =
+			VAR CurrentYear = [Total Sales]
+			VAR LastYear = CALCULATE([Total Sales], SAMEPERIODLASTYEAR('Calendar'[Date]))
+			RETURN DIVIDE(CurrentYear - LastYear, LastYear)
+		description: 'Year-over-year growth rate'
+		formatString: 0.0%
+		displayFolder: Time Intelligence
+
+	measure 'Top 10 Customers Sales' = CALCULATE([Total Sales], TOPN(10, VALUES(Customer[CustomerKey]), [Total Sales]))
+		formatString: #,0.00
+		displayFolder: Revenue

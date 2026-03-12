@@ -1,0 +1,19 @@
+/// Customer dimension
+table Customer
+
+	column CustomerKey
+		dataType: int64
+		formatString: 0
+
+	column CustomerName
+		dataType: string
+
+	column Country
+		dataType: string
+
+	column Region
+		dataType: string
+
+	column Segment
+		dataType: string
+		description: 'Customer segment: Enterprise, SMB, Consumer'

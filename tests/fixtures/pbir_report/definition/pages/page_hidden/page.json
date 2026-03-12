@@ -1,0 +1,11 @@
+{
+  "name": "page_hidden",
+  "displayName": "Detail (hidden)",
+  "isHidden": true,
+  "width": 1280,
+  "height": 720,
+  "filters": [],
+  "config": {
+    "drillthrough": {}
+  }
+}

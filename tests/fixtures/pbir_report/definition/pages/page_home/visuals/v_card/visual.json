@@ -1,0 +1,8 @@
+{
+  "name": "v_kpi_card",
+  "config": {
+    "singleVisual": {
+      "visualType": "card"
+    }
+  }
+}

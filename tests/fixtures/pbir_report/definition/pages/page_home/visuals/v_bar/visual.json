@@ -1,0 +1,8 @@
+{
+  "name": "v_bar_sales",
+  "config": {
+    "singleVisual": {
+      "visualType": "barChart"
+    }
+  }
+}

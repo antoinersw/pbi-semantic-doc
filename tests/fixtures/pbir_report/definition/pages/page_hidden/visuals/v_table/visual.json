@@ -1,0 +1,8 @@
+{
+  "name": "v_detail_table",
+  "config": {
+    "singleVisual": {
+      "visualType": "table"
+    }
+  }
+}

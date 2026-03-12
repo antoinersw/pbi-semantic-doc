@@ -1,0 +1,41 @@
+{
+  "name": "LegacyReport",
+  "pages": [
+    {
+      "name": "pg_main",
+      "displayName": "Main Page",
+      "isHidden": false,
+      "width": 1280,
+      "height": 720,
+      "filters": [],
+      "visualContainers": [
+        {
+          "name": "vc_matrix",
+          "config": {"singleVisual": {"visualType": "matrix"}}
+        },
+        {
+          "name": "vc_slicer",
+          "config": {"singleVisual": {"visualType": "slicer"}}
+        }
+      ]
+    },
+    {
+      "name": "pg_detail",
+      "displayName": "Detail",
+      "isHidden": false,
+      "width": 1280,
+      "height": 720,
+      "filters": [{"filter": "f1"}],
+      "visualContainers": [
+        {
+          "name": "vc_line",
+          "config": {"singleVisual": {"visualType": "lineChart"}}
+        }
+      ]
+    }
+  ],
+  "bookmarks": [
+    {"name": "bk_a", "displayName": "Bookmark A"},
+    {"name": "bk_b", "displayName": "Bookmark B"}
+  ]
+}

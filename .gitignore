@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Build & distribution
+build/
+dist/
+*.egg-info/
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.kiro/
+.claude/
+
+# Generated output files
+output_*.md
+output_*.json
+MODEL_DOC.md
+REPORT_ANALYSIS.md
+REPORT_ANALYSIS.json
+COMBINED_ANALYSIS.md
+COMBINED_ANALYSIS.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# examples — keep source files, ignore generated docs
+examples/**/*.md
+examples/**/*.json
+!examples/**/README.md
+
+# docs build output
+docs/

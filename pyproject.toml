@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pbi-semantic-doc"
+version = "0.2.0"
+description = "Automatic documentation generator and analyzer for Power BI semantic models (TMDL) and reports (PBIR)"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "viciuslios" }]
+keywords = ["power-bi", "tmdl", "semantic-model", "documentation", "pbip", "pbir", "report", "dataops"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Documentation",
+    "Topic :: Software Development :: Documentation",
+]
+requires-python = ">=3.9"
+dependencies = []  # zero external dependencies — stdlib only
+
+[project.scripts]
+pbi-semantic-doc = "pbi_semantic_doc.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/viciuslios/pbi-semantic-doc"
+Issues = "https://github.com/viciuslios/pbi-semantic-doc/issues"
+Changelog = "https://github.com/viciuslios/pbi-semantic-doc/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pbi_semantic_doc*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
