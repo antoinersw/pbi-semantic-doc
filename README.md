@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-138%20passing-brightgreen)](#)
 
-Built with ❤️ by [viciuslios](https://github.com/viciuslios) in collaboration with [Claude AI](https://claude.ai) (Anthropic).
+Built with ❤️ by [ViciusLio](https://github.com/ViciusLio) in collaboration with [Claude AI](https://claude.ai) (Anthropic).
 
 ---
 
@@ -50,7 +50,7 @@ pip install pbi-semantic-doc
 Or from source:
 
 ```bash
-git clone https://github.com/viciuslios/pbi-semantic-doc
+git clone https://github.com/ViciusLio/pbi-semantic-doc
 cd pbi-semantic-doc
 pip install -e .
 ```
@@ -245,7 +245,7 @@ Manual descriptions in Power BI Desktop always take precedence over auto-generat
 
 ## Contributing
 
-Issues and pull requests are welcome at [github.com/viciuslios/pbi-semantic-doc](https://github.com/viciuslios/pbi-semantic-doc).
+Issues and pull requests are welcome at [github.com/ViciusLio/pbi-semantic-doc](https://github.com/ViciusLio/pbi-semantic-doc).
 
 ```bash
 pip install pytest
