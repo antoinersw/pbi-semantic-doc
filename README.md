@@ -5,7 +5,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/pbi-semantic-doc)](https://pypi.org/project/pbi-semantic-doc/)
 [![Python 3.9+](https://img.shields.io/pypi/pyversions/pbi-semantic-doc)](https://pypi.org/project/pbi-semantic-doc/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-138%20passing-brightgreen)](#)
+[![Tests](https://img.shields.io/badge/tests-193%20passing-brightgreen)](#)
 
 Built with ❤️ by [ViciusLio](https://github.com/ViciusLio) in collaboration with [Claude AI](https://claude.ai) (Anthropic).
 
@@ -21,14 +21,14 @@ Zero configuration. Zero external dependencies. Drop it into any pipeline.
 ```bash
 pip install pbi-semantic-doc
 
-# Document a semantic model
-pbi-semantic-doc ./MyProject.SemanticModel --output docs/MODEL.md
+# Document a semantic model — writes DOC_MyProject.md next to the .SemanticModel folder
+pbi-semantic-doc ./MyProject.SemanticModel
 
 # Analyze a report
-pbi-semantic-doc ./MyProject.Report --analyze-report --output docs/REPORT.md
+pbi-semantic-doc ./MyProject.Report --analyze-report
 
-# Both at once (from the .pbip project folder)
-pbi-semantic-doc ./MyProject --combined --output docs/FULL.md
+# Both in one document (from the .pbip project folder)
+pbi-semantic-doc ./MyProject --combined
 ```
 
 ---
@@ -62,24 +62,24 @@ pip install -e .
 ### Semantic Model Documentation
 
 ```bash
-# Basic — writes MODEL_DOC.md inside the model folder
+# Basic — writes DOC_<ModelName>.md next to the .SemanticModel folder
 pbi-semantic-doc ./MyProject.SemanticModel
 
-# Specify output path
+# Specify a custom output path
 pbi-semantic-doc ./MyProject.SemanticModel --output ./docs/MODEL.md
 
 # Point to the .pbip parent folder (auto-discovers the .SemanticModel subfolder)
 pbi-semantic-doc . --output MODEL.md
 
 # Suppress console output (useful in CI)
-pbi-semantic-doc ./MyProject.SemanticModel --output ./docs/MODEL.md --quiet
+pbi-semantic-doc ./MyProject.SemanticModel --quiet
 ```
 
 ### Report Analysis
 
 ```bash
-# Markdown output (default)
-pbi-semantic-doc ./MyProject.Report --analyze-report --output ./docs/REPORT.md
+# Markdown output (default) — writes DOC_<ReportName>.md next to the .Report folder
+pbi-semantic-doc ./MyProject.Report --analyze-report
 
 # JSON output for programmatic use
 pbi-semantic-doc ./MyProject.Report --analyze-report --format json --output analysis.json
@@ -91,7 +91,10 @@ pbi-semantic-doc ./MyProject.Report --analyze-report --format text
 ### Combined Analysis
 
 ```bash
-# Analyze both model and report from a .pbip project folder
+# Single unified document with Semantic Model + Report sections
+pbi-semantic-doc ./MyProject --combined
+
+# Custom output path
 pbi-semantic-doc ./MyProject --combined --output ./docs/FULL.md
 
 # JSON combined output
@@ -104,10 +107,36 @@ pbi-semantic-doc ./MyProject --combined --format json --output analysis.json
 |------|-------------|
 | `PATH` | Path to `.SemanticModel`, `.Report`, or `.pbip` project folder |
 | `--analyze-report` | Analyze report instead of semantic model |
-| `--combined` | Analyze both semantic model and report |
+| `--combined` | Produce a single document covering both semantic model and report |
 | `--format` | Output format: `md` (default), `json`, `text` |
-| `--output`, `-o` | Output file path |
+| `--output`, `-o` | Output file path (default: `DOC_<name>.md` next to the input folder) |
 | `--quiet`, `-q` | Suppress console output |
+
+---
+
+## Output
+
+### File naming and placement
+
+| Mode | Default output location |
+|------|------------------------|
+| Semantic model | `DOC_<ModelName>.md` — **next to** the `.SemanticModel` folder |
+| Report | `DOC_<ReportName>.md` — **next to** the `.Report` folder |
+| Combined | `DOC_<ProjectName>.md` — **inside** the `.pbip` project folder |
+
+Example: running against `Artificial Intelligence Sample.SemanticModel` produces `DOC_Artificial_Intelligence_Sample.md` in the parent folder.
+
+### Document structure
+
+Each generated Markdown document includes:
+
+- **Table of Contents** — GitHub-compatible anchor links to every section and table; always visible at the top
+- **Overview** — complexity index, table/column/measure/relationship counts, storage mode summary
+- **Data Sources** — connector type, connection string, and Power Query (M) steps per table partition
+- **Relationships** — collapsible table with cardinality, cross-filter direction, and active/inactive status
+- **Row Level Security** — always visible; DAX filter expression per role
+- **Tables** — one collapsible section per table: columns (type, hidden, description), measures (DAX + auto description)
+- **Measures Index** — collapsible A–Z index of all measures with their home table
 
 ---
 
@@ -116,6 +145,7 @@ pbi-semantic-doc ./MyProject --combined --format json --output analysis.json
 ```
 MyProject/
 ├── MyProject.pbip
+├── DOC_MyProject.md              ← combined output lands here
 ├── MyProject.SemanticModel/
 │   └── definition/
 │       ├── model.tmdl
@@ -147,6 +177,8 @@ MyProject/
 - Documents tables, columns (data types, descriptions, hidden status), measures (full DAX), and relationships
 - Generates automatic DAX pattern descriptions when no manual description is present
 - Extracts model name from the `.SemanticModel` folder name
+- Correctly handles Power Query `#"Step Name"` quoted identifiers (e.g. `#"Changed Type"`, `#"Removed Columns"`)
+- **Navigable output**: Table of Contents + collapsible `<details>` sections (renders natively on GitHub/GitLab)
 - **Complexity Index** — normalized 0–1 score per model (see below)
 
 ### Report Analysis
@@ -218,11 +250,13 @@ Manual descriptions in Power BI Desktop always take precedence over auto-generat
 
 ## Roadmap
 
-### v0.3 — Data Sources & Power Query
-- **Data source discovery**: extract connection strings, server/database names, SharePoint/OneLake endpoints from TMDL partitions
-- **Power Query (M) extraction**: expose the full M expression for each table partition
-- **Custom query detection**: flag tables using `Value.NativeQuery` or inline SQL — a common maintenance risk
-- **Dataflow & lakehouse references**: identify tables sourced from Power BI Dataflows, Fabric Lakehouses, or Warehouses
+### v0.3 ✅ — Data Sources & Power Query
+- **Data source discovery**: connection strings, server/database names, SharePoint/OneLake endpoints
+- **Power Query (M) extraction**: full M expression per table partition with step-level breakdown
+- **Custom query detection**: flag tables using `Value.NativeQuery` or inline SQL
+- **Dataflow & lakehouse references**: identify Dataflow, Fabric Lakehouse, Warehouse sources
+- **Navigable docs**: Table of Contents + collapsible sections + `DOC_<name>.md` naming
+- **Unified combined document**: single file with Semantic Model + Report sections
 
 ### v0.4 — Deep Model Analysis
 - **Column lineage**: trace which measures reference which columns across tables
@@ -249,7 +283,7 @@ Issues and pull requests are welcome at [github.com/ViciusLio/pbi-semantic-doc](
 
 ```bash
 pip install pytest
-pytest tests/ -v   # 138 tests
+pytest tests/ -v   # 193 tests
 ```
 
 ---

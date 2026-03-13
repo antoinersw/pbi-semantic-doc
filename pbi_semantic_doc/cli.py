@@ -7,7 +7,8 @@ Usage:
 Examples:
     pbi-semantic-doc ./MyReport.SemanticModel
     pbi-semantic-doc ./MyReport.SemanticModel --output ./docs/MODEL.md
-    pbi-semantic-doc . --output MODEL.md
+    pbi-semantic-doc . --output DOC.md
+    pbi-semantic-doc ./MyProject --combined --output ./docs/FULL.md
 """
 
 from __future__ import annotations
@@ -16,6 +17,7 @@ import argparse
 import json
 import re
 import sys
+from datetime import date
 from pathlib import Path
 
 from .parser import TmdlParser
@@ -29,6 +31,77 @@ def _safe_name(name: str) -> str:
     safe = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "", name)
     safe = re.sub(r"\s+", "_", safe.strip())
     return safe or "output"
+
+
+def _strip_h1(content: str) -> str:
+    """Remove the first top-level heading from a Markdown document.
+
+    Used when assembling a combined document so each sub-document's h1
+    becomes an h2 section heading in the unified output.
+    """
+    lines = content.splitlines()
+    if lines and lines[0].startswith("# "):
+        lines = lines[1:]
+    # Drop leading blank lines left after the removed h1
+    while lines and not lines[0].strip():
+        lines = lines[1:]
+    return "\n".join(lines)
+
+
+def _combined_markdown(
+    model,
+    report_metrics,
+    project_name: str,
+) -> str:
+    """Build a single unified Markdown document with both model and report sections."""
+    today = date.today().strftime("%Y-%m-%d")
+
+    # ── top-level header ──────────────────────────────────────────────────
+    header_lines = [
+        f"# DOC — {project_name}",
+        "",
+        f"> Combined Power BI project documentation &middot; Generated {today}",
+        "",
+        "---",
+        "",
+        "## Contents",
+        "",
+    ]
+    if model:
+        tables = len(model.visible_tables)
+        measures = sum(len(t.measures) for t in model.visible_tables)
+        rels = len(model.relationships)
+        header_lines.append(
+            f"- [Semantic Model](#semantic-model)"
+            f" — {tables} table{'s' if tables != 1 else ''},"
+            f" {measures} measure{'s' if measures != 1 else ''},"
+            f" {rels} relationship{'s' if rels != 1 else ''}"
+        )
+    if report_metrics:
+        pages = report_metrics.total_pages
+        visuals = report_metrics.total_visuals
+        header_lines.append(
+            f"- [Report](#report)"
+            f" — {pages} page{'s' if pages != 1 else ''},"
+            f" {visuals} visual{'s' if visuals != 1 else ''}"
+        )
+    header_lines.append("")
+
+    parts: list[str] = ["\n".join(header_lines)]
+
+    # ── semantic model section ────────────────────────────────────────────
+    if model:
+        gen = MarkdownGenerator()
+        body = _strip_h1(gen.generate(model))
+        parts.append(f"## Semantic Model\n\n{body}")
+
+    # ── report section ────────────────────────────────────────────────────
+    if report_metrics:
+        gen = ReportGenerator()
+        body = _strip_h1(gen.generate_markdown(report_metrics))
+        parts.append(f"## Report\n\n{body}")
+
+    return "\n\n---\n\n".join(parts)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -61,7 +134,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--output", "-o",
         metavar="OUTPUT_PATH",
         default=None,
-        help="Where to write the output file. Defaults to DOC_<name>.md in the input folder.",
+        help=(
+            "Where to write the output file. "
+            "Defaults to DOC_<name>.md in the parent of the input folder."
+        ),
     )
     p.add_argument(
         "--format", "-f",
@@ -84,7 +160,6 @@ def main(argv: list[str] | None = None) -> int:
 
     args = build_parser().parse_args(argv)
 
-    # Logica di routing
     if args.combined:
         return analyze_combined(args)
     elif args.analyze_report:
@@ -94,7 +169,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def analyze_semantic_model(args) -> int:
-    """Analizza solo il modello semantico (comportamento originale)"""
+    """Analizza solo il modello semantico."""
     model_path = Path(args.model_path).resolve()
     if not model_path.exists():
         print(f"Error: path does not exist: {model_path}", file=sys.stderr)
@@ -111,18 +186,16 @@ def analyze_semantic_model(args) -> int:
         print(f"Unexpected error while parsing: {exc}", file=sys.stderr)
         return 1
 
-    # Determine output path (after parse so we have the model name)
+    # Determine output path — place NEXT TO (not inside) the .SemanticModel folder
     if args.output:
         output_path = Path(args.output).resolve()
     else:
-        output_path = model_path / f"DOC_{_safe_name(model.name)}.md"
+        output_path = model_path.parent / f"DOC_{_safe_name(model.name)}.md"
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Generate
     generator = MarkdownGenerator()
     content = generator.generate(model)
-
     output_path.write_text(content, encoding="utf-8")
 
     if not args.quiet:
@@ -141,13 +214,12 @@ def analyze_semantic_model(args) -> int:
 
 
 def analyze_report(args) -> int:
-    """Analizza solo il report"""
+    """Analizza solo il report."""
     report_path = Path(args.model_path).resolve()
     if not report_path.exists():
         print(f"Error: path does not exist: {report_path}", file=sys.stderr)
         return 1
 
-    # Parse first so we can use the report name in the default output filename
     try:
         parser = ReportParser()
         report = parser.parse(report_path)
@@ -159,59 +231,55 @@ def analyze_report(args) -> int:
         print(f"Unexpected error while parsing: {exc}", file=sys.stderr)
         return 1
 
-    # Determine output path (after parse so we have the report name)
+    # Determine output path — place NEXT TO (not inside) the .Report folder
     if args.output:
         output_path = Path(args.output).resolve()
     else:
         safe = _safe_name(metrics.report_name)
         if args.format == "json":
-            output_path = report_path / f"DOC_{safe}.json"
+            output_path = report_path.parent / f"DOC_{safe}.json"
         elif args.format == "text":
-            output_path = None  # Print to console
+            output_path = None  # print to console
         else:
-            output_path = report_path / f"DOC_{safe}.md"
+            output_path = report_path.parent / f"DOC_{safe}.md"
 
     if output_path:
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Generate
     generator = ReportGenerator()
-    
+
     if args.format == "json":
         content = generator.generate_json(metrics)
     elif args.format == "text":
         content = generator.generate_text(metrics)
-    else:  # markdown
+    else:
         content = generator.generate_markdown(metrics)
 
-    # Output
     if output_path:
         output_path.write_text(content, encoding="utf-8")
         if not args.quiet:
-            print(f"✓ Report analysis saved: {output_path}")
+            print(
+                f"✓ Report analysis saved: {output_path}\n"
+                f"  Report  : {metrics.report_name}\n"
+                f"  Format  : {metrics.report_format}\n"
+                f"  Pages   : {metrics.total_pages}\n"
+                f"  Visuals : {metrics.total_visuals}\n"
+                f"  Complexity: {metrics.complexity_index:.0%}"
+            )
     else:
         print(content)
-
-    if not args.quiet and output_path:
-        print(
-            f"  Report  : {metrics.report_name}\n"
-            f"  Format  : {metrics.report_format}\n"
-            f"  Pages   : {metrics.total_pages}\n"
-            f"  Visuals : {metrics.total_visuals}\n"
-            f"  Complexity: {metrics.complexity_index:.0%}"
-        )
 
     return 0
 
 
 def analyze_combined(args) -> int:
-    """Analizza sia modello semantico che report"""
+    """Analizza sia modello semantico che report, producendo un unico documento."""
     project_path = Path(args.model_path).resolve()
     if not project_path.exists():
         print(f"Error: path does not exist: {project_path}", file=sys.stderr)
         return 1
 
-    # Trova cartelle .SemanticModel e .Report
+    # Discover .SemanticModel and .Report subfolders
     semantic_model_path = None
     report_path = None
 
@@ -226,44 +294,42 @@ def analyze_combined(args) -> int:
         print(
             f"Error: No .SemanticModel or .Report folders found in: {project_path}\n"
             f"Expected a .pbip project structure",
-            file=sys.stderr
+            file=sys.stderr,
         )
         return 1
 
-    # Determine output path — use project folder name as base
+    # Determine output path (sits at project folder level)
     if args.output:
         output_path = Path(args.output).resolve()
     else:
         safe = _safe_name(project_path.name)
-        if args.format == "json":
-            output_path = project_path / f"DOC_{safe}.json"
-        else:
-            output_path = project_path / f"DOC_{safe}.md"
+        ext = ".json" if args.format == "json" else ".md"
+        output_path = project_path / f"DOC_{safe}{ext}"
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Parse both
+    # Parse both components
     model = None
     report_metrics = None
 
     if semantic_model_path:
         try:
-            parser = TmdlParser()
-            model = parser.parse(semantic_model_path)
+            tmdl_parser = TmdlParser()
+            model = tmdl_parser.parse(semantic_model_path)
         except Exception as exc:
             print(f"Warning: Failed to parse semantic model: {exc}", file=sys.stderr)
 
     if report_path:
         try:
-            parser = ReportParser()
-            report = parser.parse(report_path)
+            rpt_parser = ReportParser()
+            report = rpt_parser.parse(report_path)
             report_metrics = report.calculate_metrics()
         except Exception as exc:
             print(f"Warning: Failed to parse report: {exc}", file=sys.stderr)
 
-    # Generate combined output
+    # Generate unified output
     if args.format == "json":
-        combined = {}
+        combined: dict = {}
         if model:
             combined["semantic_model"] = {
                 "name": model.name,
@@ -273,29 +339,24 @@ def analyze_combined(args) -> int:
             }
         if report_metrics:
             combined["report"] = report_metrics.to_dict()
-        
         content = json.dumps(combined, indent=2, ensure_ascii=False)
-    else:  # markdown
-        sections = []
-        
-        if model:
-            gen = MarkdownGenerator()
-            sections.append(gen.generate(model))
-        
-        if report_metrics:
-            gen = ReportGenerator()
-            sections.append(gen.generate_markdown(report_metrics))
-        
-        content = "\n\n---\n\n".join(sections)
+    else:  # markdown — unified single document
+        project_name = (
+            model.name if model
+            else (report_metrics.report_name if report_metrics else project_path.name)
+        )
+        content = _combined_markdown(model, report_metrics, project_name)
 
     output_path.write_text(content, encoding="utf-8")
 
     if not args.quiet:
-        print(f"✓ Combined analysis saved: {output_path}")
+        print(f"✓ Combined documentation saved: {output_path}")
         if model:
-            print(f"  Model: {model.name} ({len(model.visible_tables)} tables)")
+            print(f"  Model : {model.name} ({len(model.visible_tables)} tables, "
+                  f"{sum(len(t.measures) for t in model.visible_tables)} measures)")
         if report_metrics:
-            print(f"  Report: {report_metrics.report_name} ({report_metrics.total_pages} pages)")
+            print(f"  Report: {report_metrics.report_name} "
+                  f"({report_metrics.total_pages} pages, {report_metrics.total_visuals} visuals)")
 
     return 0
 

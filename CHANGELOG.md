@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.3.1] — 2026-03-13
+
+### Added
+- **Navigable documentation**: Table of Contents with GitHub-compatible anchor links at the top of every generated document — links directly to each table, the Relationships section, RLS, and the Measures Index
+- **Collapsible sections**: Table sections, Relationships, and Measures Index are wrapped in `<details>/<summary>` HTML — renders as expandable blocks on GitHub/GitLab, keeping long documents readable
+- **Unified combined document** (`--combined`): instead of two concatenated files, generates a single structured document with a shared header, a combined Table of Contents, and clearly separated `## Semantic Model` / `## Report` sections
+
+### Fixed
+- **`#"Step Name"` Power Query identifiers**: Power BI Desktop wraps M step names containing spaces in `#"..."` syntax (e.g. `#"Changed Type"`, `#"Removed Columns"`, `#"Renamed Columns"`). These were silently merged into the preceding step's expression. The parser now correctly recognises both plain identifiers and `#"..."` quoted identifiers as step boundaries.
+- **Output file placement**: `DOC_<name>.md` is now written **next to** the `.SemanticModel` / `.Report` folder (at the project level), not inside it. Combined mode output continues to land in the project root folder.
+- **Output filename**: default filename is now `DOC_<ModelName>.md` (e.g. `DOC_Artificial_Intelligence_Sample.md`) instead of the generic `MODEL_DOC.md`, making it immediately identifiable and unique per project.
+
+### Tests
+- 193 tests — all passing
+
+---
+
 ## [0.2.0] — 2026-03-12
 
 ### Added
