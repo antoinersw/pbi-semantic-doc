@@ -189,7 +189,9 @@ class MarkdownGenerator:
         if model.roles:
             lines.append(f"| RLS Roles | {len(model.roles)} |")
 
-        lines.append(f"| **Complexity Index** | **{metrics.complexity_index:.0%}** |")
+        cx = metrics.complexity_index
+        cx_icon = "🟢" if cx < 0.25 else ("🟡" if cx < 0.60 else "🔴")
+        lines.append(f"| **Complexity Index** | **{cx_icon} {cx:.0%}** |")
 
         return "\n".join(lines)
 

@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.3.2] — 2026-03-13
+
+### Added
+- **Report sections now collapsible**: Visual Types Distribution, Custom Visuals, Bookmarks, and Report Extensions are wrapped in collapsible blocks — consistent with the semantic model's navigable structure
+- **Report TOC**: Table of Contents with anchor links added to the report markdown output
+- **Complexity Index with colour indicator**: both semantic model and report now show a coloured dot next to the complexity percentage (green below 25%, yellow 25–59%, red 60%+) for at-a-glance readability
+- **Report Overview enriched**: visual min/avg/max per page shown inline; hidden pages count included
+
+### Tests
+- 193 tests — all passing
+
+---
+
 ## [0.3.1] — 2026-03-13
 
 ### Added

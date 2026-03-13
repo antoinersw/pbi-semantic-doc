@@ -13,149 +13,71 @@ from .report_models import ReportMetrics
 class ReportGenerator:
     """
     Genera output formattato dalle metriche del report.
-    
+
     Supporta tre formati:
     - JSON: per integrazione programmatica
-    - Markdown: per documentazione human-readable
+    - Markdown: per documentazione human-readable (con TOC e sezioni collassabili)
     - Text: per output console
     """
-    
+
+    # ── public API ────────────────────────────────────────────────────────
+
     def generate_json(self, metrics: ReportMetrics) -> str:
-        """
-        Genera output JSON.
-        
-        Args:
-            metrics: ReportMetrics da serializzare
-            
-        Returns:
-            Stringa JSON formattata
-        """
         return json.dumps(metrics.to_dict(), indent=2, ensure_ascii=False)
-    
+
     def generate_markdown(self, metrics: ReportMetrics) -> str:
         """
-        Genera documentazione Markdown strutturata.
-        
-        Sezioni:
+        Genera documentazione Markdown strutturata e navigabile.
+
+        Struttura:
         - Header con nome report e formato
-        - Overview con metriche principali
-        - Tabella distribuzione tipi visual
-        - Sezione bookmarks (se presenti)
-        - Sezione report extensions (se presenti)
-        - Footer con timestamp
-        
-        Args:
-            metrics: ReportMetrics da documentare
-            
-        Returns:
-            Stringa Markdown formattata
+        - Table of Contents con anchor link
+        - Overview: metriche chiave + Complexity Index (sempre visibile)
+        - Visual Types Distribution (collassabile)
+        - Custom Visuals (collassabile, se presenti)
+        - Bookmarks (collassabile, se presenti)
+        - Report Extensions (collassabile, se presenti)
+        - Advanced Metrics (sempre visibile)
+        - Footer
         """
-        sections: list[str] = []
-        
-        # Header
-        sections.append(f"# {metrics.report_name} — Report Analysis")
-        sections.append("")
-        
-        # Overview
-        sections.append("## Overview")
-        sections.append("")
-        sections.append(f"| | |")
-        sections.append(f"|---|---|")
-        sections.append(f"| Report Format | {metrics.report_format} |")
-        sections.append(f"| Total Pages | {metrics.total_pages} |")
-        sections.append(f"| Hidden Pages | {metrics.hidden_pages_count} |")
-        sections.append(f"| Total Visuals | {metrics.total_visuals} |")
-        sections.append(f"| Visuals per Page (min/avg/max) | {metrics.visuals_per_page_min} / {metrics.visuals_per_page_avg:.1f} / {metrics.visuals_per_page_max} |")
-        sections.append(f"| Bookmarks | {metrics.total_bookmarks} |")
-        sections.append(f"| Report-Level Measures | {len(metrics.report_level_measures)} |")
-        sections.append(f"| Complexity Index | {metrics.complexity_index:.0%} |")
-        sections.append("")
-        
-        # Visual Types Distribution
+        parts: list[str] = []
+
+        parts.append(self._header(metrics))
+        parts.append(self._toc(metrics))
+        parts.append(self._overview(metrics))
+
         if metrics.visual_types_count:
-            sections.append("## Visual Types Distribution")
-            sections.append("")
-            sections.append("| Visual Type | Count | Percentage |")
-            sections.append("|---|---|---|")
-            
-            for vtype, count in sorted(metrics.visual_types_count.items(), key=lambda x: x[1], reverse=True):
-                percentage = metrics.visual_types_percentage.get(vtype, 0.0)
-                sections.append(f"| {vtype} | {count} | {percentage:.1f}% |")
-            
-            sections.append("")
-        
-        # Custom Visuals
+            parts.append(self._visual_types_section(metrics))
+
         if metrics.custom_visuals:
-            sections.append("## Custom Visuals")
-            sections.append("")
-            for custom_visual in metrics.custom_visuals:
-                sections.append(f"- `{custom_visual}`")
-            sections.append("")
-        
-        # Bookmarks
+            parts.append(self._custom_visuals_section(metrics))
+
         if metrics.has_bookmarks:
-            sections.append("## Bookmarks")
-            sections.append("")
-            sections.append(f"Total: {metrics.total_bookmarks}")
-            sections.append("")
-            if metrics.bookmark_names:
-                for bookmark_name in metrics.bookmark_names:
-                    sections.append(f"- {bookmark_name}")
-                sections.append("")
-        
-        # Report Extensions
+            parts.append(self._bookmarks_section(metrics))
+
         if metrics.has_report_extensions:
-            sections.append("## Report Extensions")
-            sections.append("")
-            sections.append(f"Report-level measures: {len(metrics.report_level_measures)}")
-            sections.append("")
-            if metrics.report_level_measures:
-                for measure in metrics.report_level_measures:
-                    sections.append(f"- `{measure}`")
-                sections.append("")
-        
-        # Advanced Metrics
-        sections.append("## Advanced Metrics")
-        sections.append("")
-        sections.append(f"| Metric | Value |")
-        sections.append(f"|---|---|")
-        sections.append(f"| Pages with Drillthrough | {metrics.pages_with_drillthrough} |")
-        sections.append(f"| Total Filters | {metrics.total_filters} |")
-        sections.append(f"| Visuals with Mobile Layout | {metrics.visuals_with_mobile_layout} |")
-        sections.append("")
-        
-        # Error message if present
+            parts.append(self._report_extensions_section(metrics))
+
+        parts.append(self._advanced_metrics_section(metrics))
+
         if metrics.error_message:
-            sections.append("## Errors")
-            sections.append("")
-            sections.append(f"⚠️ {metrics.error_message}")
-            sections.append("")
-        
-        # Footer
+            parts.append(f"## Errors\n\n⚠️ {metrics.error_message}")
+
         ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-        sections.append("---")
-        sections.append("")
-        sections.append(f"*Generated by [pbi-semantic-doc](https://github.com/viciuslios/pbi-semantic-doc) · {ts}*")
-        
-        return "\n".join(sections) + "\n"
-    
+        parts.append(
+            f"---\n\n*Generated by [pbi-semantic-doc]"
+            f"(https://github.com/viciuslios/pbi-semantic-doc) · {ts}*"
+        )
+
+        return "\n\n".join(parts) + "\n"
+
     def generate_text(self, metrics: ReportMetrics) -> str:
-        """
-        Genera output testuale per console.
-        Formato compatto e leggibile.
-        
-        Args:
-            metrics: ReportMetrics da formattare
-            
-        Returns:
-            Stringa testuale formattata
-        """
         lines: list[str] = []
-        
+
         lines.append(f"Report Analysis: {metrics.report_name}")
         lines.append(f"Format: {metrics.report_format}")
         lines.append("")
-        
+
         lines.append("Overview:")
         lines.append(f"  Pages: {metrics.total_pages} (hidden: {metrics.hidden_pages_count})")
         lines.append(f"  Visuals: {metrics.total_visuals} (avg per page: {metrics.visuals_per_page_avg:.1f})")
@@ -163,20 +85,178 @@ class ReportGenerator:
         lines.append(f"  Report-Level Measures: {len(metrics.report_level_measures)}")
         lines.append(f"  Complexity Index: {metrics.complexity_index:.0%}")
         lines.append("")
-        
+
         if metrics.visual_types_count:
             lines.append("Visual Types:")
-            for vtype, count in sorted(metrics.visual_types_count.items(), key=lambda x: x[1], reverse=True):
+            for vtype, count in sorted(
+                metrics.visual_types_count.items(), key=lambda x: x[1], reverse=True
+            ):
                 percentage = metrics.visual_types_percentage.get(vtype, 0.0)
                 lines.append(f"  {vtype}: {count} ({percentage:.1f}%)")
             lines.append("")
-        
+
         if metrics.custom_visuals:
             lines.append(f"Custom Visuals: {', '.join(metrics.custom_visuals)}")
             lines.append("")
-        
+
         if metrics.error_message:
             lines.append(f"⚠️  Error: {metrics.error_message}")
             lines.append("")
-        
+
         return "\n".join(lines)
+
+    # ── private helpers ───────────────────────────────────────────────────
+
+    @staticmethod
+    def _header(metrics: ReportMetrics) -> str:
+        return f"# {metrics.report_name} — Report Analysis"
+
+    @staticmethod
+    def _toc(metrics: ReportMetrics) -> str:
+        lines = ["## Contents", ""]
+        lines.append("- [Overview](#overview)")
+
+        if metrics.visual_types_count:
+            n = len(metrics.visual_types_count)
+            lines.append(
+                f"- [Visual Types Distribution](#visual-types-distribution)"
+                f" — {n} type{'s' if n != 1 else ''}"
+            )
+        if metrics.custom_visuals:
+            n = len(metrics.custom_visuals)
+            lines.append(
+                f"- [Custom Visuals](#custom-visuals)"
+                f" — {n} marketplace visual{'s' if n != 1 else ''}"
+            )
+        if metrics.has_bookmarks:
+            n = metrics.total_bookmarks
+            lines.append(
+                f"- [Bookmarks](#bookmarks)"
+                f" — {n} bookmark{'s' if n != 1 else ''}"
+            )
+        if metrics.has_report_extensions:
+            n = len(metrics.report_level_measures)
+            lines.append(
+                f"- [Report Extensions](#report-extensions)"
+                f" — {n} report-level measure{'s' if n != 1 else ''}"
+            )
+        lines.append("- [Advanced Metrics](#advanced-metrics)")
+        lines.append("")
+        return "\n".join(lines)
+
+    @staticmethod
+    def _overview(metrics: ReportMetrics) -> str:
+        complexity_pct = metrics.complexity_index
+        # Colour-coded emoji for the complexity score
+        if complexity_pct < 0.25:
+            cx_icon = "🟢"
+        elif complexity_pct < 0.60:
+            cx_icon = "🟡"
+        else:
+            cx_icon = "🔴"
+
+        rows = [
+            f"| Report Format | {metrics.report_format} |",
+            f"| Total Pages | {metrics.total_pages} (hidden: {metrics.hidden_pages_count}) |",
+            f"| Total Visuals | {metrics.total_visuals}"
+            f" (avg {metrics.visuals_per_page_avg:.1f}/page,"
+            f" min {metrics.visuals_per_page_min}, max {metrics.visuals_per_page_max}) |",
+            f"| Bookmarks | {metrics.total_bookmarks} |",
+            f"| Report-Level Measures | {len(metrics.report_level_measures)} |",
+            f"| **Complexity Index** | **{cx_icon} {complexity_pct:.0%}** |",
+        ]
+
+        table = "\n".join(["| | |", "|---|---|"] + rows)
+        return f"## Overview\n\n{table}"
+
+    @staticmethod
+    def _visual_types_section(metrics: ReportMetrics) -> str:
+        heading = "## Visual Types Distribution"
+        n = len(metrics.visual_types_count)
+        total = metrics.total_visuals
+
+        rows = []
+        for vtype, count in sorted(
+            metrics.visual_types_count.items(), key=lambda x: x[1], reverse=True
+        ):
+            pct = metrics.visual_types_percentage.get(vtype, 0.0)
+            rows.append(f"| {vtype} | {count} | {pct:.1f}% |")
+
+        inner = (
+            "| Visual Type | Count | Percentage |\n"
+            "|---|---|---|\n"
+            + "\n".join(rows)
+        )
+
+        summary = f"📊 {n} visual type{'s' if n != 1 else ''} across {total} visuals — click to expand"
+        details = (
+            f"<details>\n"
+            f"<summary>{summary}</summary>\n\n"
+            f"{inner}\n\n"
+            f"</details>"
+        )
+        return f"{heading}\n\n{details}"
+
+    @staticmethod
+    def _custom_visuals_section(metrics: ReportMetrics) -> str:
+        heading = "## Custom Visuals"
+        n = len(metrics.custom_visuals)
+        items = "\n".join(f"- `{v}`" for v in metrics.custom_visuals)
+
+        summary = f"🔌 {n} marketplace visual{'s' if n != 1 else ''} — click to expand"
+        details = (
+            f"<details>\n"
+            f"<summary>{summary}</summary>\n\n"
+            f"{items}\n\n"
+            f"</details>"
+        )
+        return f"{heading}\n\n{details}"
+
+    @staticmethod
+    def _bookmarks_section(metrics: ReportMetrics) -> str:
+        heading = "## Bookmarks"
+        n = metrics.total_bookmarks
+
+        inner_lines = [f"Total: {n}", ""]
+        if metrics.bookmark_names:
+            inner_lines += [f"- {b}" for b in metrics.bookmark_names]
+        inner = "\n".join(inner_lines)
+
+        summary = f"🔖 {n} bookmark{'s' if n != 1 else ''} — click to expand"
+        details = (
+            f"<details>\n"
+            f"<summary>{summary}</summary>\n\n"
+            f"{inner}\n\n"
+            f"</details>"
+        )
+        return f"{heading}\n\n{details}"
+
+    @staticmethod
+    def _report_extensions_section(metrics: ReportMetrics) -> str:
+        heading = "## Report Extensions"
+        n = len(metrics.report_level_measures)
+
+        inner_lines = [f"Report-level measures: {n}", ""]
+        if metrics.report_level_measures:
+            inner_lines += [f"- `{m}`" for m in metrics.report_level_measures]
+        inner = "\n".join(inner_lines)
+
+        summary = f"📐 {n} report-level measure{'s' if n != 1 else ''} — click to expand"
+        details = (
+            f"<details>\n"
+            f"<summary>{summary}</summary>\n\n"
+            f"{inner}\n\n"
+            f"</details>"
+        )
+        return f"{heading}\n\n{details}"
+
+    @staticmethod
+    def _advanced_metrics_section(metrics: ReportMetrics) -> str:
+        table = (
+            "| Metric | Value |\n"
+            "|---|---|\n"
+            f"| Pages with Drillthrough | {metrics.pages_with_drillthrough} |\n"
+            f"| Total Filters | {metrics.total_filters} |\n"
+            f"| Visuals with Mobile Layout | {metrics.visuals_with_mobile_layout} |"
+        )
+        return f"## Advanced Metrics\n\n{table}"
