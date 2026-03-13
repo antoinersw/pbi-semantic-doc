@@ -1,5 +1,17 @@
 table Sales
 
+	partition 'Sales-Partition' = m
+		mode: import
+		source =
+			let
+				Source = Sql.Database("srv-dw01", "AdventureWorks"),
+				dbo_FactSales = Source{[Schema="dbo",Item="FactSales"]}[Data],
+				FilteredRows = Table.SelectRows(dbo_FactSales, each [Year] >= 2020),
+				RemovedColumns = Table.RemoveColumns(FilteredRows, {"InternalID"}),
+				ChangedTypes = Table.TransformColumnTypes(RemovedColumns, {{"OrderID", Int64.Type}, {"SalesAmount", type number}})
+			in
+				ChangedTypes
+
 	column OrderID
 		dataType: int64
 

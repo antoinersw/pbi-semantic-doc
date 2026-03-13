@@ -1,0 +1,7 @@
+role user_role
+	modelPermission: read
+
+	tablePermission Owners = [Manager] == "Low, Spencer" && [Manager] == "Weiler, Anne"
+
+	annotation PBI_Id = 76cd079e605e47f38f862e709eefbb6c
+

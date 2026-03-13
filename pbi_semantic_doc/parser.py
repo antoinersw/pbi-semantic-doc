@@ -10,6 +10,8 @@ Handles all real-world TMDL syntax variants:
 - Escaped single quotes in measure names ('it''s fine')
 - Relationships with dotted notation: fromColumn: Table.Column
 - Auto-generated date tables (LocalDateTable_, DateTableTemplate_)
+- Partition blocks with M / Power Query expressions
+- RLS roles with table-level DAX filter expressions
 """
 
 from __future__ import annotations
@@ -28,9 +30,96 @@ EXCLUDED_TABLE_PREFIXES = (
     "DateTableTemplate_",
 )
 
+# ---------------------------------------------------------------------------
+# Power Query connector name mapping  (M namespace → friendly label)
+# Any namespace NOT in this dict is returned as-is (e.g. "AmazonRedshift")
+# ---------------------------------------------------------------------------
+CONNECTOR_NAMES: dict[str, str] = {
+    "Sql":                       "SQL Server",
+    "AzureSQL":                  "Azure SQL",
+    "AzureSQLDataWarehouse":     "Azure Synapse",
+    "AzureSQLManagedInstance":   "Azure SQL Managed Instance",
+    "PostgreSQL":                "PostgreSQL",
+    "MySql":                     "MySQL",
+    "Oracle":                    "Oracle",
+    "Teradata":                  "Teradata",
+    "DB2":                       "IBM DB2",
+    "ODBC":                      "ODBC",
+    "OleDB":                     "OLE DB",
+    "Snowflake":                 "Snowflake",
+    "AmazonRedshift":            "Amazon Redshift",
+    "GoogleBigQuery":            "Google BigQuery",
+    "AzureDataExplorer":         "Azure Data Explorer",
+    "Databricks":                "Databricks",
+    "DeltaLake":                 "Delta Lake",
+    "Fabric":                    "Microsoft Fabric",
+    "PowerBI":                   "Power BI Dataset",
+    "AnalysisServices":          "SSAS / AAS",
+    "Excel":                     "Excel",
+    "Csv":                       "CSV",
+    "Json":                      "JSON",
+    "Xml":                       "XML",
+    "Parquet":                   "Parquet",
+    "Folder":                    "Local Folder",
+    "SharePoint":                "SharePoint",
+    "AzureStorage":              "Azure Storage",
+    "Web":                       "Web / REST API",
+    "OData":                     "OData",
+    "Salesforce":                "Salesforce",
+    "Dynamics365":               "Dynamics 365",
+    "GraphQL":                   "GraphQL",
+    "SapHana":                   "SAP HANA",
+    "SapBw":                     "SAP BW",
+    "Sybase":                    "Sybase",
+}
+
+# Connectors that never support query folding (file-based / non-relational)
+NEVER_FOLDS_CONNECTORS: set[str] = {
+    "Excel", "CSV", "JSON", "XML", "Parquet",
+    "Local Folder", "Web / REST API", "SharePoint",
+}
 
 # ---------------------------------------------------------------------------
-# Data classes
+# Step function catalog: M function name → (transform_type, folding_impact)
+# folding_impact: True = folds,  False = breaks folding,  None = depends
+# ---------------------------------------------------------------------------
+STEP_FUNCTION_CATALOG: dict[str, tuple[str, Optional[bool]]] = {
+    "Table.SelectRows":           ("filter",            True),
+    "Table.SelectColumns":        ("select_columns",    True),
+    "Table.RemoveColumns":        ("remove_columns",    True),
+    "Table.RenameColumns":        ("rename",            True),
+    "Table.TransformColumnTypes": ("type_cast",         True),
+    "Table.Sort":                 ("sort",              True),
+    "Table.Distinct":             ("distinct",          True),
+    "Table.Skip":                 ("skip",              True),
+    "Table.FirstN":               ("top_n",             True),
+    "Table.Range":                ("range",             True),
+    "Table.AddColumn":            ("add_column",        None),
+    "Table.Group":                ("group_by",          None),
+    "Table.NestedJoin":           ("merge",             None),
+    "Table.Join":                 ("merge",             None),
+    "Table.Combine":              ("append",            False),
+    "Table.Pivot":                ("pivot",             False),
+    "Table.Unpivot":              ("unpivot",           False),
+    "Table.UnpivotOtherColumns":  ("unpivot",           False),
+    "Table.ExpandTableColumn":    ("expand",            None),
+    "Table.ExpandRecordColumn":   ("expand_record",     None),
+    "Table.TransformColumns":     ("custom_transform",  False),
+    "Table.ReplaceValue":         ("replace",           None),
+    "Table.FillDown":             ("fill",              False),
+    "Table.FillUp":               ("fill",              False),
+    "Table.Buffer":               ("buffer",            False),
+    "Table.Last":                 ("last",              None),
+    "Table.PromoteHeaders":       ("promote_headers",   False),
+    "Table.DemoteHeaders":        ("demote_headers",    False),
+    "Table.SplitColumn":          ("split_column",      False),
+    "Table.CombineColumns":       ("combine_columns",   False),
+    "Value.NativeQuery":          ("native_query",      True),
+}
+
+
+# ---------------------------------------------------------------------------
+# Data classes — base model
 # ---------------------------------------------------------------------------
 
 @dataclass
@@ -147,13 +236,116 @@ class Measure:
             hints.append("Inactive relationship")
         if "RELATED(" in expr or "RELATEDTABLE(" in expr:
             hints.append("Cross-table lookup")
-        
+
         # Filter
         if "FILTER(" in expr:
             hints.append("Row filter")
 
         return " · ".join(hints) if hints else ""
 
+
+# ---------------------------------------------------------------------------
+# Data classes — Power Query / partitions
+# ---------------------------------------------------------------------------
+
+@dataclass
+class ConnectorCall:
+    """Represents the source connector extracted from an M expression."""
+    function_name: str                                    # e.g. "Sql.Database"
+    source_type: str                                      # e.g. "SQL Server" or raw namespace
+    positional_params: list[str] = field(default_factory=list)   # e.g. ["srv", "db"]
+    named_params: dict[str, str] = field(default_factory=dict)   # e.g. {"Query": "SELECT ..."}
+    is_parameterized: bool = False   # True if any param is a PQ variable (not a string literal)
+
+
+@dataclass
+class MStep:
+    """Represents a single step in a Power Query let...in expression."""
+    name: str                           # step name (e.g. "FilteredRows")
+    transform_type: str                 # normalized type (e.g. "filter", "merge")
+    expression: str                     # raw M expression of this step
+    folding_impact: Optional[bool] = None   # True=folds, False=breaks, None=depends
+
+
+@dataclass
+class IncrementalRefreshInfo:
+    """Incremental refresh detection for a partition."""
+    is_incremental: bool = False
+    range_column: Optional[str] = None   # detected date/datetime column name
+    has_range_start: bool = False
+    has_range_end: bool = False
+
+
+@dataclass
+class MQueryAnalysis:
+    """Full analysis of a Power Query M expression."""
+    query_type: str                          # m_query | native_sql | direct_table | calculated | entity | unknown
+    connector: Optional[ConnectorCall] = None
+    step_count: int = 0
+    steps: list[MStep] = field(default_factory=list)
+    native_query: Optional[str] = None           # extracted SQL if present
+    query_folding_status: str = "unknown"         # likely | at_risk | disabled | n/a | unknown
+    query_folding_reason: str = ""
+    has_merges: bool = False
+    has_appends: bool = False
+    has_custom_transforms: bool = False
+    incremental_refresh: IncrementalRefreshInfo = field(default_factory=IncrementalRefreshInfo)
+    unrecognized_functions: list[str] = field(default_factory=list)
+
+    def complexity_score(self) -> float:
+        """Return a 0–1 M query complexity score."""
+        step_score = min(self.step_count / 20, 1.0) * 0.4
+        transform_score = 0.0
+        if self.has_merges:            transform_score += 0.3
+        if self.has_appends:           transform_score += 0.2
+        if self.native_query:          transform_score += 0.1
+        if self.has_custom_transforms: transform_score += 0.2
+        if self.unrecognized_functions: transform_score += 0.1
+        return round(min(step_score + min(transform_score, 1.0) * 0.6, 1.0), 3)
+
+
+@dataclass
+class Partition:
+    """Represents a table partition in a TMDL semantic model."""
+    name: str
+    mode: str = "import"      # import | directQuery | directLake
+    type: str = "m"           # m | calculated | entity
+    expression: str = ""      # raw M or DAX expression
+    query_analysis: Optional[MQueryAnalysis] = None
+
+
+@dataclass
+class DataSourceSummary:
+    """Aggregated data source across all tables sharing the same connection."""
+    source_type: str
+    server: Optional[str]     # server name, file path, or URL
+    database: Optional[str]   # database name if applicable
+    tables: list[str] = field(default_factory=list)
+    modes: list[str] = field(default_factory=list)   # import/directQuery per partition
+
+
+# ---------------------------------------------------------------------------
+# Data classes — RLS
+# ---------------------------------------------------------------------------
+
+@dataclass
+class RoleTablePermission:
+    """A DAX filter applied to a table within an RLS role."""
+    table_name: str
+    filter_expression: str   # DAX expression, or "true" meaning no row filter
+
+
+@dataclass
+class Role:
+    """An RLS role in the semantic model."""
+    name: str
+    model_permission: str = "read"   # read | readRefresh | admin | none
+    table_permissions: list[RoleTablePermission] = field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
+# Data classes — Table, Relationship, SemanticModel
+# ---------------------------------------------------------------------------
 
 @dataclass
 class Table:
@@ -162,6 +354,26 @@ class Table:
     is_hidden: bool = False
     columns: list[Column] = field(default_factory=list)
     measures: list[Measure] = field(default_factory=list)
+    partitions: list[Partition] = field(default_factory=list)
+
+    @property
+    def effective_mode(self) -> str:
+        """Return data access mode: import / directQuery / mixed / calculated / unknown."""
+        if not self.partitions:
+            return "unknown"
+        modes = {p.mode for p in self.partitions if p.type not in ("calculated", "entity")}
+        if not modes:
+            return "calculated"
+        return modes.pop() if len(modes) == 1 else "mixed"
+
+    @property
+    def is_incremental(self) -> bool:
+        """True if any partition uses incremental refresh."""
+        return any(
+            p.query_analysis and p.query_analysis.incremental_refresh.is_incremental
+            for p in self.partitions
+            if p.query_analysis
+        )
 
 
 @dataclass
@@ -235,8 +447,12 @@ class SemanticModel:
     name: str
     tables: list[Table] = field(default_factory=list)
     relationships: list[Relationship] = field(default_factory=list)
+    roles: list[Role] = field(default_factory=list)
 
+    # ------------------------------------------------------------------
     # Convenience aggregates
+    # ------------------------------------------------------------------
+
     @property
     def all_measures(self) -> list[tuple[str, Measure]]:
         """Returns (table_name, measure) pairs sorted by measure name."""
@@ -250,6 +466,34 @@ class SemanticModel:
     @property
     def visible_tables(self) -> list[Table]:
         return [t for t in self.tables if not t.is_hidden]
+
+    @property
+    def data_sources(self) -> list[DataSourceSummary]:
+        """Aggregate unique data sources across all table partitions."""
+        source_map: dict[tuple, DataSourceSummary] = {}
+
+        for table in self.tables:
+            for partition in table.partitions:
+                qa = partition.query_analysis
+                if not qa or not qa.connector:
+                    continue
+                conn = qa.connector
+                server = conn.positional_params[0] if conn.positional_params else None
+                database = conn.positional_params[1] if len(conn.positional_params) > 1 else None
+                key = (conn.source_type, server, database)
+
+                if key not in source_map:
+                    source_map[key] = DataSourceSummary(
+                        source_type=conn.source_type,
+                        server=server,
+                        database=database,
+                    )
+                if table.name not in source_map[key].tables:
+                    source_map[key].tables.append(table.name)
+                if partition.mode not in source_map[key].modes:
+                    source_map[key].modes.append(partition.mode)
+
+        return list(source_map.values())
 
     def calculate_metrics(self) -> ModelMetrics:
         return ModelMetrics.from_model(self)
@@ -270,6 +514,8 @@ class TmdlParser:
                     <TableName>.tmdl
                     ...
                 relationships.tmdl   (optional)
+                roles/
+                    <RoleName>.tmdl  (optional)
     """
 
     def parse(self, model_root: Path) -> SemanticModel:
@@ -294,6 +540,8 @@ class TmdlParser:
                 and not self._is_excluded_table(r.to_table)
             ]
 
+        model.roles = self._parse_roles(definition_dir)
+
         return model
 
     # ------------------------------------------------------------------
@@ -302,7 +550,6 @@ class TmdlParser:
 
     @staticmethod
     def _is_excluded_table(name: str) -> bool:
-        """Check if table should be excluded from documentation"""
         return any(name.startswith(prefix) for prefix in EXCLUDED_TABLE_PREFIXES)
 
     def _find_definition_dir(self, root: Path) -> Path:
@@ -312,16 +559,13 @@ class TmdlParser:
           - a folder that *contains* a .SemanticModel sub-folder
           - the definition/ folder itself
         """
-        # Already the definition folder?
         if (root / "model.tmdl").exists():
             return root
 
-        # Standard layout: root/definition/
         candidate = root / "definition"
         if candidate.exists():
             return candidate
 
-        # Maybe root contains a *.SemanticModel child
         for child in root.iterdir():
             if child.is_dir() and child.suffix == ".SemanticModel":
                 defn = child / "definition"
@@ -336,13 +580,11 @@ class TmdlParser:
         )
 
     def _extract_model_name(self, model_tmdl: Path) -> str:
-        # Prefer the .SemanticModel folder name (e.g. "MyModel.SemanticModel" → "MyModel")
-        semantic_model_dir = model_tmdl.parent.parent  # definition/ → SemanticModel root
+        semantic_model_dir = model_tmdl.parent.parent
         folder_name = semantic_model_dir.name
         if folder_name.endswith(".SemanticModel"):
             return folder_name[: -len(".SemanticModel")]
 
-        # Fallback: read from model.tmdl
         if not model_tmdl.exists():
             return folder_name
         text = model_tmdl.read_text(encoding="utf-8", errors="replace")
@@ -352,21 +594,19 @@ class TmdlParser:
         return folder_name
 
     # ------------------------------------------------------------------
-    # Table / column / measure parsing
+    # Table / column / measure / partition parsing
     # ------------------------------------------------------------------
 
     def _parse_table(self, path: Path) -> Optional[Table]:
         text = path.read_text(encoding="utf-8", errors="replace")
         table = Table(name=path.stem)
 
-        # Override name if explicitly declared
         m = re.search(r"^table\s+(.+)$", text, re.MULTILINE)
         if m:
             table.name = self._unescape_name(m.group(1).strip())
 
         table.is_hidden = bool(re.search(r"^\tisHidden\s*$", text, re.MULTILINE))
 
-        # Description: prefer /// doc-comment above table keyword, fallback to description property
         table_line = next(
             (l for l in text.splitlines() if re.match(r"^table\s+", l.strip())),
             ""
@@ -376,9 +616,9 @@ class TmdlParser:
             or self._prop(text, "description")
         )
 
-        # Extract column and measure blocks
         table.columns = self._parse_columns(text)
         table.measures = self._parse_measures(text)
+        table.partitions = self._parse_partitions(text)
 
         return table
 
@@ -388,7 +628,6 @@ class TmdlParser:
             if keyword != "column":
                 continue
 
-            # Build the keyword line to find the /// comment above it
             col_line = f"\tcolumn {name_raw}"
             triple_desc = self._extract_triple_slash_comment(text, col_line)
 
@@ -431,7 +670,6 @@ class TmdlParser:
         2. Multi-line:    measure 'Name' =\n\t\t\tVAR x = ...\n\t\t\tRETURN x
         3. Backtick:      measure 'Name' = ```\n\t\t\tSUM(T[C])\n\t\t\t```
         """
-        # Extract only the quoted name portion for the regex
         quoted_name = self._extract_quoted_name(name_raw)
         escaped = re.escape(quoted_name)
         pattern = rf"^\tmeasure\s+{escaped}\s*=\s*(.*?)$"
@@ -442,11 +680,9 @@ class TmdlParser:
         first_line = m.group(1).strip()
         rest_start = m.end()
 
-        # Backtick-fenced
         if first_line.startswith("```"):
             return self._extract_backtick_expression(full_text, rest_start)
 
-        # Single-line with possible continuation
         continuation = self._extract_multiline_after(full_text, rest_start)
         if first_line and continuation:
             return (first_line + "\n" + continuation).strip()
@@ -475,15 +711,12 @@ class TmdlParser:
                     lines.append("")
                 continue
 
-            # New top-level block
             if re.match(r"^\t(measure|column|partition|hierarchy|annotation)\b", line):
                 break
 
-            # 2-tab property (formatString:, lineageTag:, etc.) — stop
             if re.match(r"^\t\t\w[\w.]+\s*[=:]", line) and not re.match(r"^\t\t\t", line):
                 break
 
-            # Expression content at 2+ tab indent
             if re.match(r"^\t\t", line):
                 lines.append(line.strip())
 
@@ -494,6 +727,418 @@ class TmdlParser:
         return "\n".join(lines)
 
     # ------------------------------------------------------------------
+    # Partition parsing
+    # ------------------------------------------------------------------
+
+    def _parse_partitions(self, text: str) -> list[Partition]:
+        """Parse partition blocks from table TMDL text."""
+        partitions = []
+        for keyword, name_raw, block in self._split_top_level_blocks(text):
+            if keyword != "partition":
+                continue
+
+            # Extract partition type (m, calculated, entity…) from "name = type"
+            type_match = re.search(r"=\s*(\w+)\s*$", name_raw.strip())
+            partition_type = type_match.group(1).lower() if type_match else "m"
+
+            partition_name = self._unescape_name(name_raw)
+            mode = self._prop(block, "mode") or "import"
+            expression = self._extract_partition_source(block)
+            analysis = self._analyze_m_query(expression, partition_type)
+
+            partitions.append(Partition(
+                name=partition_name,
+                mode=mode,
+                type=partition_type,
+                expression=expression,
+                query_analysis=analysis,
+            ))
+        return partitions
+
+    def _extract_partition_source(self, block: str) -> str:
+        """Extract the M/DAX source expression from a partition block."""
+        # Use [ \t]* (not \s*) to avoid consuming newlines before the expression
+        src_match = re.search(r"(?m)^\t\tsource[ \t]*=[ \t]*(.*?)$", block)
+        if not src_match:
+            return ""
+
+        first_line = src_match.group(1).strip()
+        rest_start = src_match.end()
+
+        # Backtick-fenced
+        if first_line.startswith("```"):
+            return self._extract_backtick_expression(block, rest_start)
+
+        # Collect multiline M expression (3+ tab indented lines)
+        rest = block[rest_start:]
+        lines = [first_line] if first_line else []
+        for line in rest.splitlines():
+            if not line.strip():
+                if lines:
+                    lines.append("")
+                continue
+            # Stop at a new 2-tab property
+            if re.match(r"^\t\t\w", line) and not re.match(r"^\t\t\t", line):
+                break
+            # Stop at a new top-level block
+            if re.match(r"^\t(column|measure|partition|hierarchy|annotation)\b", line):
+                break
+            if re.match(r"^\t\t\t", line):
+                lines.append(line.strip())
+
+        while lines and not lines[-1]:
+            lines.pop()
+        return "\n".join(lines)
+
+    # ------------------------------------------------------------------
+    # M expression analysis
+    # ------------------------------------------------------------------
+
+    def _analyze_m_query(self, expression: str, partition_type: str) -> MQueryAnalysis:
+        """Full analysis of a partition's M or DAX expression."""
+        if partition_type == "calculated":
+            return MQueryAnalysis(query_type="calculated")
+        if partition_type == "entity":
+            return MQueryAnalysis(query_type="entity")
+        if not expression.strip():
+            return MQueryAnalysis(query_type="unknown")
+
+        steps = self._parse_m_steps(expression)
+        connector = self._detect_connector(steps)
+        native_sql = self._extract_native_query(expression)
+        incremental = self._detect_incremental_refresh(expression)
+        folding_status, folding_reason = self._assess_query_folding(steps, connector)
+
+        # Determine query type
+        if native_sql:
+            query_type = "native_sql"
+        elif steps:
+            non_trivial = [s for s in steps if s.transform_type not in (
+                "source", "navigation", "type_cast"
+            )]
+            query_type = "direct_table" if not non_trivial else "m_query"
+        else:
+            query_type = "m_query"
+
+        has_merges = any(s.transform_type == "merge" for s in steps)
+        has_appends = any(s.transform_type == "append" for s in steps)
+        has_custom = any(s.transform_type == "custom_transform" for s in steps)
+        unrecognized = [
+            s.transform_type.replace("unknown (", "").rstrip(")")
+            for s in steps if s.transform_type.startswith("unknown")
+        ]
+
+        return MQueryAnalysis(
+            query_type=query_type,
+            connector=connector,
+            step_count=len(steps),
+            steps=steps,
+            native_query=native_sql,
+            query_folding_status=folding_status,
+            query_folding_reason=folding_reason,
+            has_merges=has_merges,
+            has_appends=has_appends,
+            has_custom_transforms=has_custom,
+            incremental_refresh=incremental,
+            unrecognized_functions=unrecognized,
+        )
+
+    def _parse_m_steps(self, expression: str) -> list[MStep]:
+        """Parse steps from a let...in M expression."""
+        expr = expression.strip()
+
+        let_match = re.search(r"(?i)\blet\b", expr)
+        if not let_match:
+            return []
+
+        body_start = let_match.end()
+        body_text = expr[body_start:]
+
+        # Find last top-level 'in' keyword
+        in_match = re.search(r"(?m)^[ \t]*\bin\b[ \t]*$", body_text)
+        if not in_match:
+            # 'in' on same line as result expression
+            in_match = re.search(r"(?m)^[ \t]*\bin\b[ \t]+\S", body_text)
+        body = body_text[:in_match.start()] if in_match else body_text
+
+        # Parse step definitions
+        # Use [ \t]* (0+ whitespace) to handle both indented and stripped lines
+        step_pat = re.compile(r'^([ \t]*)((?:\w+|#"[^"]+"))\s*=\s*(.*)')
+        lines = body.splitlines()
+
+        steps_raw: list[tuple[str, list[str]]] = []
+        base_indent: Optional[int] = None
+
+        for line in lines:
+            m = step_pat.match(line)
+            if m:
+                indent = len(m.group(1).expandtabs(4))
+                name = m.group(2)
+                first_expr = m.group(3).strip().rstrip(",")
+
+                if base_indent is None or indent <= base_indent:
+                    base_indent = indent
+                    steps_raw.append((name, [first_expr] if first_expr else []))
+                else:
+                    # Continuation of current step's expression
+                    if steps_raw:
+                        steps_raw[-1][1].append(line.strip().rstrip(","))
+            elif steps_raw and line.strip():
+                steps_raw[-1][1].append(line.strip().rstrip(","))
+
+        result: list[MStep] = []
+        for name, expr_lines in steps_raw:
+            expr_text = "\n".join(l for l in expr_lines if l).strip()
+            transform_type, folding_impact = self._classify_step(name, expr_text)
+            result.append(MStep(
+                name=name,
+                transform_type=transform_type,
+                expression=expr_text,
+                folding_impact=folding_impact,
+            ))
+        return result
+
+    def _classify_step(self, step_name: str, step_expr: str) -> tuple[str, Optional[bool]]:
+        """Classify a step by looking for known M functions in its expression."""
+        # Check known function catalog FIRST (takes priority over navigation heuristic)
+        for fn_name, (transform_type, folding_impact) in STEP_FUNCTION_CATALOG.items():
+            if (fn_name + "(") in step_expr or (fn_name + " (") in step_expr:
+                return transform_type, folding_impact
+
+        # Navigation pattern: {[Schema=..., Item=...]} or {[Name=...]}
+        if re.search(r"\{[^}]*(?:Schema|Item|Name)\s*=", step_expr):
+            return "navigation", True
+
+        # Connector source step: Namespace.Function(...)
+        if re.search(r"\b[A-Z][a-zA-Z]+\.[A-Z][a-zA-Z]+\s*\(", step_expr):
+            return "source", True
+
+        # Unknown — try to capture function name for transparency
+        fn_match = re.search(r"\b([A-Z][a-zA-Z]+\.[A-Z][a-zA-Z]+)\s*\(", step_expr)
+        if fn_match:
+            return f"unknown ({fn_match.group(1)})", None
+
+        return "unknown", None
+
+    def _detect_connector(self, steps: list[MStep]) -> Optional[ConnectorCall]:
+        """Detect the source connector from the steps (first 'source' step)."""
+        for step in steps:
+            if step.transform_type == "source":
+                return self._parse_connector_call(step.expression)
+        return None
+
+    def _parse_connector_call(self, expr: str) -> Optional[ConnectorCall]:
+        """Parse a connector function call and extract parameters generically."""
+        m = re.match(r"([A-Za-z][A-Za-z0-9]*\.[A-Za-z][A-Za-z0-9]*)\s*\(", expr)
+        if not m:
+            return None
+
+        function_name = m.group(1)
+        namespace = function_name.split(".")[0]
+        source_type = CONNECTOR_NAMES.get(namespace, namespace)
+
+        # Extract content inside outermost parens
+        params_start = m.end()
+        depth = 1
+        pos = params_start
+        while pos < len(expr) and depth > 0:
+            if expr[pos] == "(":
+                depth += 1
+            elif expr[pos] == ")":
+                depth -= 1
+            pos += 1
+        params_str = expr[params_start:pos - 1]
+
+        positional, named, is_param = self._parse_call_params(params_str)
+
+        return ConnectorCall(
+            function_name=function_name,
+            source_type=source_type,
+            positional_params=positional,
+            named_params=named,
+            is_parameterized=is_param,
+        )
+
+    def _parse_call_params(self, params_str: str) -> tuple[list[str], dict[str, str], bool]:
+        """Parse function parameters into positional and named."""
+        positional: list[str] = []
+        named: dict[str, str] = {}
+        is_parameterized = False
+
+        # Extract named params from [Key=Value] or [Key="Value"] record
+        named_block = re.search(r"\[([^\]]*)\]", params_str)
+        if named_block:
+            for kv in re.finditer(r'(\w+)\s*=\s*"([^"]*)"', named_block.group(1)):
+                named[kv.group(1)] = kv.group(2)
+
+        # Extract positional params (string literals before the record)
+        pos_part = params_str[:named_block.start()] if named_block else params_str
+        for p in re.findall(r'"([^"]*)"', pos_part):
+            positional.append(p)
+
+        # Detect PQ variable params (non-string, non-record tokens)
+        remaining = re.sub(r'"[^"]*"', "", pos_part)
+        remaining = remaining.strip().strip(",").strip()
+        if remaining:
+            is_parameterized = True
+            for tok in re.split(r"\s*,\s*", remaining):
+                tok = tok.strip()
+                if tok:
+                    positional.append(f"<{tok}>")
+
+        return positional, named, is_parameterized
+
+    def _extract_native_query(self, expression: str) -> Optional[str]:
+        """Extract native SQL from M expression (3 patterns)."""
+        # Pattern 1: Value.NativeQuery(source, "SELECT ...")
+        m = re.search(
+            r'Value\.NativeQuery\s*\([^,]+,\s*"([^"]+)"',
+            expression, re.DOTALL
+        )
+        if m:
+            return m.group(1).strip()
+
+        # Pattern 2: [Query="SELECT ..."]
+        m = re.search(r'\[Query\s*=\s*"([^"]+)"\]', expression, re.DOTALL)
+        if m:
+            return m.group(1).strip()
+
+        return None
+
+    def _detect_incremental_refresh(self, expression: str) -> IncrementalRefreshInfo:
+        """Detect incremental refresh pattern (RangeStart/RangeEnd)."""
+        has_start = bool(re.search(r"\bRangeStart\b", expression))
+        has_end = bool(re.search(r"\bRangeEnd\b", expression))
+
+        if not (has_start or has_end):
+            return IncrementalRefreshInfo()
+
+        # Detect the range column
+        range_col: Optional[str] = None
+        m = re.search(
+            r"each\s+\[([^\]]+)\]\s*(?:>=?|<=?)\s*(?:RangeStart|RangeEnd)",
+            expression,
+        )
+        if m:
+            range_col = m.group(1)
+
+        return IncrementalRefreshInfo(
+            is_incremental=True,
+            range_column=range_col,
+            has_range_start=has_start,
+            has_range_end=has_end,
+        )
+
+    def _assess_query_folding(
+        self, steps: list[MStep], connector: Optional[ConnectorCall]
+    ) -> tuple[str, str]:
+        """Assess query folding status and return (status, reason)."""
+        # File-based connectors → folding not applicable
+        if connector and connector.source_type in NEVER_FOLDS_CONNECTORS:
+            return "n/a", f"{connector.source_type} connector does not support query folding"
+
+        # Definite folding killers
+        for step in steps:
+            if step.transform_type == "buffer":
+                return "disabled", f"Table.Buffer() in step '{step.name}' stops query folding"
+            if step.transform_type == "append":
+                return "disabled", f"Table.Combine() in step '{step.name}' cannot fold back to source"
+            if step.transform_type == "custom_transform":
+                return "disabled", f"Custom M transform in step '{step.name}' breaks folding chain"
+            if step.transform_type in ("pivot", "unpivot"):
+                return "disabled", f"Pivot/Unpivot in step '{step.name}' cannot be folded"
+
+        # At-risk operations
+        merge_steps = [s for s in steps if s.transform_type == "merge"]
+        if merge_steps:
+            return "at_risk", f"Merge in step '{merge_steps[0].name}' — folding depends on connector"
+
+        unknown_steps = [
+            s for s in steps
+            if s.transform_type.startswith("unknown") and s.folding_impact is None
+        ]
+        if unknown_steps:
+            names = ", ".join(f"'{s.name}'" for s in unknown_steps[:3])
+            return "at_risk", f"Unrecognized functions in steps: {names}"
+
+        # All known foldable types
+        foldable = {
+            "filter", "select_columns", "remove_columns", "rename", "type_cast",
+            "sort", "navigation", "source", "native_query", "distinct", "top_n",
+            "skip", "range", "add_column",
+        }
+        if all(s.transform_type in foldable or s.folding_impact is True for s in steps):
+            return "likely", "All steps are known foldable operations"
+
+        return "at_risk", "Mix of foldable and non-deterministic steps"
+
+    # ------------------------------------------------------------------
+    # RLS role parsing
+    # ------------------------------------------------------------------
+
+    def _parse_roles(self, definition_dir: Path) -> list[Role]:
+        """Parse RLS roles from roles/ directory or inline in model.tmdl."""
+        roles: list[Role] = []
+
+        roles_dir = definition_dir / "roles"
+        if roles_dir.exists():
+            for role_file in sorted(roles_dir.glob("*.tmdl")):
+                role = self._parse_role_file(role_file)
+                if role:
+                    roles.append(role)
+        else:
+            # Fallback: roles declared inline in model.tmdl
+            model_tmdl = definition_dir / "model.tmdl"
+            if model_tmdl.exists():
+                text = model_tmdl.read_text(encoding="utf-8", errors="replace")
+                roles = self._parse_roles_from_text(text)
+
+        return roles
+
+    def _parse_role_file(self, path: Path) -> Optional[Role]:
+        text = path.read_text(encoding="utf-8", errors="replace")
+        return self._parse_role_text(text)
+
+    def _parse_roles_from_text(self, text: str) -> list[Role]:
+        """Parse all role blocks from a TMDL file."""
+        roles = []
+        blocks = re.split(r"^role\b", text, flags=re.MULTILINE)
+        for block in blocks[1:]:
+            role = self._parse_role_text("role" + block)
+            if role:
+                roles.append(role)
+        return roles
+
+    def _parse_role_text(self, text: str) -> Optional[Role]:
+        """Parse a single role from TMDL text."""
+        name_match = re.search(r"^role\s+(.+)$", text, re.MULTILINE)
+        if not name_match:
+            return None
+        name = self._unescape_name(name_match.group(1).strip())
+
+        perm_match = re.search(r"modelPermission\s*[=:]\s*(\w+)", text)
+        model_permission = perm_match.group(1) if perm_match else "read"
+
+        table_permissions: list[RoleTablePermission] = []
+        for tp in re.finditer(
+            r"^\s+tablePermission\s+(.+?)\s*=\s*(.+)$",
+            text,
+            re.MULTILINE,
+        ):
+            table_name = self._unescape_name(tp.group(1).strip())
+            filter_expr = tp.group(2).strip()
+            table_permissions.append(RoleTablePermission(
+                table_name=table_name,
+                filter_expression=filter_expr,
+            ))
+
+        return Role(
+            name=name,
+            model_permission=model_permission,
+            table_permissions=table_permissions,
+        )
+
+    # ------------------------------------------------------------------
     # Relationship parsing
     # ------------------------------------------------------------------
 
@@ -501,7 +1146,6 @@ class TmdlParser:
         text = path.read_text(encoding="utf-8", errors="replace")
         relationships = []
 
-        # Each relationship block starts with `relationship`
         blocks = re.split(r"^relationship\b", text, flags=re.MULTILINE)
         for block in blocks[1:]:
             from_ref = re.search(r"fromColumn\s*[=:]\s*(.+)", block)
@@ -513,7 +1157,6 @@ class TmdlParser:
             from_table, from_col = self._split_dotted_ref(from_ref.group(1).strip())
             to_table, to_col     = self._split_dotted_ref(to_ref.group(1).strip())
 
-            # Fallback: separate fromTable / toTable properties (non-dotted notation)
             if not from_table:
                 m = re.search(r"fromTable\s*[=:]\s*(.+)", block)
                 if m:
@@ -549,12 +1192,6 @@ class TmdlParser:
 
     @staticmethod
     def _extract_quoted_name(name_raw: str) -> str:
-        """
-        Extract just the quoted name portion from name_raw.
-        e.g. "'Giorni Indisponibilità' = ```"  →  "'Giorni Indisponibilità'"
-             "'it''s' ="                        →  "'it''s'"
-             "SimpleColumn"                     →  "SimpleColumn"
-        """
         if not name_raw.startswith("'"):
             return name_raw.split()[0] if name_raw else name_raw
 
@@ -562,7 +1199,7 @@ class TmdlParser:
         while i < len(name_raw):
             if name_raw[i] == "'":
                 if i + 1 < len(name_raw) and name_raw[i + 1] == "'":
-                    i += 2  # skip escaped quote
+                    i += 2
                     continue
                 break
             i += 1
@@ -577,7 +1214,7 @@ class TmdlParser:
         return ref[:dot_idx].strip(), ref[dot_idx + 1:].strip()
 
     def _split_top_level_blocks(self, text: str) -> list[tuple[str, str, str]]:
-        """Split text into top-level blocks (column, measure, etc.)"""
+        """Split text into top-level blocks (column, measure, partition, etc.)"""
         results = []
         pattern = re.compile(
             r"^\t(column|measure|partition|hierarchy|annotation)\s*(.*?)$",
@@ -595,8 +1232,7 @@ class TmdlParser:
 
     @staticmethod
     def _unescape_name(raw: str) -> str:
-        """Unescape TMDL name (remove quotes, handle escaped quotes)"""
-        # Strip = and everything after it (handles "'Name' = expr", "'Name' = ```", "'Name' =")
+        """Unescape TMDL name (remove quotes, handle escaped quotes)."""
         raw = re.sub(r"\s*=.*$", "", raw).strip()
         if raw.startswith("'") and raw.endswith("'"):
             raw = raw[1:-1]
@@ -605,20 +1241,11 @@ class TmdlParser:
 
     @staticmethod
     def _extract_triple_slash_comment(text: str, before_keyword: str) -> str:
-        """
-        Extract /// doc-comment lines that appear immediately before a keyword line.
-        Example:
-            /// First line of description.
-            /// Second line.
-            column myColumn
-        Returns the concatenated comment text, stripped of /// prefix.
-        """
         lines = text.splitlines()
         result_lines = []
         for i, line in enumerate(lines):
             stripped = line.strip()
             if stripped.startswith(before_keyword.strip()):
-                # Walk backwards collecting /// lines
                 j = i - 1
                 comment_lines = []
                 while j >= 0:
@@ -627,7 +1254,7 @@ class TmdlParser:
                         comment_lines.insert(0, prev[3:].strip())
                         j -= 1
                     elif prev == "":
-                        j -= 1  # allow blank lines between comments
+                        j -= 1
                         if j >= 0 and not lines[j].strip().startswith("///"):
                             break
                     else:

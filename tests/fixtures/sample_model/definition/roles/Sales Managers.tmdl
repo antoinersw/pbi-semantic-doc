@@ -1,0 +1,6 @@
+role 'Sales Managers'
+	modelPermission: read
+
+	tablePermission Sales = [Region] = USERPRINCIPALNAME()
+
+	tablePermission Customer = true

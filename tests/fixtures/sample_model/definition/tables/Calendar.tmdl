@@ -1,6 +1,9 @@
 /// Date dimension table
 table Calendar
 
+	partition Calendar = calculated
+		source = CALENDARAUTO()
+
 	column Date
 		dataType: dateTime
 		formatString: Short Date

@@ -1,0 +1,9 @@
+role admin_role
+	modelPermission: read
+
+	tablePermission Owners = [Manager] == "Weiler, Anne"
+
+	tablePermission Accounts
+
+	annotation PBI_Id = 57f1918c9e28409db26213f72af42503
+

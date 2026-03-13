@@ -33,5 +33,8 @@ ref table LocalDateTable_16a9f7af-fed3-4e54-9b5a-15d1cdfee444
 ref table LocalDateTable_36e7cc16-9aa7-44be-8b25-7a2fa51c55d8
 ref table LocalDateTable_de73616c-e116-4a69-92e1-907ce2a4d5db
 
+ref role admin_role
+ref role user_role
+
 ref cultureInfo en-US
 
