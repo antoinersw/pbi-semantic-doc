@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.3.3] — 2026-03-13
+
+### Fixed
+- **Combined mode filename**: `--combined` now uses the real model/report name (e.g. `DOC_Artificial_Intelligence_Sample.md`) instead of the parent folder name (`DOC_sample_model.md`). Achieved by parsing both components first, then determining the output path.
+
+### Tests
+- 193 tests — all passing
+
+---
+
 ## [0.3.2] — 2026-03-13
 
 ### Added

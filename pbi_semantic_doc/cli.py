@@ -298,17 +298,7 @@ def analyze_combined(args) -> int:
         )
         return 1
 
-    # Determine output path (sits at project folder level)
-    if args.output:
-        output_path = Path(args.output).resolve()
-    else:
-        safe = _safe_name(project_path.name)
-        ext = ".json" if args.format == "json" else ".md"
-        output_path = project_path / f"DOC_{safe}{ext}"
-
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    # Parse both components
+    # Parse both components first so we can use the real model/report name
     model = None
     report_metrics = None
 
@@ -326,6 +316,19 @@ def analyze_combined(args) -> int:
             report_metrics = report.calculate_metrics()
         except Exception as exc:
             print(f"Warning: Failed to parse report: {exc}", file=sys.stderr)
+
+    # Determine output path — use real model/report name, not the folder name
+    if args.output:
+        output_path = Path(args.output).resolve()
+    else:
+        project_name = (
+            model.name if model
+            else (report_metrics.report_name if report_metrics else project_path.name)
+        )
+        ext = ".json" if args.format == "json" else ".md"
+        output_path = project_path / f"DOC_{_safe_name(project_name)}{ext}"
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Generate unified output
     if args.format == "json":
