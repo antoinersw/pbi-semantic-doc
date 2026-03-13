@@ -1,13 +1,16 @@
 """
 Markdown generator — takes a SemanticModel object and produces
-a well-structured Markdown document.
+a well-structured, navigable Markdown document.
 
-Uses HTML <details>/<summary> for collapsible column sections,
-which renders natively in GitHub and GitLab.
+Features:
+- Table of Contents with anchor links to every section
+- Collapsible table, relationship and measures sections (<details>/<summary>)
+- Renders natively on GitHub and GitLab
 """
 
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone
 
 from .parser import (
@@ -50,18 +53,19 @@ _MODE_ICON = {
 
 class MarkdownGenerator:
     """
-    Generates a single Markdown file documenting a SemanticModel.
+    Generates a single navigable Markdown file documenting a SemanticModel.
 
     Usage:
         gen = MarkdownGenerator()
         output = gen.generate(model)
-        Path("MODEL_DOC.md").write_text(output)
+        Path(f"DOC_{model.name}.md").write_text(output)
     """
 
     def generate(self, model: SemanticModel) -> str:
         sections: list[str] = []
 
         sections.append(self._header(model))
+        sections.append(self._toc(model))
         sections.append(self._overview(model))
 
         # Data Sources (only if any partition has a connector)
@@ -85,6 +89,78 @@ class MarkdownGenerator:
         sections.append(self._footer())
 
         return "\n\n".join(sections) + "\n"
+
+    # ------------------------------------------------------------------
+    # Table of Contents
+    # ------------------------------------------------------------------
+
+    def _toc(self, model: SemanticModel) -> str:
+        lines = ["## Contents", ""]
+
+        lines.append("- [Overview](#overview)")
+
+        ds = model.data_sources
+        if ds:
+            n = len(ds)
+            lines.append(
+                f"- [Data Sources](#data-sources)"
+                f" — {n} connector{'s' if n != 1 else ''}"
+            )
+
+        if model.relationships:
+            n = len(model.relationships)
+            lines.append(
+                f"- [Relationships](#relationships)"
+                f" — {n} relationship{'s' if n != 1 else ''}"
+            )
+
+        if model.roles:
+            n = len(model.roles)
+            lines.append(
+                f"- [Row Level Security](#row-level-security)"
+                f" — {n} role{'s' if n != 1 else ''}"
+            )
+
+        if model.visible_tables:
+            lines.append("- **Tables**")
+            for table in model.visible_tables:
+                anchor = self._heading_anchor(f"Table: `{table.name}`")
+                n_cols = len([c for c in table.columns if not c.is_hidden])
+                n_meas = len(table.measures)
+                mode = table.effective_mode
+                mode_icon = _MODE_ICON.get(mode, "🧮" if mode == "calculated" else "")
+                parts = []
+                if mode_icon:
+                    parts.append(f"{mode_icon} {_MODE_LABEL.get(mode, mode)}")
+                parts.append(f"{n_cols} col{'s' if n_cols != 1 else ''}")
+                if n_meas:
+                    parts.append(f"{n_meas} measure{'s' if n_meas != 1 else ''}")
+                detail = " · ".join(parts)
+                lines.append(f"  - [{table.name}](#{anchor}) — {detail}")
+
+        if model.all_measures:
+            n = len(model.all_measures)
+            lines.append(
+                f"- [Measures Index](#measures-index-az)"
+                f" — {n} measure{'s' if n != 1 else ''}"
+            )
+
+        return "\n".join(lines)
+
+    @staticmethod
+    def _heading_anchor(heading: str) -> str:
+        """Convert a heading string to a GitHub-style anchor id."""
+        # Strip markdown formatting (backticks, asterisks, etc.)
+        text = re.sub(r"[`*_~]", "", heading)
+        # Lowercase
+        text = text.lower()
+        # Remove anything that is not a letter, number, space, or hyphen
+        text = re.sub(r"[^\w\s-]", "", text)
+        # Collapse whitespace → hyphens
+        text = re.sub(r"\s+", "-", text.strip())
+        # Collapse multiple hyphens
+        text = re.sub(r"-+", "-", text)
+        return text
 
     # ------------------------------------------------------------------
     # Sections
@@ -177,22 +253,32 @@ class MarkdownGenerator:
         return "\n".join(lines)
 
     def _relationships_section(self, relationships: list[Relationship]) -> str:
-        lines = ["## Relationships", ""]
-        lines.append("| From | | To | Cardinality | Cross-filter | Active |")
-        lines.append("|---|---|---|---|---|---|")
+        n = len(relationships)
+        summary = f"🔗 {n} relationship{'s' if n != 1 else ''} — click to expand"
 
+        rows = [
+            "| From | | To | Cardinality | Cross-filter | Active |",
+            "|---|---|---|---|---|---|",
+        ]
         for r in relationships:
             active_icon = "✅" if r.is_active else "⬜"
             from_ref = f"`{r.from_table}`[{r.from_column}]"
             to_ref   = f"`{r.to_table}`[{r.to_column}]"
-            lines.append(
+            rows.append(
                 f"| {from_ref} | → | {to_ref} | {r.cardinality} | {r.cross_filter} | {active_icon} |"
             )
 
-        return "\n".join(lines)
+        inner = "\n".join(rows)
+        return (
+            "## Relationships\n\n"
+            f"<details>\n"
+            f"<summary>{summary}</summary>\n\n"
+            f"{inner}\n\n"
+            f"</details>"
+        )
 
     def _rls_section(self, model: SemanticModel) -> str:
-        """Row Level Security section."""
+        """Row Level Security section — always visible (security-critical)."""
         lines = ["## Row Level Security", ""]
         lines.append("| Role | Permission | Table | Filter |")
         lines.append("|------|-----------|-------|--------|")
@@ -219,37 +305,78 @@ class MarkdownGenerator:
         return "\n".join(lines)
 
     def _table_section(self, table: Table) -> str:
-        lines = [f"## Table: `{table.name}`"]
+        heading = f"## Table: `{table.name}`"
+
+        # Build summary line for the <details> toggle
+        n_cols = len([c for c in table.columns if not c.is_hidden])
+        n_meas = len(table.measures)
+        mode = table.effective_mode
+
+        summary_parts: list[str] = []
+        if mode == "calculated":
+            summary_parts.append("🧮 Calculated (DAX)")
+        elif mode == "entity":
+            summary_parts.append("⚡ DirectLake")
+        elif mode in _MODE_ICON:
+            summary_parts.append(f"{_MODE_ICON[mode]} {_MODE_LABEL[mode]}")
+
+        summary_parts.append(f"{n_cols} col{'s' if n_cols != 1 else ''}")
+        if n_meas:
+            summary_parts.append(f"{n_meas} measure{'s' if n_meas != 1 else ''}")
+
+        # Add folding status if we have partitions
+        for p in table.partitions:
+            qa = p.query_analysis
+            if qa and qa.connector:
+                f_icon = _FOLDING_ICON.get(qa.query_folding_status, "❓")
+                f_label = _FOLDING_LABEL.get(qa.query_folding_status, qa.query_folding_status)
+                summary_parts.append(f"Folding: {f_icon} {f_label}")
+                break
+
+        summary = " · ".join(summary_parts) + " — click to expand"
+
+        # Build inner content
+        content: list[str] = []
 
         if table.description:
-            lines += ["", table.description]
+            content += ["", table.description]
 
         # Partition / source info badge
         badge = self._partition_badge(table)
         if badge:
-            lines += ["", badge]
+            content += ["", badge]
 
-        # Columns — collapsible
+        # Columns — collapsible (nested inside the table details)
         if table.columns:
             visible_cols = [c for c in table.columns if not c.is_hidden]
             hidden_cols  = [c for c in table.columns if c.is_hidden]
             if visible_cols:
-                lines += [""]
-                lines.append(self._collapsible_columns(visible_cols, hidden_cols))
+                content += [""]
+                content.append(self._collapsible_columns(visible_cols, hidden_cols))
 
         # Measures
         if table.measures:
-            lines += ["", "### Measures", ""]
+            content += ["", "### Measures", ""]
             for measure in sorted(table.measures, key=lambda m: m.name.lower()):
-                lines.append(self._measure_block(measure))
+                content.append(self._measure_block(measure))
 
         # M expression — collapsible per partition
         for partition in table.partitions:
             if partition.expression and partition.type == "m":
-                lines += [""]
-                lines.append(self._collapsible_m_expression(partition))
+                content += [""]
+                content.append(self._collapsible_m_expression(partition))
 
-        return "\n".join(lines)
+        if not content:
+            return heading
+
+        inner = "\n".join(content).strip()
+        details = (
+            f"<details>\n"
+            f"<summary>{summary}</summary>\n\n"
+            f"{inner}\n\n"
+            f"</details>"
+        )
+        return f"{heading}\n\n{details}"
 
     def _partition_badge(self, table: Table) -> str:
         """Compact source info line(s) shown just below the table heading."""
@@ -385,15 +512,25 @@ class MarkdownGenerator:
         return "\n".join(lines)
 
     def _measures_index(self, model: SemanticModel) -> str:
-        lines = ["## Measures Index (A–Z)", ""]
-        lines.append("| Measure | Table | Folder |")
-        lines.append("|---|---|---|")
+        n = len(model.all_measures)
+        summary = f"📋 {n} measure{'s' if n != 1 else ''} — click to expand"
 
+        rows = [
+            "| Measure | Table | Folder |",
+            "|---|---|---|",
+        ]
         for table_name, measure in model.all_measures:
             folder = measure.display_folder or ""
-            lines.append(f"| `{measure.name}` | `{table_name}` | {folder} |")
+            rows.append(f"| `{measure.name}` | `{table_name}` | {folder} |")
 
-        return "\n".join(lines)
+        inner = "\n".join(rows)
+        return (
+            "## Measures Index (A–Z)\n\n"
+            f"<details>\n"
+            f"<summary>{summary}</summary>\n\n"
+            f"{inner}\n\n"
+            f"</details>"
+        )
 
     def _footer(self) -> str:
         ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")

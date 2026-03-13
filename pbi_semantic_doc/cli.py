@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -21,6 +22,13 @@ from .parser import TmdlParser
 from .generator import MarkdownGenerator
 from .report_parser import ReportParser
 from .report_generator import ReportGenerator
+
+
+def _safe_name(name: str) -> str:
+    """Convert a model/report name to a filesystem-safe string."""
+    safe = re.sub(r'[<>:"/\\|?*\x00-\x1f]', "", name)
+    safe = re.sub(r"\s+", "_", safe.strip())
+    return safe or "output"
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -53,7 +61,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--output", "-o",
         metavar="OUTPUT_PATH",
         default=None,
-        help="Where to write the output file. Defaults to MODEL_DOC.md or REPORT_ANALYSIS.md",
+        help="Where to write the output file. Defaults to DOC_<name>.md in the input folder.",
     )
     p.add_argument(
         "--format", "-f",
@@ -92,15 +100,7 @@ def analyze_semantic_model(args) -> int:
         print(f"Error: path does not exist: {model_path}", file=sys.stderr)
         return 1
 
-    # Determine output path
-    if args.output:
-        output_path = Path(args.output).resolve()
-    else:
-        output_path = model_path / "MODEL_DOC.md"
-
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    # Parse
+    # Parse first so we can use the model name in the default output filename
     try:
         parser = TmdlParser()
         model = parser.parse(model_path)
@@ -110,6 +110,14 @@ def analyze_semantic_model(args) -> int:
     except Exception as exc:  # noqa: BLE001
         print(f"Unexpected error while parsing: {exc}", file=sys.stderr)
         return 1
+
+    # Determine output path (after parse so we have the model name)
+    if args.output:
+        output_path = Path(args.output).resolve()
+    else:
+        output_path = model_path / f"DOC_{_safe_name(model.name)}.md"
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Generate
     generator = MarkdownGenerator()
@@ -139,21 +147,7 @@ def analyze_report(args) -> int:
         print(f"Error: path does not exist: {report_path}", file=sys.stderr)
         return 1
 
-    # Determine output path
-    if args.output:
-        output_path = Path(args.output).resolve()
-    else:
-        if args.format == "json":
-            output_path = report_path / "REPORT_ANALYSIS.json"
-        elif args.format == "text":
-            output_path = None  # Print to console
-        else:
-            output_path = report_path / "REPORT_ANALYSIS.md"
-
-    if output_path:
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    # Parse
+    # Parse first so we can use the report name in the default output filename
     try:
         parser = ReportParser()
         report = parser.parse(report_path)
@@ -164,6 +158,21 @@ def analyze_report(args) -> int:
     except Exception as exc:  # noqa: BLE001
         print(f"Unexpected error while parsing: {exc}", file=sys.stderr)
         return 1
+
+    # Determine output path (after parse so we have the report name)
+    if args.output:
+        output_path = Path(args.output).resolve()
+    else:
+        safe = _safe_name(metrics.report_name)
+        if args.format == "json":
+            output_path = report_path / f"DOC_{safe}.json"
+        elif args.format == "text":
+            output_path = None  # Print to console
+        else:
+            output_path = report_path / f"DOC_{safe}.md"
+
+    if output_path:
+        output_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Generate
     generator = ReportGenerator()
@@ -221,14 +230,15 @@ def analyze_combined(args) -> int:
         )
         return 1
 
-    # Determine output path
+    # Determine output path — use project folder name as base
     if args.output:
         output_path = Path(args.output).resolve()
     else:
+        safe = _safe_name(project_path.name)
         if args.format == "json":
-            output_path = project_path / "COMBINED_ANALYSIS.json"
+            output_path = project_path / f"DOC_{safe}.json"
         else:
-            output_path = project_path / "COMBINED_ANALYSIS.md"
+            output_path = project_path / f"DOC_{safe}.md"
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
