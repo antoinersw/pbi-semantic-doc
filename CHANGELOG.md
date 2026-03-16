@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.4.2] — 2026-03-16
+
+### Fixed
+- **Native SQL display**: M language escape sequences (`#(lf)`, `#(tab)`, `#(cr,lf)`, `#(#)`, `#(HHHH)` Unicode) inside hand-written native queries are now converted to real characters before display — `Value.NativeQuery(...)` and `[Query="..."]` both benefit. The SQL now renders as clean, readable multi-line code instead of a wall of `#(lf)` tokens.
+
+### Tests
+- 267 tests — all passing (+8 new unescape tests)
+
+---
+
 ## [0.4.1] — 2026-03-16
 
 ### Added

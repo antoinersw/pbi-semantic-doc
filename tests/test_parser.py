@@ -321,6 +321,75 @@ in
         qa = self._make_partition_expression(expr)
         assert qa.native_query is None
 
+    # ── M escape sequence unescaping ──────────────────────────────────────
+
+    def test_native_query_lf_unescaped(self):
+        """#(lf) in the embedded SQL is converted to a real newline."""
+        expr = 'let\n    S = Sql.Database("s","d"),\n    R = Value.NativeQuery(S, "SELECT#(lf)  id,#(lf)  name#(lf)FROM dbo.Orders")\nin R'
+        qa = self._make_partition_expression(expr)
+        assert qa.native_query is not None
+        assert "\n" in qa.native_query
+        assert "#(lf)" not in qa.native_query
+
+    def test_native_query_tab_unescaped(self):
+        """#(tab) in the embedded SQL is converted to a real tab."""
+        expr = 'let\n    S = Sql.Database("s","d"),\n    R = Value.NativeQuery(S, "SELECT#(tab)id FROM t")\nin R'
+        qa = self._make_partition_expression(expr)
+        assert "\t" in qa.native_query
+        assert "#(tab)" not in qa.native_query
+
+    def test_native_query_crlf_unescaped(self):
+        """#(cr,lf) is converted to CRLF."""
+        expr = 'let\n    S = Sql.Database("s","d"),\n    R = Value.NativeQuery(S, "SELECT id#(cr,lf)FROM t")\nin R'
+        qa = self._make_partition_expression(expr)
+        assert "\r\n" in qa.native_query
+        assert "#(cr,lf)" not in qa.native_query
+
+    def test_native_query_hash_unescaped(self):
+        """#(#) is converted to a literal hash."""
+        expr = 'let\n    S = Sql.Database("s","d"),\n    R = Value.NativeQuery(S, "-- #(#)comment")\nin R'
+        qa = self._make_partition_expression(expr)
+        assert "##" not in qa.native_query or "#(" not in qa.native_query
+        assert "#(#)" not in qa.native_query
+
+    def test_native_query_multiline_readable(self):
+        """A real-world Redshift-style query with #(lf) produces readable multi-line SQL."""
+        sql_escaped = (
+            "WITH#(lf)"
+            "orders AS (#(lf)"
+            "  SELECT id, amount#(lf)"
+            "  FROM sales#(lf)"
+            ")#(lf)"
+            "SELECT * FROM orders"
+        )
+        expr = f'let\n    S = AmazonRedshift.Database("host","db"),\n    R = Value.NativeQuery(S, "{sql_escaped}")\nin R'
+        qa = self._make_partition_expression(expr)
+        lines = qa.native_query.splitlines()
+        assert len(lines) >= 5, "Expected multi-line SQL after unescaping"
+        assert lines[0].startswith("WITH")
+
+    def test_query_named_param_lf_unescaped(self):
+        """[Query="..."] pattern is also unescaped."""
+        expr = 'let\n    S = Sql.Database("s","d", [Query="SELECT id#(lf)FROM t"])\nin S'
+        qa = self._make_partition_expression(expr)
+        assert "\n" in qa.native_query
+        assert "#(lf)" not in qa.native_query
+
+    def test_unicode_escape_unescaped(self):
+        """#(HHHH) Unicode escapes are converted to the correct character."""
+        from pbi_semantic_doc.parser import TmdlParser
+        unescape = TmdlParser._unescape_m_string
+        assert unescape("#(0041)") == "A"     # U+0041 = 'A'
+        assert unescape("#(00e9)") == "é"     # U+00E9 = é
+        assert unescape("#(1F600)") == "😀"   # U+1F600 = 😀
+
+    def test_unescape_no_sequences_unchanged(self):
+        """Strings without M escapes pass through unchanged."""
+        from pbi_semantic_doc.parser import TmdlParser
+        unescape = TmdlParser._unescape_m_string
+        plain = "SELECT id, name FROM dbo.Sales WHERE year = 2024"
+        assert unescape(plain) == plain
+
 
 # ---------------------------------------------------------------------------
 # Query folding assessment tests

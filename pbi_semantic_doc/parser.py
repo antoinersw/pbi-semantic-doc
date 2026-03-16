@@ -988,20 +988,51 @@ class TmdlParser:
 
         return positional, named, is_parameterized
 
+    @staticmethod
+    def _unescape_m_string(s: str) -> str:
+        """Convert M language escape sequences to their real characters.
+
+        Power Query / M uses #(xx) notation inside string literals:
+            #(lf)    → newline
+            #(cr)    → carriage return
+            #(cr,lf) → CRLF
+            #(tab)   → horizontal tab
+            #(#)     → literal #
+        Unicode code-point escapes like #(0041) are also supported.
+        """
+        # Named sequences — order matters: cr,lf before cr
+        s = s.replace("#(cr,lf)", "\r\n")
+        s = s.replace("#(lf)", "\n")
+        s = s.replace("#(cr)", "\r")
+        s = s.replace("#(tab)", "\t")
+        s = s.replace("#(#)", "#")
+        # Numeric Unicode escapes: #(HHHH) or #(HHHHHH)
+        s = re.sub(
+            r"#\(([0-9A-Fa-f]{4,6})\)",
+            lambda m: chr(int(m.group(1), 16)),
+            s,
+        )
+        return s
+
     def _extract_native_query(self, expression: str) -> Optional[str]:
-        """Extract native SQL from M expression (3 patterns)."""
+        """Extract native SQL from M expression (3 patterns).
+
+        The extracted SQL is unescaped so that M string escape sequences
+        (e.g. #(lf), #(tab)) are converted to real whitespace characters,
+        making the SQL human-readable in the generated documentation.
+        """
         # Pattern 1: Value.NativeQuery(source, "SELECT ...")
         m = re.search(
             r'Value\.NativeQuery\s*\([^,]+,\s*"([^"]+)"',
             expression, re.DOTALL
         )
         if m:
-            return m.group(1).strip()
+            return self._unescape_m_string(m.group(1)).strip()
 
         # Pattern 2: [Query="SELECT ..."]
         m = re.search(r'\[Query\s*=\s*"([^"]+)"\]', expression, re.DOTALL)
         if m:
-            return m.group(1).strip()
+            return self._unescape_m_string(m.group(1)).strip()
 
         return None
 
