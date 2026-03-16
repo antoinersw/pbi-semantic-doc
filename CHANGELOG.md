@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.4.0] — 2026-03-14
+
+### Added
+- **HTML output** (`--format html`): generates a single self-contained `.html` file — all CSS and JavaScript embedded, no external assets, zero new dependencies
+  - Same collapsible `<details>/<summary>` structure as the Markdown output
+  - **Print-friendly**: `@media print` CSS automatically expands all sections — `Ctrl+P → Save as PDF` produces a complete, fully-formatted document
+  - **"Expand All / Collapse All"** toolbar buttons for quick navigation in the browser
+  - Clean design with Power BI blue (`#0078d4`) accent, zebra-striped tables, monospace code blocks, hover effects
+  - Supports all three modes: `--format html` (model), `--analyze-report --format html` (report), `--combined --format html` (unified model + report)
+  - Default output filename follows the same `DOC_<name>.html` convention, placed next to the input folder
+- **`HtmlGenerator`** class in `pbi_semantic_doc/html_generator.py` — mirrors `MarkdownGenerator` in structure, fully parallel API (`generate()`, `generate_report()`, `generate_combined()`)
+
+### Tests
+- 259 tests — all passing (+66 new HTML generator tests)
+
+---
+
 ## [0.3.3] — 2026-03-13
 
 ### Fixed

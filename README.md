@@ -5,8 +5,8 @@
 [![PyPI version](https://img.shields.io/pypi/v/pbi-semantic-doc)](https://pypi.org/project/pbi-semantic-doc/)
 [![Python 3.9+](https://img.shields.io/pypi/pyversions/pbi-semantic-doc)](https://pypi.org/project/pbi-semantic-doc/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-193%20passing-brightgreen)](#)
-[![Version](https://img.shields.io/badge/version-0.3.3-blue)](#)
+[![Tests](https://img.shields.io/badge/tests-259%20passing-brightgreen)](#)
+[![Version](https://img.shields.io/badge/version-0.4.0-blue)](#)
 
 Built with ❤️ by [ViciusLio](https://github.com/ViciusLio) in collaboration with [Claude AI](https://claude.ai) (Anthropic).
 
@@ -24,6 +24,9 @@ pip install pbi-semantic-doc
 
 # Document a semantic model — writes DOC_MyProject.md next to the .SemanticModel folder
 pbi-semantic-doc ./MyProject.SemanticModel
+
+# Same but as a self-contained, printable HTML file
+pbi-semantic-doc ./MyProject.SemanticModel --format html
 
 # Analyze a report
 pbi-semantic-doc ./MyProject.Report --analyze-report
@@ -109,8 +112,8 @@ pbi-semantic-doc ./MyProject --combined --format json --output analysis.json
 | `PATH` | Path to `.SemanticModel`, `.Report`, or `.pbip` project folder |
 | `--analyze-report` | Analyze report instead of semantic model |
 | `--combined` | Produce a single document covering both semantic model and report |
-| `--format` | Output format: `md` (default), `json`, `text` |
-| `--output`, `-o` | Output file path (default: `DOC_<name>.md` next to the input folder) |
+| `--format` | Output format: `md` (default), `html`, `json`, `text` |
+| `--output`, `-o` | Output file path (default: `DOC_<name>.md` / `.html` next to the input folder) |
 | `--quiet`, `-q` | Suppress console output |
 
 ---
@@ -121,9 +124,10 @@ pbi-semantic-doc ./MyProject --combined --format json --output analysis.json
 
 | Mode | Default output location |
 |------|------------------------|
-| Semantic model | `DOC_<ModelName>.md` — **next to** the `.SemanticModel` folder |
-| Report | `DOC_<ReportName>.md` — **next to** the `.Report` folder |
-| Combined | `DOC_<ProjectName>.md` — **inside** the `.pbip` project folder |
+| Semantic model (md) | `DOC_<ModelName>.md` — **next to** the `.SemanticModel` folder |
+| Semantic model (html) | `DOC_<ModelName>.html` — **next to** the `.SemanticModel` folder |
+| Report | `DOC_<ReportName>.md` / `.html` — **next to** the `.Report` folder |
+| Combined | `DOC_<ProjectName>.md` / `.html` — **inside** the `.pbip` project folder |
 
 Example: running against `Artificial Intelligence Sample.SemanticModel` produces `DOC_Artificial_Intelligence_Sample.md` in the parent folder.
 
@@ -190,6 +194,13 @@ MyProject/
 - **Complexity Index** — normalized 0–1 score per report (see below)
 - Outputs Markdown, JSON, and plain text
 
+### HTML Output (`--format html`)
+- **Self-contained** single `.html` file — all CSS and JavaScript embedded, no external assets
+- **Print to PDF**: `@media print` expands all collapsible sections automatically — open in any browser, hit `Ctrl+P`, choose "Save as PDF"
+- Collapsible `<details>/<summary>` sections (identical structure to `.md` output)
+- "Expand All / Collapse All" toolbar buttons for quick browser navigation
+- Covers all modes: model-only, report-only, and combined (`--combined`)
+
 ### General
 - Zero external dependencies — pure Python 3.9+ stdlib
 - Installable via pip; works as a CLI or Python library
@@ -251,6 +262,10 @@ Manual descriptions in Power BI Desktop always take precedence over auto-generat
 
 ## Roadmap
 
+### v0.4 ✅ — HTML Output
+- **Self-contained HTML output** (`--format html`): navigable in browser, printable to PDF via `Ctrl+P`
+- Zero new dependencies — pure Python stdlib
+
 ### v0.3 ✅ — Data Sources & Power Query
 - **Data source discovery**: connection strings, server/database names, SharePoint/OneLake endpoints
 - **Power Query (M) extraction**: full M expression per table partition with step-level breakdown
@@ -259,20 +274,19 @@ Manual descriptions in Power BI Desktop always take precedence over auto-generat
 - **Navigable docs**: Table of Contents + collapsible sections + `DOC_<name>.md` naming
 - **Unified combined document**: single file with Semantic Model + Report sections
 
-### v0.4 — Deep Model Analysis
+### v0.5 — Deep Model Analysis
 - **Column lineage**: trace which measures reference which columns across tables
 - **Unused columns**: detect columns not referenced in any measure, relationship, or visual
 - **Measure dependency graph**: DAG of measure-to-measure dependencies
 - **Hidden object inventory**: report on all hidden tables and columns
 
-### v0.5 — Report Deep Dive
+### v0.6 — Report Deep Dive
 - **Visual-to-measure mapping**: detect which measures each visual uses (from `prototypeQuery`)
 - **Filter analysis**: page-level and visual-level filters with target fields and values
 - **Theme extraction**: color palette and font settings from theme files
 - **Tooltip page detection**: pages used exclusively as tooltip layers
 
 ### Future
-- Interactive single-file HTML output
 - Pre-commit hook configuration helper
 - VS Code extension wrapper
 
@@ -284,7 +298,7 @@ Issues and pull requests are welcome at [github.com/ViciusLio/pbi-semantic-doc](
 
 ```bash
 pip install pytest
-pytest tests/ -v   # 193 tests
+pytest tests/ -v   # 259 tests
 ```
 
 ---

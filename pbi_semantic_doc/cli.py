@@ -22,6 +22,7 @@ from pathlib import Path
 
 from .parser import TmdlParser
 from .generator import MarkdownGenerator
+from .html_generator import HtmlGenerator
 from .report_parser import ReportParser
 from .report_generator import ReportGenerator
 
@@ -141,9 +142,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument(
         "--format", "-f",
-        choices=["md", "json", "text"],
+        choices=["md", "html", "json", "text"],
         default="md",
-        help="Output format. Default: md",
+        help="Output format: md (default), html (self-contained printable), json, text",
     )
     p.add_argument(
         "--quiet", "-q",
@@ -190,12 +191,15 @@ def analyze_semantic_model(args) -> int:
     if args.output:
         output_path = Path(args.output).resolve()
     else:
-        output_path = model_path.parent / f"DOC_{_safe_name(model.name)}.md"
+        ext = ".html" if args.format == "html" else ".md"
+        output_path = model_path.parent / f"DOC_{_safe_name(model.name)}{ext}"
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    generator = MarkdownGenerator()
-    content = generator.generate(model)
+    if args.format == "html":
+        content = HtmlGenerator().generate(model)
+    else:
+        content = MarkdownGenerator().generate(model)
     output_path.write_text(content, encoding="utf-8")
 
     if not args.quiet:
@@ -240,20 +244,24 @@ def analyze_report(args) -> int:
             output_path = report_path.parent / f"DOC_{safe}.json"
         elif args.format == "text":
             output_path = None  # print to console
+        elif args.format == "html":
+            output_path = report_path.parent / f"DOC_{safe}.html"
         else:
             output_path = report_path.parent / f"DOC_{safe}.md"
 
     if output_path:
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    generator = ReportGenerator()
+    rpt_gen = ReportGenerator()
 
     if args.format == "json":
-        content = generator.generate_json(metrics)
+        content = rpt_gen.generate_json(metrics)
     elif args.format == "text":
-        content = generator.generate_text(metrics)
+        content = rpt_gen.generate_text(metrics)
+    elif args.format == "html":
+        content = HtmlGenerator().generate_report(metrics)
     else:
-        content = generator.generate_markdown(metrics)
+        content = rpt_gen.generate_markdown(metrics)
 
     if output_path:
         output_path.write_text(content, encoding="utf-8")
@@ -325,12 +333,22 @@ def analyze_combined(args) -> int:
             model.name if model
             else (report_metrics.report_name if report_metrics else project_path.name)
         )
-        ext = ".json" if args.format == "json" else ".md"
+        if args.format == "json":
+            ext = ".json"
+        elif args.format == "html":
+            ext = ".html"
+        else:
+            ext = ".md"
         output_path = project_path / f"DOC_{_safe_name(project_name)}{ext}"
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Generate unified output
+    project_name = (
+        model.name if model
+        else (report_metrics.report_name if report_metrics else project_path.name)
+    )
+
     if args.format == "json":
         combined: dict = {}
         if model:
@@ -343,11 +361,9 @@ def analyze_combined(args) -> int:
         if report_metrics:
             combined["report"] = report_metrics.to_dict()
         content = json.dumps(combined, indent=2, ensure_ascii=False)
+    elif args.format == "html":
+        content = HtmlGenerator().generate_combined(model, report_metrics, project_name)
     else:  # markdown — unified single document
-        project_name = (
-            model.name if model
-            else (report_metrics.report_name if report_metrics else project_path.name)
-        )
         content = _combined_markdown(model, report_metrics, project_name)
 
     output_path.write_text(content, encoding="utf-8")
