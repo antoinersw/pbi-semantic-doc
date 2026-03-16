@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.5.2] — 2026-03-16
+
+### Fixed
+- **Native SQL extraction — two-step positional approach**: replaced the single-regex strategy for `Value.NativeQuery()` with a more robust two-step method: (1) locate the opening `"` of the SQL string using a paren-aware regex; (2) locate the closing `"` by scanning forward for `", null` or `", [` — the same approach proven in production. This eliminates potential backtracking failures on very large SQL strings (multi-CTE queries with hundreds of columns). After extraction, trims any preamble before `WITH`/`SELECT` for a clean SQL block.
+
+### Tests
+- 329 tests — all passing
+
+---
+
 ## [0.5.1] — 2026-03-16
 
 ### Fixed
