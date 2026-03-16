@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ---
 
-## [0.4.0] — 2026-03-14
+## [0.4.1] — 2026-03-16
 
 ### Added
 - **HTML output** (`--format html`): generates a single self-contained `.html` file — all CSS and JavaScript embedded, no external assets, zero new dependencies
