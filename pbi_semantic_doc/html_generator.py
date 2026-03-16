@@ -131,6 +131,20 @@ body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ro
     font-size: .72rem; font-weight: 700; text-transform: uppercase;
     letter-spacing: .06em; color: var(--muted);
 }
+/* nav-level collapsible (tables group) — no card style, no shadow */
+.nav-details { border: none; box-shadow: none; background: transparent; margin: 0; border-radius: 0; }
+.nav-details[open] { background: transparent; }
+.nav-details > summary.nav-group-summary {
+    display: block; padding: .5em 1.1em .2em;
+    font-size: .72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--muted);
+    border-radius: 0; border-left: 3px solid transparent;
+    cursor: pointer; user-select: none; list-style: none;
+}
+.nav-details > summary.nav-group-summary::-webkit-details-marker { display: none; }
+.nav-details > summary.nav-group-summary::before { content: "\\25B6\\00A0"; font-size: .72em; }
+.nav-details[open] > summary.nav-group-summary::before { content: "\\25BC\\00A0"; }
+.nav-details > summary.nav-group-summary:hover { color: var(--accent); background: var(--accent-light); border-left-color: var(--accent); }
 .nav-sub a { padding-left: 2em; }
 .sidebar-footer {
     padding: .6rem .8rem; border-top: 1px solid var(--border);
@@ -185,8 +199,8 @@ details { border: 1px solid var(--border); border-radius: 6px; margin: .4em 0; b
 details[open] { background: var(--surface); }
 summary { cursor: pointer; font-weight: 500; padding: .55em 1em; list-style: none; user-select: none; border-radius: 5px; }
 summary::-webkit-details-marker { display: none; }
-summary::before { content: "\25B6\00A0"; font-size: .75em; color: var(--muted); }
-details[open] > summary::before { content: "\25BC\00A0"; }
+summary::before { content: "\\25B6\\00A0"; font-size: .75em; color: var(--muted); }
+details[open] > summary::before { content: "\\25BC\\00A0"; }
 .details-body { padding: .7em 1em 1em; border-top: 1px solid var(--border); }
 
 /* ── measure cards ─────────────────────────────────────────────────────── */
@@ -692,20 +706,28 @@ class HtmlGenerator:
         if model.roles:
             items.append(f'<li><a href="#row-level-security">Row Level Security</a></li>')
 
-        # Tables group
+        # Tables group — collapsible so 150+ tables don't flood the sidebar
         if model.visible_tables:
-            items.append('<li><span class="nav-group-label">Tables</span><ul class="nav-sub">')
+            n_tables = len(model.visible_tables)
+            table_links: list[str] = []
             for table in model.visible_tables:
                 anchor = _section_anchor(f"Table: `{table.name}`")
                 mode = table.effective_mode
                 icon = _MODE_ICON.get(mode, "🧮" if mode == "calculated" else "📋")
                 n_meas = len(table.measures)
                 meas_note = f" · {n_meas}m" if n_meas else ""
-                items.append(
+                table_links.append(
                     f'<li><a href="#{_attr(anchor)}" title="{_attr(table.name)}">'
                     f'{icon} {_e(table.name)}{_e(meas_note)}</a></li>'
                 )
-            items.append('</ul></li>')
+            table_list = "\n".join(table_links)
+            items.append(
+                f'<li class="nav-tables-group">'
+                f'<details class="nav-details">'
+                f'<summary class="nav-group-summary">📊 Tables ({n_tables})</summary>'
+                f'<ul class="nav-sub">{table_list}</ul>'
+                f'</details></li>'
+            )
 
         # Measures index
         if model.all_measures:

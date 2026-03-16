@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.5.4] — 2026-03-16
+
+### Fixed
+- **CSS summary arrows garbled** (`□B6◆A0` visible in all `<details>` summaries): Python was interpreting `\25B6` as octal escape chr(21) instead of passing the literal string `\25B6` to the CSS. Fixed by doubling the backslash (`\\25B6`, `\\25BC`) in all four `content:` rules (main details arrows + nav-details arrows).
+- **Sidebar tables flood** with large models (150+ tables): the Tables group in the sidebar is now a `<details class="nav-details">` collapsible. Click "📊 Tables (N)" to expand/collapse the full table list. The nav-details uses a stripped-down style (no card border, no shadow) so it blends naturally into the sidebar.
+
+### Tests
+- 329 tests — all passing
+
+---
+
 ## [0.5.3] — 2026-03-16
 
 ### Changed — HTML output (UX/UI redesign)
