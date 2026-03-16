@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.5.0] — 2026-03-16
+
+### Added
+- **Measure Lineage** — automatic compatibility analysis for every measure in the semantic model, surfaced in the HTML output as a collapsible "Lineage" section inside each measure:
+  - **Base tables**: the fact/dimension tables directly aggregated by the measure (including transitive dependencies through nested measures)
+  - **Compatible tables**: all tables reachable via the model's relationship graph — these are the dimensions you *can* use as slicers
+  - **Incompatible tables**: tables with no relationship path to the measure's base tables — using them as slicers has no effect or gives wrong results
+  - **Filter-removed tables**: tables explicitly cleared with `ALL()`, `ALLEXCEPT()`, or `ALLSELECTED()`
+  - **Measure dependencies**: direct and transitive `[MeasureName]` references, resolved via BFS (cycle-safe)
+  - **Flags**: time intelligence usage, `USERELATIONSHIP`, `TREATAS`
+  - Works entirely from the model's relationship graph — no naming conventions required, no manual annotations
+- **`dax_analyzer.py`** — new Layer 1 stateless module: regex-based extraction of `Table[Col]` refs, bare `[Measure]` refs, `ALL()`-removed tables, aggregated base tables (`SUM`, `COUNTROWS`, iterator functions `SUMX`/`AVERAGEX`/etc.), time intelligence flags, `USERELATIONSHIP`, `TREATAS`
+- **`lineage.py`** — new Layer 2+3 model-aware module: `ModelLineage` builds an undirected relationship graph + measure index at construction time; `resolve()` performs BFS over nested measure dependencies (cycle-safe via `_visiting` frozenset); `MeasureLineage` dataclass carries all results; `resolve_all()` never raises (defensive wrapper keeps doc generation safe)
+
+### Tests
+- 326 tests — all passing (+59 new lineage tests: `test_dax_analyzer.py` × 34, `test_lineage.py` × 25)
+
+---
+
 ## [0.4.2] — 2026-03-16
 
 ### Fixed

@@ -166,6 +166,14 @@ footer {
     text-align: center;
 }
 
+/* ── lineage badges ──────────────────────────────────────────────────── */
+.lineage-row { display: flex; flex-wrap: wrap; gap: .35em; align-items: center; margin: .3em 0; font-size: .85em; }
+.lineage-label { color: var(--muted); font-weight: 600; min-width: 7em; }
+.badge-compatible { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 3px; padding: .1em .4em; font-size: .78em; }
+.badge-incompatible { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 3px; padding: .1em .4em; font-size: .78em; }
+.badge-removed { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; border-radius: 3px; padding: .1em .4em; font-size: .78em; }
+.badge-dep { background: var(--code-bg); color: var(--muted); border: 1px solid var(--border); border-radius: 3px; padding: .1em .4em; font-size: .78em; }
+
 /* ── print ────────────────────────────────────────────────────────────── */
 @media print {
     .no-print { display: none !important; }
@@ -186,22 +194,24 @@ footer {
 <body>
 <div class="toolbar no-print"><button onclick="toggleAll(true)">⊞ Expand All</button><button onclick="toggleAll(false)">⊟ Collapse All</button></div>
 
-<h1>Artificial Intelligence Sample &mdash; Power BI Documentation</h1>
+<h1>Artificial Intelligence Sample &mdash; Semantic Model Documentation</h1>
 
 <nav class="toc">
 <span class="toc-label">Contents</span>
 <ul>
-<li><a href="#semantic-model">Semantic Model</a> &mdash; 9 tables, 21 measures, 12 relationships</li>
-<li><a href="#report">Report</a> &mdash; 3 pages, 235 visuals</li>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#data-sources">Data Sources</a> &mdash; 1 connector</li>
+<li><a href="#relationships">Relationships</a> &mdash; 12 relationships</li>
+<li><a href="#row-level-security">Row Level Security</a> &mdash; 2 roles</li>
+<li><strong>Tables</strong><ul>
+<li><a href="#table-accounts">Accounts</a> &mdash; 📥 Import &middot; 18 cols</li><li><a href="#table-campaigns">Campaigns</a> &mdash; 📥 Import &middot; 3 cols</li><li><a href="#table-case-calendar">Case Calendar</a> &mdash; 🧮 Calculated &middot; 14 cols</li><li><a href="#table-cases">Cases</a> &mdash; 📥 Import &middot; 19 cols &middot; 10 measures</li><li><a href="#table-contacts">Contacts</a> &mdash; 📥 Import &middot; 13 cols</li><li><a href="#table-opportunities">Opportunities</a> &mdash; 📥 Import &middot; 19 cols &middot; 10 measures</li><li><a href="#table-opportunity-calendar">Opportunity Calendar</a> &mdash; 🧮 Calculated &middot; 9 cols</li><li><a href="#table-owners">Owners</a> &mdash; 📥 Import &middot; 2 cols &middot; 1 measure</li><li><a href="#table-products">Products</a> &mdash; 📥 Import &middot; 4 cols</li>
+</ul></li>
+<li><a href="#measures-index-az">Measures Index</a> &mdash; 22 measures</li>
 </ul>
 </nav>
 
-<section id="semantic-model">
-
-<h2>Semantic Model</h2>
-
 <section id="overview">
-<h3>Overview</h3>
+<h2>Overview</h2>
 <table>
 <thead><tr><th></th><th></th></tr></thead>
 <tbody>
@@ -216,7 +226,7 @@ footer {
 </section>
 
 <section id="data-sources">
-<h3>Data Sources</h3>
+<h2>Data Sources</h2>
 <table>
 <thead><tr><th>Table</th><th>Connector</th><th>Server / Path</th><th>Database</th><th>Mode</th><th>Steps</th><th>Query Folding</th></tr></thead>
 <tbody>
@@ -237,7 +247,7 @@ footer {
 </section>
 
 <section id="relationships">
-<h3>Relationships</h3>
+<h2>Relationships</h2>
 <details>
 <summary>🔗 12 relationships — click to expand</summary>
 <div class="details-body">
@@ -263,7 +273,7 @@ footer {
 </section>
 
 <section id="row-level-security">
-<h3>Row Level Security</h3>
+<h2>Row Level Security</h2>
 <table>
 <thead><tr><th>Role</th><th>Permission</th><th>Table</th><th>Filter</th></tr></thead>
 <tbody>
@@ -274,7 +284,7 @@ footer {
 </section>
 
 <section id="table-accounts">
-<h3 id="table-accounts">Table: <code>Accounts</code></h3>
+<h2 id="table-accounts">Table: <code>Accounts</code></h2>
 <details>
 <summary>📥 Import &middot; 18 cols &middot; Folding: — N/A &mdash; click to expand</summary>
 <div class="details-body">
@@ -336,7 +346,7 @@ in
 </section>
 
 <section id="table-campaigns">
-<h3 id="table-campaigns">Table: <code>Campaigns</code></h3>
+<h2 id="table-campaigns">Table: <code>Campaigns</code></h2>
 <details>
 <summary>📥 Import &middot; 3 cols &middot; Folding: — N/A &mdash; click to expand</summary>
 <div class="details-body">
@@ -383,7 +393,7 @@ in
 </section>
 
 <section id="table-case-calendar">
-<h3 id="table-case-calendar">Table: <code>Case Calendar</code></h3>
+<h2 id="table-case-calendar">Table: <code>Case Calendar</code></h2>
 <details>
 <summary>🧮 Calculated (DAX) &middot; 14 cols &mdash; click to expand</summary>
 <div class="details-body">
@@ -420,7 +430,7 @@ in
 </section>
 
 <section id="table-cases">
-<h3 id="table-cases">Table: <code>Cases</code></h3>
+<h2 id="table-cases">Table: <code>Cases</code></h2>
 <details>
 <summary>📥 Import &middot; 19 cols &middot; 10 measures &middot; Folding: — N/A &mdash; click to expand</summary>
 <div class="details-body">
@@ -458,11 +468,19 @@ in
 </table>
 </div>
 </details>
-<h4>Measures</h4>
-<h5><code>Case Count</code></h5>
+<h3>Measures</h3>
+<h4><code>Case Count</code></h4>
 <p><strong>Format:</strong> <code>#,0</code></p>
 <pre><code class="language-dax">COUNTROWS('Cases')</code></pre>
-<h5><code>Cases % by Product</code></h5>
+<details>
+<summary>🔗 <strong>Lineage</strong> — click to expand</summary>
+<div class="details-body">
+<div class="lineage-row"><span class="lineage-label">📊 Aggrega</span><span class="badge-dep">Cases</span></div>
+<div class="lineage-row"><span class="lineage-label">✅ Compatibile</span><span class="badge-compatible">Accounts</span> <span class="badge-compatible">Campaigns</span> <span class="badge-compatible">Contacts</span> <span class="badge-compatible">Industries</span> <span class="badge-compatible">Opportunities</span> <span class="badge-compatible">Owners</span> <span class="badge-compatible">Products</span></div>
+<div class="lineage-row"><span class="lineage-label">❌ Non correlato</span><span class="badge-incompatible">Case Calendar</span> <span class="badge-incompatible">Opportunity Calendar</span> <span class="badge-incompatible">Opportunity Forecast Adjustment</span> <span class="badge-incompatible">Territories</span></div>
+</div>
+</details>
+<h4><code>Cases % by Product</code></h4>
 <p><em>Uses CALCULATE · Removes filters · Safe division</em></p>
 <p><strong>Format:</strong> <code>0.00%;-0.00%;0.00%</code></p>
 <pre><code class="language-dax">DIVIDE(
@@ -471,7 +489,17 @@ CALCULATE(
 [Case Count],All('Products')
 )
 )</code></pre>
-<h5><code>Cases % by Subject</code></h5>
+<details>
+<summary>🔗 <strong>Lineage</strong> — click to expand</summary>
+<div class="details-body">
+<div class="lineage-row"><span class="lineage-label">📊 Aggrega</span><span class="badge-dep">Cases</span></div>
+<div class="lineage-row"><span class="lineage-label">🔗 Dipende da</span><span class="badge-dep">[Case Count]</span></div>
+<div class="lineage-row"><span class="lineage-label">✅ Compatibile</span><span class="badge-compatible">Accounts</span> <span class="badge-compatible">Campaigns</span> <span class="badge-compatible">Contacts</span> <span class="badge-compatible">Industries</span> <span class="badge-compatible">Opportunities</span> <span class="badge-compatible">Owners</span> <span class="badge-compatible">Products</span></div>
+<div class="lineage-row"><span class="lineage-label">❌ Non correlato</span><span class="badge-incompatible">Case Calendar</span> <span class="badge-incompatible">Opportunity Calendar</span> <span class="badge-incompatible">Opportunity Forecast Adjustment</span> <span class="badge-incompatible">Territories</span></div>
+<div class="lineage-row"><span class="lineage-label">⚠️ Filtro rimosso</span><span class="badge-removed">Products</span></div>
+</div>
+</details>
+<h4><code>Cases % by Subject</code></h4>
 <p><em>Uses CALCULATE · Removes filters · Safe division</em></p>
 <p><strong>Format:</strong> <code>0.0%;-0.0%;0.0%</code></p>
 <pre><code class="language-dax">DIVIDE(
@@ -480,13 +508,33 @@ CALCULATE(
 [Case Count],All('Cases'[Subject])
 )
 )</code></pre>
-<h5><code>Cases MoM%</code></h5>
+<details>
+<summary>🔗 <strong>Lineage</strong> — click to expand</summary>
+<div class="details-body">
+<div class="lineage-row"><span class="lineage-label">📊 Aggrega</span><span class="badge-dep">Cases</span></div>
+<div class="lineage-row"><span class="lineage-label">🔗 Dipende da</span><span class="badge-dep">[Case Count]</span></div>
+<div class="lineage-row"><span class="lineage-label">✅ Compatibile</span><span class="badge-compatible">Accounts</span> <span class="badge-compatible">Campaigns</span> <span class="badge-compatible">Contacts</span> <span class="badge-compatible">Industries</span> <span class="badge-compatible">Opportunities</span> <span class="badge-compatible">Owners</span> <span class="badge-compatible">Products</span></div>
+<div class="lineage-row"><span class="lineage-label">❌ Non correlato</span><span class="badge-incompatible">Case Calendar</span> <span class="badge-incompatible">Opportunity Calendar</span> <span class="badge-incompatible">Opportunity Forecast Adjustment</span> <span class="badge-incompatible">Territories</span></div>
+<div class="lineage-row"><span class="lineage-label">⚠️ Filtro rimosso</span><span class="badge-removed">Cases</span></div>
+</div>
+</details>
+<h4><code>Cases MoM%</code></h4>
 <p><em>Time intelligence · Uses CALCULATE · Uses variables · Safe division</em></p>
 <p><strong>Format:</strong> <code>0.0%;-0.0%;0.0%</code></p>
 <pre><code class="language-dax">VAR __PREV_MONTH = CALCULATE([Case Count], DATEADD('Case Calendar'[Date], -1, MONTH))
 RETURN
 DIVIDE([Case Count] - __PREV_MONTH, __PREV_MONTH)</code></pre>
-<h5><code>CSAT Impact</code></h5>
+<details>
+<summary>🔗 <strong>Lineage</strong> — click to expand</summary>
+<div class="details-body">
+<div class="lineage-row"><span class="lineage-label">📊 Aggrega</span><span class="badge-dep">Cases</span></div>
+<div class="lineage-row"><span class="badge-dep">📅 Time intelligence</span></div>
+<div class="lineage-row"><span class="lineage-label">🔗 Dipende da</span><span class="badge-dep">[Case Count]</span></div>
+<div class="lineage-row"><span class="lineage-label">✅ Compatibile</span><span class="badge-compatible">Accounts</span> <span class="badge-compatible">Campaigns</span> <span class="badge-compatible">Contacts</span> <span class="badge-compatible">Industries</span> <span class="badge-compatible">Opportunities</span> <span class="badge-compatible">Owners</span> <span class="badge-compatible">Products</span></div>
+<div class="lineage-row"><span class="lineage-label">❌ Non correlato</span><span class="badge-incompatible">Case Calendar</span> <span class="badge-incompatible">Opportunity Calendar</span> <span class="badge-incompatible">Opportunity Forecast Adjustment</span> <span class="badge-incompatible">Territories</span></div>
+</div>
+</details>
+<h4><code>CSAT Impact</code></h4>
 <p><em>Uses variables · Division (check for zero)</em></p>
 <p><strong>Format:</strong> <code>0.00%;-0.00%;0.00%</code></p>
 <pre><code class="language-dax">VAR FactorAvg =
@@ -500,7 +548,16 @@ FILTER ( ALL ( 'Cases' ), 'Cases'[Topic] &lt;&gt; SELECTEDVALUE ( 'Cases'[Topic]
 )
 RETURN
 1 - ( AllAvgExcept / AllAvg )</code></pre>
-<h5><code>CSAT Impact - Agent</code></h5>
+<details>
+<summary>🔗 <strong>Lineage</strong> — click to expand</summary>
+<div class="details-body">
+<div class="lineage-row"><span class="lineage-label">📊 Aggrega</span><span class="badge-dep">Cases</span></div>
+<div class="lineage-row"><span class="lineage-label">✅ Compatibile</span><span class="badge-compatible">Accounts</span> <span class="badge-compatible">Campaigns</span> <span class="badge-compatible">Contacts</span> <span class="badge-compatible">Industries</span> <span class="badge-compatible">Opportunities</span> <span class="badge-compatible">Owners</span> <span class="badge-compatible">Products</span></div>
+<div class="lineage-row"><span class="lineage-label">❌ Non correlato</span><span class="badge-incompatible">Case Calendar</span> <span class="badge-incompatible">Opportunity Calendar</span> <span class="badge-incompatible">Opportunity Forecast Adjustment</span> <span class="badge-incompatible">Territories</span></div>
+<div class="lineage-row"><span class="lineage-label">⚠️ Filtro rimosso</span><span class="badge-removed">Cases</span></div>
+</div>
+</details>
+<h4><code>CSAT Impact - Agent</code></h4>
 <p><em>Uses variables · Division (check for zero)</em></p>
 <p><strong>Format:</strong> <code>0.00%;-0.00%;0.00%</code></p>
 <pre><code class="language-dax">VAR FactorAvg =
@@ -514,7 +571,16 @@ FILTER ( ALL ( 'Cases' ), 'Cases'[Agent] &lt;&gt; SELECTEDVALUE ( 'Cases'[Agent]
 )
 RETURN
 1 - ( AllAvgExcept / AllAvg )</code></pre>
-<h5><code>CSAT Impact - Products</code></h5>
+<details>
+<summary>🔗 <strong>Lineage</strong> — click to expand</summary>
+<div class="details-body">
+<div class="lineage-row"><span class="lineage-label">📊 Aggrega</span><span class="badge-dep">Cases</span></div>
+<div class="lineage-row"><span class="lineage-label">✅ Compatibile</span><span class="badge-compatible">Accounts</span> <span class="badge-compatible">Campaigns</span> <span class="badge-compatible">Contacts</span> <span class="badge-compatible">Industries</span> <span class="badge-compatible">Opportunities</span> <span class="badge-compatible">Owners</span> <span class="badge-compatible">Products</span></div>
+<div class="lineage-row"><span class="lineage-label">❌ Non correlato</span><span class="badge-incompatible">Case Calendar</span> <span class="badge-incompatible">Opportunity Calendar</span> <span class="badge-incompatible">Opportunity Forecast Adjustment</span> <span class="badge-incompatible">Territories</span></div>
+<div class="lineage-row"><span class="lineage-label">⚠️ Filtro rimosso</span><span class="badge-removed">Cases</span></div>
+</div>
+</details>
+<h4><code>CSAT Impact - Products</code></h4>
 <p><em>Uses variables · Division (check for zero)</em></p>
 <p><strong>Format:</strong> <code>0.00%;-0.00%;0.00%</code></p>
 <pre><code class="language-dax">VAR FactorAvg =
@@ -528,7 +594,16 @@ FILTER ( ALL ( 'Cases' ), 'Cases'[ProductSeq] &lt;&gt; SELECTEDVALUE ( 'Cases'[P
 )
 RETURN
 1 - ( AllAvgExcept / AllAvg )</code></pre>
-<h5><code>CSAT Impact - Subject</code></h5>
+<details>
+<summary>🔗 <strong>Lineage</strong> — click to expand</summary>
+<div class="details-body">
+<div class="lineage-row"><span class="lineage-label">📊 Aggrega</span><span class="badge-dep">Cases</span></div>
+<div class="lineage-row"><span class="lineage-label">✅ Compatibile</span><span class="badge-compatible">Accounts</span> <span class="badge-compatible">Campaigns</span> <span class="badge-compatible">Contacts</span> <span class="badge-compatible">Industries</span> <span class="badge-compatible">Opportunities</span> <span class="badge-compatible">Owners</span> <span class="badge-compatible">Products</span></div>
+<div class="lineage-row"><span class="lineage-label">❌ Non correlato</span><span class="badge-incompatible">Case Calendar</span> <span class="badge-incompatible">Opportunity Calendar</span> <span class="badge-incompatible">Opportunity Forecast Adjustment</span> <span class="badge-incompatible">Territories</span></div>
+<div class="lineage-row"><span class="lineage-label">⚠️ Filtro rimosso</span><span class="badge-removed">Cases</span></div>
+</div>
+</details>
+<h4><code>CSAT Impact - Subject</code></h4>
 <p><em>Uses variables · Division (check for zero)</em></p>
 <p><strong>Format:</strong> <code>0.00%;-0.00%;0.00%</code></p>
 <pre><code class="language-dax">VAR FactorAvg =
@@ -542,14 +617,41 @@ FILTER ( ALL ( 'Cases' ), 'Cases'[Subject] &lt;&gt; SELECTEDVALUE ( 'Cases'[Subj
 )
 RETURN
 1 - ( AllAvgExcept / AllAvg )</code></pre>
-<h5><code>Escalations</code></h5>
+<details>
+<summary>🔗 <strong>Lineage</strong> — click to expand</summary>
+<div class="details-body">
+<div class="lineage-row"><span class="lineage-label">📊 Aggrega</span><span class="badge-dep">Cases</span></div>
+<div class="lineage-row"><span class="lineage-label">✅ Compatibile</span><span class="badge-compatible">Accounts</span> <span class="badge-compatible">Campaigns</span> <span class="badge-compatible">Contacts</span> <span class="badge-compatible">Industries</span> <span class="badge-compatible">Opportunities</span> <span class="badge-compatible">Owners</span> <span class="badge-compatible">Products</span></div>
+<div class="lineage-row"><span class="lineage-label">❌ Non correlato</span><span class="badge-incompatible">Case Calendar</span> <span class="badge-incompatible">Opportunity Calendar</span> <span class="badge-incompatible">Opportunity Forecast Adjustment</span> <span class="badge-incompatible">Territories</span></div>
+<div class="lineage-row"><span class="lineage-label">⚠️ Filtro rimosso</span><span class="badge-removed">Cases</span></div>
+</div>
+</details>
+<h4><code>Escalations</code></h4>
 <p><em>Uses CALCULATE · Safe division</em></p>
 <p><strong>Format:</strong> <code>#,0%;-#,0%;#,0%</code></p>
 <pre><code class="language-dax">DIVIDE(CALCULATE(COUNTROWS('Cases'),'Cases'[Is Escalated] = TRUE()) , [Case Count],0)</code></pre>
-<h5><code>SLA Compliance</code></h5>
+<details>
+<summary>🔗 <strong>Lineage</strong> — click to expand</summary>
+<div class="details-body">
+<div class="lineage-row"><span class="lineage-label">📊 Aggrega</span><span class="badge-dep">Cases</span></div>
+<div class="lineage-row"><span class="lineage-label">🔗 Dipende da</span><span class="badge-dep">[Case Count]</span></div>
+<div class="lineage-row"><span class="lineage-label">✅ Compatibile</span><span class="badge-compatible">Accounts</span> <span class="badge-compatible">Campaigns</span> <span class="badge-compatible">Contacts</span> <span class="badge-compatible">Industries</span> <span class="badge-compatible">Opportunities</span> <span class="badge-compatible">Owners</span> <span class="badge-compatible">Products</span></div>
+<div class="lineage-row"><span class="lineage-label">❌ Non correlato</span><span class="badge-incompatible">Case Calendar</span> <span class="badge-incompatible">Opportunity Calendar</span> <span class="badge-incompatible">Opportunity Forecast Adjustment</span> <span class="badge-incompatible">Territories</span></div>
+</div>
+</details>
+<h4><code>SLA Compliance</code></h4>
 <p><em>Uses CALCULATE · Safe division</em></p>
 <p><strong>Format:</strong> <code>#,0%;-#,0%;#,0%</code></p>
 <pre><code class="language-dax">DIVIDE(CALCULATE(COUNTROWS('Cases'),'Cases'[Is SLA Violation] = FALSE()) , [Case Count],0)</code></pre>
+<details>
+<summary>🔗 <strong>Lineage</strong> — click to expand</summary>
+<div class="details-body">
+<div class="lineage-row"><span class="lineage-label">📊 Aggrega</span><span class="badge-dep">Cases</span></div>
+<div class="lineage-row"><span class="lineage-label">🔗 Dipende da</span><span class="badge-dep">[Case Count]</span></div>
+<div class="lineage-row"><span class="lineage-label">✅ Compatibile</span><span class="badge-compatible">Accounts</span> <span class="badge-compatible">Campaigns</span> <span class="badge-compatible">Contacts</span> <span class="badge-compatible">Industries</span> <span class="badge-compatible">Opportunities</span> <span class="badge-compatible">Owners</span> <span class="badge-compatible">Products</span></div>
+<div class="lineage-row"><span class="lineage-label">❌ Non correlato</span><span class="badge-incompatible">Case Calendar</span> <span class="badge-incompatible">Opportunity Calendar</span> <span class="badge-incompatible">Opportunity Forecast Adjustment</span> <span class="badge-incompatible">Territories</span></div>
+</div>
+</details>
 <details>
 <summary>🔌 <strong>Power Query</strong> &mdash; 6 steps</summary>
 <div class="details-body">
@@ -582,7 +684,7 @@ in
 </section>
 
 <section id="table-contacts">
-<h3 id="table-contacts">Table: <code>Contacts</code></h3>
+<h2 id="table-contacts">Table: <code>Contacts</code></h2>
 <details>
 <summary>📥 Import &middot; 13 cols &middot; Folding: — N/A &mdash; click to expand</summary>
 <div class="details-body">
@@ -638,7 +740,7 @@ in
 </section>
 
 <section id="table-opportunities">
-<h3 id="table-opportunities">Table: <code>Opportunities</code></h3>
+<h2 id="table-opportunities">Table: <code>Opportunities</code></h2>
 <details>
 <summary>📥 Import &middot; 19 cols &middot; 10 measures &middot; Folding: — N/A &mdash; click to expand</summary>
 <div class="details-body">
@@ -678,12 +780,21 @@ in
 </table>
 </div>
 </details>
-<h4>Measures</h4>
-<h5><code>Close %</code></h5>
+<h3>Measures</h3>
+<h4><code>Close %</code></h4>
 <p><em>Division (check for zero)</em></p>
 <p><strong>Format:</strong> <code>0.0%;-0.0%;0.0%</code></p>
 <pre><code class="language-dax">[Count of Won]/([Count of Won]+[Count of Lost])</code></pre>
-<h5><code>Count of Lost</code></h5>
+<details>
+<summary>🔗 <strong>Lineage</strong> — click to expand</summary>
+<div class="details-body">
+<div class="lineage-row"><span class="lineage-label">📊 Aggrega</span><span class="badge-dep">Opportunities</span></div>
+<div class="lineage-row"><span class="lineage-label">🔗 Dipende da</span><span class="badge-dep">[Count of Won]</span> <span class="badge-dep">[Count of Lost]</span></div>
+<div class="lineage-row"><span class="lineage-label">✅ Compatibile</span><span class="badge-compatible">Accounts</span> <span class="badge-compatible">Campaigns</span> <span class="badge-compatible">Cases</span> <span class="badge-compatible">Contacts</span> <span class="badge-compatible">Industries</span> <span class="badge-compatible">Owners</span> <span class="badge-compatible">Products</span></div>
+<div class="lineage-row"><span class="lineage-label">❌ Non correlato</span><span class="badge-incompatible">Case Calendar</span> <span class="badge-incompatible">Opportunity Calendar</span> <span class="badge-incompatible">Opportunity Forecast Adjustment</span> <span class="badge-incompatible">Territories</span></div>
+</div>
+</details>
+<h4><code>Count of Lost</code></h4>
 <p><em>Preserves filters · Row filter</em></p>
 <p><strong>Format:</strong> <code>#,0</code></p>
 <pre><code class="language-dax">COUNTAX(
@@ -692,7 +803,15 @@ KEEPFILTERS(Opportunities),Opportunities[Status] = "Lost"
 ),
 Opportunities[OpportunitySeq]
 )</code></pre>
-<h5><code>Count of Won</code></h5>
+<details>
+<summary>🔗 <strong>Lineage</strong> — click to expand</summary>
+<div class="details-body">
+<div class="lineage-row"><span class="lineage-label">📊 Aggrega</span><span class="badge-dep">Opportunities</span></div>
+<div class="lineage-row"><span class="lineage-label">✅ Compatibile</span><span class="badge-compatible">Accounts</span> <span class="badge-compatible">Campaigns</span> <span class="badge-compatible">Cases</span> <span class="badge-compatible">Contacts</span> <span class="badge-compatible">Industries</span> <span class="badge-compatible">Owners</span> <span class="badge-compatible">Products</span></div>
+<div class="lineage-row"><span class="lineage-label">❌ Non correlato</span><span class="badge-incompatible">Case Calendar</span> <span class="badge-incompatible">Opportunity Calendar</span> <span class="badge-incompatible">Opportunity Forecast Adjustment</span> <span class="badge-incompatible">Territories</span></div>
+</div>
+</details>
+<h4><code>Count of Won</code></h4>
 <p><em>Preserves filters · Row filter</em></p>
 <p><strong>Format:</strong> <code>#,0</code></p>
 <pre><code class="language-dax">COUNTAX(
@@ -701,17 +820,51 @@ KEEPFILTERS(Opportunities),Opportunities[Status] = "Won"
 ),
 Opportunities[OpportunitySeq]
 )</code></pre>
-<h5><code>Forecast</code></h5>
+<details>
+<summary>🔗 <strong>Lineage</strong> — click to expand</summary>
+<div class="details-body">
+<div class="lineage-row"><span class="lineage-label">📊 Aggrega</span><span class="badge-dep">Opportunities</span></div>
+<div class="lineage-row"><span class="lineage-label">✅ Compatibile</span><span class="badge-compatible">Accounts</span> <span class="badge-compatible">Campaigns</span> <span class="badge-compatible">Cases</span> <span class="badge-compatible">Contacts</span> <span class="badge-compatible">Industries</span> <span class="badge-compatible">Owners</span> <span class="badge-compatible">Products</span></div>
+<div class="lineage-row"><span class="lineage-label">❌ Non correlato</span><span class="badge-incompatible">Case Calendar</span> <span class="badge-incompatible">Opportunity Calendar</span> <span class="badge-incompatible">Opportunity Forecast Adjustment</span> <span class="badge-incompatible">Territories</span></div>
+</div>
+</details>
+<h4><code>Forecast</code></h4>
 <p><strong>Format:</strong> <code>\$#,0.###############;(\$#,0.###############);\$#,0.###############</code></p>
 <pre><code class="language-dax">([Revenue Won]+[Revenue In Pipeline])</code></pre>
-<h5><code>Forecast %</code></h5>
+<details>
+<summary>🔗 <strong>Lineage</strong> — click to expand</summary>
+<div class="details-body">
+<div class="lineage-row"><span class="lineage-label">📊 Aggrega</span><span class="badge-dep">Opportunities</span></div>
+<div class="lineage-row"><span class="lineage-label">🔗 Dipende da</span><span class="badge-dep">[Revenue Won]</span> <span class="badge-dep">[Revenue In Pipeline]</span></div>
+<div class="lineage-row"><span class="lineage-label">✅ Compatibile</span><span class="badge-compatible">Accounts</span> <span class="badge-compatible">Campaigns</span> <span class="badge-compatible">Cases</span> <span class="badge-compatible">Contacts</span> <span class="badge-compatible">Industries</span> <span class="badge-compatible">Owners</span> <span class="badge-compatible">Products</span></div>
+<div class="lineage-row"><span class="lineage-label">❌ Non correlato</span><span class="badge-incompatible">Case Calendar</span> <span class="badge-incompatible">Opportunity Calendar</span> <span class="badge-incompatible">Opportunity Forecast Adjustment</span> <span class="badge-incompatible">Territories</span></div>
+</div>
+</details>
+<h4><code>Forecast %</code></h4>
 <p><em>Division (check for zero)</em></p>
 <p><strong>Format:</strong> <code>#,0%;-#,0%;#,0%</code></p>
 <pre><code class="language-dax">(([Revenue Won]+[Revenue In Pipeline]))/ [Rev Goal]</code></pre>
-<h5><code>Opportunity Count</code></h5>
+<details>
+<summary>🔗 <strong>Lineage</strong> — click to expand</summary>
+<div class="details-body">
+<div class="lineage-row"><span class="lineage-label">📊 Aggrega</span><span class="badge-dep">Opportunities</span></div>
+<div class="lineage-row"><span class="lineage-label">🔗 Dipende da</span><span class="badge-dep">[Revenue Won]</span> <span class="badge-dep">[Revenue In Pipeline]</span> <span class="badge-dep">[Rev Goal]</span></div>
+<div class="lineage-row"><span class="lineage-label">✅ Compatibile</span><span class="badge-compatible">Accounts</span> <span class="badge-compatible">Campaigns</span> <span class="badge-compatible">Cases</span> <span class="badge-compatible">Contacts</span> <span class="badge-compatible">Industries</span> <span class="badge-compatible">Owners</span> <span class="badge-compatible">Products</span></div>
+<div class="lineage-row"><span class="lineage-label">❌ Non correlato</span><span class="badge-incompatible">Case Calendar</span> <span class="badge-incompatible">Opportunity Calendar</span> <span class="badge-incompatible">Opportunity Forecast Adjustment</span> <span class="badge-incompatible">Territories</span></div>
+</div>
+</details>
+<h4><code>Opportunity Count</code></h4>
 <p><strong>Format:</strong> <code>#,0</code></p>
 <pre><code class="language-dax">COUNTAX(Opportunities,TRUE())</code></pre>
-<h5><code>Opportunity Count In Pipeline</code></h5>
+<details>
+<summary>🔗 <strong>Lineage</strong> — click to expand</summary>
+<div class="details-body">
+<div class="lineage-row"><span class="lineage-label">📊 Aggrega</span><span class="badge-dep">Opportunities</span></div>
+<div class="lineage-row"><span class="lineage-label">✅ Compatibile</span><span class="badge-compatible">Accounts</span> <span class="badge-compatible">Campaigns</span> <span class="badge-compatible">Cases</span> <span class="badge-compatible">Contacts</span> <span class="badge-compatible">Industries</span> <span class="badge-compatible">Owners</span> <span class="badge-compatible">Products</span></div>
+<div class="lineage-row"><span class="lineage-label">❌ Non correlato</span><span class="badge-incompatible">Case Calendar</span> <span class="badge-incompatible">Opportunity Calendar</span> <span class="badge-incompatible">Opportunity Forecast Adjustment</span> <span class="badge-incompatible">Territories</span></div>
+</div>
+</details>
+<h4><code>Opportunity Count In Pipeline</code></h4>
 <p><em>Aggregation: COUNT</em></p>
 <p><strong>Format:</strong> <code>#,0</code></p>
 <pre><code class="language-dax">CALCULATE (
@@ -722,7 +875,15 @@ Opportunities[Status] = "Open"
 --  &amp;&amp; Opportunities[PipelineStep] IN { "3-Pipeline", "4-Mandate", "5-Close" }
 )
 )</code></pre>
-<h5><code>Revenue In Pipeline</code></h5>
+<details>
+<summary>🔗 <strong>Lineage</strong> — click to expand</summary>
+<div class="details-body">
+<div class="lineage-row"><span class="lineage-label">📊 Aggrega</span><span class="badge-dep">Opportunities</span></div>
+<div class="lineage-row"><span class="lineage-label">✅ Compatibile</span><span class="badge-compatible">Accounts</span> <span class="badge-compatible">Campaigns</span> <span class="badge-compatible">Cases</span> <span class="badge-compatible">Contacts</span> <span class="badge-compatible">Industries</span> <span class="badge-compatible">Owners</span> <span class="badge-compatible">Products</span></div>
+<div class="lineage-row"><span class="lineage-label">❌ Non correlato</span><span class="badge-incompatible">Case Calendar</span> <span class="badge-incompatible">Opportunity Calendar</span> <span class="badge-incompatible">Opportunity Forecast Adjustment</span> <span class="badge-incompatible">Territories</span></div>
+</div>
+</details>
+<h4><code>Revenue In Pipeline</code></h4>
 <p><em>Uses variables · Division (check for zero)</em></p>
 <p><strong>Format:</strong> <code>\$#,0.0;(\$#,0.0);\$#,0.0</code></p>
 <pre><code class="language-dax">VAR Revenue =
@@ -736,20 +897,44 @@ Opportunities[Status] = "Open"
 )
 RETURN
 Revenue + ( Revenue * ( 'Opportunity Forecast Adjustment'[Forecast Adjustment Value] / 100 ) )</code></pre>
-<h5><code>Revenue Open</code></h5>
+<details>
+<summary>🔗 <strong>Lineage</strong> — click to expand</summary>
+<div class="details-body">
+<div class="lineage-row"><span class="lineage-label">📊 Aggrega</span><span class="badge-dep">Opportunities</span></div>
+<div class="lineage-row"><span class="lineage-label">✅ Compatibile</span><span class="badge-compatible">Accounts</span> <span class="badge-compatible">Campaigns</span> <span class="badge-compatible">Cases</span> <span class="badge-compatible">Contacts</span> <span class="badge-compatible">Industries</span> <span class="badge-compatible">Owners</span> <span class="badge-compatible">Products</span></div>
+<div class="lineage-row"><span class="lineage-label">❌ Non correlato</span><span class="badge-incompatible">Case Calendar</span> <span class="badge-incompatible">Opportunity Calendar</span> <span class="badge-incompatible">Opportunity Forecast Adjustment</span> <span class="badge-incompatible">Territories</span></div>
+</div>
+</details>
+<h4><code>Revenue Open</code></h4>
 <p><em>Iterator: SUMX · Uses CALCULATE · Row filter</em></p>
 <p><strong>Format:</strong> <code>\$#,0.###############;(\$#,0.###############);\$#,0.###############</code></p>
 <pre><code class="language-dax">CALCULATE(
 SUMX(Opportunities, Opportunities[Value]),
 FILTER(Opportunities, Opportunities[Status] = "Open")
 )</code></pre>
-<h5><code>Revenue Won</code></h5>
+<details>
+<summary>🔗 <strong>Lineage</strong> — click to expand</summary>
+<div class="details-body">
+<div class="lineage-row"><span class="lineage-label">📊 Aggrega</span><span class="badge-dep">Opportunities</span></div>
+<div class="lineage-row"><span class="lineage-label">✅ Compatibile</span><span class="badge-compatible">Accounts</span> <span class="badge-compatible">Campaigns</span> <span class="badge-compatible">Cases</span> <span class="badge-compatible">Contacts</span> <span class="badge-compatible">Industries</span> <span class="badge-compatible">Owners</span> <span class="badge-compatible">Products</span></div>
+<div class="lineage-row"><span class="lineage-label">❌ Non correlato</span><span class="badge-incompatible">Case Calendar</span> <span class="badge-incompatible">Opportunity Calendar</span> <span class="badge-incompatible">Opportunity Forecast Adjustment</span> <span class="badge-incompatible">Territories</span></div>
+</div>
+</details>
+<h4><code>Revenue Won</code></h4>
 <p><em>Iterator: SUMX · Uses CALCULATE · Row filter</em></p>
 <p><strong>Format:</strong> <code>\$#,0.0;(\$#,0.0);\$#,0.0</code></p>
 <pre><code class="language-dax">CALCULATE(
 SUMX(Opportunities, Opportunities[Value]),
 FILTER(Opportunities, Opportunities[Status] = "Won")
 )</code></pre>
+<details>
+<summary>🔗 <strong>Lineage</strong> — click to expand</summary>
+<div class="details-body">
+<div class="lineage-row"><span class="lineage-label">📊 Aggrega</span><span class="badge-dep">Opportunities</span></div>
+<div class="lineage-row"><span class="lineage-label">✅ Compatibile</span><span class="badge-compatible">Accounts</span> <span class="badge-compatible">Campaigns</span> <span class="badge-compatible">Cases</span> <span class="badge-compatible">Contacts</span> <span class="badge-compatible">Industries</span> <span class="badge-compatible">Owners</span> <span class="badge-compatible">Products</span></div>
+<div class="lineage-row"><span class="lineage-label">❌ Non correlato</span><span class="badge-incompatible">Case Calendar</span> <span class="badge-incompatible">Opportunity Calendar</span> <span class="badge-incompatible">Opportunity Forecast Adjustment</span> <span class="badge-incompatible">Territories</span></div>
+</div>
+</details>
 <details>
 <summary>🔌 <strong>Power Query</strong> &mdash; 5 steps</summary>
 <div class="details-body">
@@ -780,7 +965,7 @@ in
 </section>
 
 <section id="table-opportunity-calendar">
-<h3 id="table-opportunity-calendar">Table: <code>Opportunity Calendar</code></h3>
+<h2 id="table-opportunity-calendar">Table: <code>Opportunity Calendar</code></h2>
 <details>
 <summary>🧮 Calculated (DAX) &middot; 9 cols &mdash; click to expand</summary>
 <div class="details-body">
@@ -815,7 +1000,7 @@ in
 </section>
 
 <section id="table-owners">
-<h3 id="table-owners">Table: <code>Owners</code></h3>
+<h2 id="table-owners">Table: <code>Owners</code></h2>
 <details>
 <summary>📥 Import &middot; 2 cols &middot; 1 measure &middot; Folding: — N/A &mdash; click to expand</summary>
 <div class="details-body">
@@ -833,8 +1018,8 @@ in
 </table>
 </div>
 </details>
-<h4>Measures</h4>
-<h5><code>Rev Goal</code></h5>
+<h3>Measures</h3>
+<h4><code>Rev Goal</code></h4>
 <p><em>Uses variables · IF logic</em></p>
 <p><strong>Format:</strong> <code>\$#,0.###############;(\$#,0.###############);\$#,0.###############</code></p>
 <pre><code class="language-dax">VAR RevenueInPipeline =
@@ -850,6 +1035,15 @@ VAR BaseGoal =
 MROUND(([Revenue Won]+ (RevenueInPipeline*.75)),100000)
 RETURN
 IF(BaseGoal &gt; 0, BaseGoal, MROUND(([Revenue Won]+ (RevenueInPipeline*.75)),10000))</code></pre>
+<details>
+<summary>🔗 <strong>Lineage</strong> — click to expand</summary>
+<div class="details-body">
+<div class="lineage-row"><span class="lineage-label">📊 Aggrega</span><span class="badge-dep">Opportunities</span></div>
+<div class="lineage-row"><span class="lineage-label">🔗 Dipende da</span><span class="badge-dep">[Revenue Won]</span></div>
+<div class="lineage-row"><span class="lineage-label">✅ Compatibile</span><span class="badge-compatible">Accounts</span> <span class="badge-compatible">Campaigns</span> <span class="badge-compatible">Cases</span> <span class="badge-compatible">Contacts</span> <span class="badge-compatible">Industries</span> <span class="badge-compatible">Owners</span> <span class="badge-compatible">Products</span></div>
+<div class="lineage-row"><span class="lineage-label">❌ Non correlato</span><span class="badge-incompatible">Case Calendar</span> <span class="badge-incompatible">Opportunity Calendar</span> <span class="badge-incompatible">Opportunity Forecast Adjustment</span> <span class="badge-incompatible">Territories</span></div>
+</div>
+</details>
 <details>
 <summary>🔌 <strong>Power Query</strong> &mdash; 6 steps</summary>
 <div class="details-body">
@@ -882,7 +1076,7 @@ in
 </section>
 
 <section id="table-products">
-<h3 id="table-products">Table: <code>Products</code></h3>
+<h2 id="table-products">Table: <code>Products</code></h2>
 <details>
 <summary>📥 Import &middot; 4 cols &middot; Folding: — N/A &mdash; click to expand</summary>
 <div class="details-body">
@@ -932,7 +1126,7 @@ in
 </section>
 
 <section id="measures-index-az">
-<h3>Measures Index (A–Z)</h3>
+<h2>Measures Index (A–Z)</h2>
 <details>
 <summary>📋 22 measures &mdash; click to expand</summary>
 <div class="details-body">
@@ -967,112 +1161,8 @@ in
 </details>
 </section>
 
-</section>
-
-<hr>
-
-<section id="report">
-
-<h2>Report</h2>
-
-<section id="overview">
-<h3>Overview</h3>
-<table>
-<thead><tr><th></th><th></th></tr></thead>
-<tbody>
-<tr><td>Report Format</td><td>pbir</td></tr>
-<tr><td>Total Pages</td><td>3 (hidden: 0)</td></tr>
-<tr><td>Total Visuals</td><td>235 (avg 78.3/page, min 77, max 81)</td></tr>
-<tr><td>Bookmarks</td><td>17</td></tr>
-<tr><td>Report-Level Measures</td><td>0</td></tr>
-<tr><td><strong>Complexity Index</strong></td><td><strong>🟡 48%</strong></td></tr>
-</tbody>
-</table>
-</section>
-
-<section id="visual-types-distribution">
-<h3>Visual Types Distribution</h3>
-<details>
-<summary>📊 10 visual types across 235 visuals &mdash; click to expand</summary>
-<div class="details-body">
-<table>
-<thead><tr><th>Visual Type</th><th>Count</th><th>Percentage</th></tr></thead>
-<tbody>
-<tr><td>actionButton</td><td>193</td><td>82.1%</td></tr>
-<tr><td>unknown</td><td>12</td><td>5.1%</td></tr>
-<tr><td>shape</td><td>9</td><td>3.8%</td></tr>
-<tr><td>textbox</td><td>7</td><td>3.0%</td></tr>
-<tr><td>barChart</td><td>5</td><td>2.1%</td></tr>
-<tr><td>image</td><td>3</td><td>1.3%</td></tr>
-<tr><td>custom</td><td>3</td><td>1.3%</td></tr>
-<tr><td>clusteredBarChart</td><td>1</td><td>0.4%</td></tr>
-<tr><td>slicer</td><td>1</td><td>0.4%</td></tr>
-<tr><td>lineChart</td><td>1</td><td>0.4%</td></tr>
-</tbody>
-</table>
-</div>
-</details>
-</section>
-
-<section id="custom-visuals">
-<h3>Custom Visuals</h3>
-<details>
-<summary>🔌 3 marketplace visuals &mdash; click to expand</summary>
-<div class="details-body">
-<ul>
-<li><code>decompositionTreeVisual</code></li>
-<li><code>keyDriversVisual</code></li>
-<li><code>qnaVisual</code></li>
-</ul>
-</div>
-</details>
-</section>
-
-<section id="bookmarks">
-<h3>Bookmarks</h3>
-<details>
-<summary>🔖 17 bookmarks &mdash; click to expand</summary>
-<div class="details-body">
-<p>Total: 17</p>
-<ul>
-<li>Sales P - Funnel 1</li>
-<li>Key - Discount</li>
-<li>Last 12</li>
-<li>CSAT - KEY - High</li>
-<li>Services - KPI - Tabular</li>
-<li>Services - KPI - Chart</li>
-<li>Sales P - Chart 2</li>
-<li>Sales P - Tabular 2</li>
-<li>Service - SLA - Key Influencers</li>
-<li>Sales P - Chart 1</li>
-<li>CSAT - KEY - Low</li>
-<li>Key - Day to close</li>
-<li>CSAT - KEY - VS</li>
-<li>Services - KPI2 - Chart</li>
-<li>Service - KPI2 - Ribbon</li>
-<li>Last 90</li>
-<li>Service - SLA -PKPI</li>
-</ul>
-</div>
-</details>
-</section>
-
-<section id="advanced-metrics">
-<h3>Advanced Metrics</h3>
-<table>
-<thead><tr><th>Metric</th><th>Value</th></tr></thead>
-<tbody>
-<tr><td>Pages with Drillthrough</td><td>0</td></tr>
-<tr><td>Total Filters</td><td>0</td></tr>
-<tr><td>Visuals with Mobile Layout</td><td>37</td></tr>
-</tbody>
-</table>
-</section>
-
-</section>
-
 <footer>
-<p><em>Generated by <a href="https://github.com/ViciusLio/pbi-semantic-doc">pbi-semantic-doc</a> &middot; 2026-03-16 14:05 UTC</em></p>
+<p><em>Generated by <a href="https://github.com/ViciusLio/pbi-semantic-doc">pbi-semantic-doc</a> &middot; 2026-03-16 17:14 UTC</em></p>
 </footer>
 <script>
 function toggleAll(open) {

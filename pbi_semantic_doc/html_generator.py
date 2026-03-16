@@ -19,6 +19,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from .parser import SemanticModel, Table, Measure, Partition, Role, Relationship
+from .lineage import ModelLineage, MeasureLineage
 
 # ── lookup tables (mirrored from generator.py) ────────────────────────────
 
@@ -218,6 +219,14 @@ footer {
     text-align: center;
 }
 
+/* ── lineage badges ──────────────────────────────────────────────────── */
+.lineage-row { display: flex; flex-wrap: wrap; gap: .35em; align-items: center; margin: .3em 0; font-size: .85em; }
+.lineage-label { color: var(--muted); font-weight: 600; min-width: 7em; }
+.badge-compatible { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 3px; padding: .1em .4em; font-size: .78em; }
+.badge-incompatible { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 3px; padding: .1em .4em; font-size: .78em; }
+.badge-removed { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; border-radius: 3px; padding: .1em .4em; font-size: .78em; }
+.badge-dep { background: var(--code-bg); color: var(--muted); border: 1px solid var(--border); border-radius: 3px; padding: .1em .4em; font-size: .78em; }
+
 /* ── print ────────────────────────────────────────────────────────────── */
 @media print {
     .no-print { display: none !important; }
@@ -347,11 +356,18 @@ class HtmlGenerator:
 
     def generate(self, model: SemanticModel) -> str:
         """Generate a self-contained HTML document for a semantic model."""
+        # Build measure lineage once for the whole model; failures are silent
+        try:
+            self._lineage_map: dict = ModelLineage(model).resolve_all()
+        except Exception:
+            self._lineage_map = {}
         body = self._model_body(model)
+        self._lineage_map = {}
         return _html_page(title=f"DOC — {model.name}", body=body)
 
     def generate_report(self, metrics) -> str:
         """Generate a self-contained HTML document for a report."""
+        self._lineage_map = {}
         body = self._report_body(metrics)
         return _html_page(title=f"DOC — {metrics.report_name}", body=body)
 
@@ -380,10 +396,15 @@ class HtmlGenerator:
 
         # Semantic model section
         if model:
+            try:
+                self._lineage_map = ModelLineage(model).resolve_all()
+            except Exception:
+                self._lineage_map = {}
             parts.append('<section id="semantic-model">')
             parts.append(_heading(2, "Semantic Model"))
             parts.append(self._model_inner(model, heading_offset=1))
             parts.append("</section>")
+            self._lineage_map = {}
 
         # Horizontal rule between sections
         if model and report_metrics:
@@ -837,7 +858,7 @@ class HtmlGenerator:
         if table.measures:
             content_parts.append(_heading(3 + h, "Measures"))
             for measure in sorted(table.measures, key=lambda m: m.name.lower()):
-                content_parts.append(self._measure_html(measure, h))
+                content_parts.append(self._measure_html(measure, h, table.name))
 
         for partition in table.partitions:
             if partition.expression and partition.type == "m":
@@ -924,7 +945,7 @@ class HtmlGenerator:
             ])
         return _details(summary_html, _table(headers, rows))
 
-    def _measure_html(self, measure: Measure, h: int = 0) -> str:
+    def _measure_html(self, measure: Measure, h: int = 0, table_name: str = "") -> str:
         parts: list[str] = []
         hidden_tag = " <em>(hidden)</em>" if measure.is_hidden else ""
         folder_tag = (
@@ -949,7 +970,89 @@ class HtmlGenerator:
         if measure.expression:
             parts.append(_pre(measure.expression, lang="dax"))
 
+        # Lineage section — only when lineage data is available
+        if table_name and hasattr(self, "_lineage_map"):
+            lin = self._lineage_map.get((table_name, measure.name))
+            if lin and lin.has_lineage_info:
+                parts.append(self._measure_lineage_html(lin))
+
         return "\n".join(parts)
+
+    def _measure_lineage_html(self, lin: MeasureLineage) -> str:
+        """Render a collapsible lineage card for a single measure."""
+        rows: list[str] = []
+
+        def _badges(names: set[str], css_class: str) -> str:
+            return " ".join(
+                f'<span class="{css_class}">{_e(n)}</span>'
+                for n in sorted(names)
+            )
+
+        # Base tables (what the measure aggregates)
+        if lin.all_base_tables:
+            badges = _badges(lin.all_base_tables, "badge-dep")
+            rows.append(
+                f'<div class="lineage-row">'
+                f'<span class="lineage-label">📊 Aggrega</span>{badges}</div>'
+            )
+
+        # Flags
+        flags: list[str] = []
+        if lin.uses_time_intelligence:
+            flags.append("📅 Time intelligence")
+        if lin.uses_inactive_relationship:
+            flags.append("🔀 USERELATIONSHIP")
+        if lin.uses_treatas:
+            flags.append("🔗 TREATAS")
+        if lin.has_cycle:
+            flags.append("⚠️ Ciclo rilevato")
+        if flags:
+            rows.append(
+                f'<div class="lineage-row">'
+                + "".join(f'<span class="badge-dep">{_e(f)}</span>' for f in flags)
+                + "</div>"
+            )
+
+        # Nested measure dependencies
+        if lin.all_measure_deps:
+            badges = " ".join(
+                f'<span class="badge-dep">[{_e(d)}]</span>'
+                for d in lin.all_measure_deps
+            )
+            rows.append(
+                f'<div class="lineage-row">'
+                f'<span class="lineage-label">🔗 Dipende da</span>{badges}</div>'
+            )
+
+        # Compatible dimensions
+        if lin.compatible_tables:
+            badges = _badges(lin.compatible_tables, "badge-compatible")
+            rows.append(
+                f'<div class="lineage-row">'
+                f'<span class="lineage-label">✅ Compatibile</span>{badges}</div>'
+            )
+
+        # Incompatible (no relationship)
+        if lin.incompatible_tables:
+            badges = _badges(lin.incompatible_tables, "badge-incompatible")
+            rows.append(
+                f'<div class="lineage-row">'
+                f'<span class="lineage-label">❌ Non correlato</span>{badges}</div>'
+            )
+
+        # ALL-removed
+        if lin.filter_removed_tables:
+            badges = _badges(lin.filter_removed_tables, "badge-removed")
+            rows.append(
+                f'<div class="lineage-row">'
+                f'<span class="lineage-label">⚠️ Filtro rimosso</span>{badges}</div>'
+            )
+
+        if not rows:
+            return ""
+
+        body_html = "\n".join(rows)
+        return _details("🔗 <strong>Lineage</strong> — click to expand", body_html)
 
     def _m_expression_html(self, partition: Partition) -> str:
         qa = partition.query_analysis

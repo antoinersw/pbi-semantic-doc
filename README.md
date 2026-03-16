@@ -5,8 +5,8 @@
 [![PyPI version](https://img.shields.io/pypi/v/pbi-semantic-doc)](https://pypi.org/project/pbi-semantic-doc/)
 [![Python 3.9+](https://img.shields.io/pypi/pyversions/pbi-semantic-doc)](https://pypi.org/project/pbi-semantic-doc/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-267%20passing-brightgreen)](#)
-[![Version](https://img.shields.io/badge/version-0.4.2-blue)](#)
+[![Tests](https://img.shields.io/badge/tests-326%20passing-brightgreen)](#)
+[![Version](https://img.shields.io/badge/version-0.5.0-blue)](#)
 
 Built with ❤️ by [ViciusLio](https://github.com/ViciusLio) in collaboration with [Claude AI](https://claude.ai) (Anthropic).
 
@@ -201,6 +201,15 @@ MyProject/
 - "Expand All / Collapse All" toolbar buttons for quick browser navigation
 - Covers all modes: model-only, report-only, and combined (`--combined`)
 
+### Measure Lineage (HTML output)
+For every measure, the HTML output includes a collapsible **Lineage** section that is computed automatically from the DAX expression and the model's relationship graph — no naming conventions or manual annotations required:
+- **Base tables** — fact/dimension tables directly aggregated by this measure (including transitive dependencies through nested `[Measures]`)
+- **Compatible tables** — all tables reachable via the relationship graph; these are the dimensions you *can* safely use as slicers for this measure
+- **Incompatible tables** — tables with no relationship path to the measure's base tables; using them as slicers has no effect or gives wrong results
+- **Filter-removed tables** — tables explicitly cleared with `ALL()`, `ALLEXCEPT()`, or `ALLSELECTED()`
+- **Measure dependencies** — direct and transitive `[MeasureName]` references, resolved via BFS (cycle-safe)
+- **Flags** — time intelligence, `USERELATIONSHIP`, `TREATAS`
+
 ### General
 - Zero external dependencies — pure Python 3.9+ stdlib
 - Installable via pip; works as a CLI or Python library
@@ -262,6 +271,11 @@ Manual descriptions in Power BI Desktop always take precedence over auto-generat
 
 ## Roadmap
 
+### v0.5 ✅ — Measure Lineage
+- **Automatic measure lineage**: per-measure compatibility analysis in HTML output — base tables, compatible/incompatible dimensions, filter-removal tracking, transitive measure dependencies, time intelligence flags
+- Two new stdlib-only modules: `dax_analyzer.py` (stateless regex Layer 1) and `lineage.py` (model-aware BFS Layer 2+3)
+- Zero new dependencies — pure Python stdlib
+
 ### v0.4 ✅ — HTML Output
 - **Self-contained HTML output** (`--format html`): navigable in browser, printable to PDF via `Ctrl+P`
 - Zero new dependencies — pure Python stdlib
@@ -274,10 +288,9 @@ Manual descriptions in Power BI Desktop always take precedence over auto-generat
 - **Navigable docs**: Table of Contents + collapsible sections + `DOC_<name>.md` naming
 - **Unified combined document**: single file with Semantic Model + Report sections
 
-### v0.5 — Deep Model Analysis
+### v0.6 — Deep Model Analysis
 - **Column lineage**: trace which measures reference which columns across tables
 - **Unused columns**: detect columns not referenced in any measure, relationship, or visual
-- **Measure dependency graph**: DAG of measure-to-measure dependencies
 - **Hidden object inventory**: report on all hidden tables and columns
 
 ### v0.6 — Report Deep Dive
