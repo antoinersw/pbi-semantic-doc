@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.5.3] — 2026-03-16
+
+### Changed — HTML output (UX/UI redesign)
+- **Two-column layout with sticky sidebar**: navigation panel fixed on the left (270 px), main content scrollable on the right. Sidebar collapses to full-width on mobile (`≤768 px`).
+- **Sidebar navigation**: project name in header, live search/filter input (`🔍 Filter…`), grouped TOC links with active-section highlighting via `IntersectionObserver`, expand/collapse buttons in footer.
+- **Each measure is now a collapsible card** (`<details class="measure-card">`): DAX expression, auto-description, format badge, folder badge and hidden badge visible at a glance; full body (DAX + lineage) revealed on click.
+- **Measures Index (A–Z)** now renders full measure cards with DAX and lineage, not just a flat name/table/folder table.
+- **Accessibility**: `<a class="skip-link" href="#main-content">` skip link, `<main id="main-content">` landmark, `<aside aria-label="Document navigation">`, `:focus-visible` outline, `aria-label` on search input and back-to-top button.
+- **Back-to-top button**: fixed floating button (`↑`), fades in after 320 px scroll, smooth scroll on click.
+- **Print**: sidebar hidden, layout collapses to single column, all `<details>` expand automatically — Ctrl+P → PDF still works.
+- **Zero new dependencies** — all CSS/JS embedded, single self-contained file.
+
+### Tests
+- 329 tests — all passing (3 HTML tests updated to match new sidebar class names)
+
+---
+
 ## [0.5.2] — 2026-03-16
 
 ### Fixed

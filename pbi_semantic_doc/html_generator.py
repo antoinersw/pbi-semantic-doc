@@ -7,7 +7,7 @@ Features:
 - All CSS and JS embedded — single file, no external assets
 - Collapsible <details>/<summary> sections (same structure as .md output)
 - @media print: all sections expand automatically — Ctrl+P → PDF works
-- "Expand All / Collapse All" JavaScript buttons
+- Sticky sidebar with search, active-section tracking, expand/collapse buttons
 - Power BI blue (#0078d4) accent colour
 """
 
@@ -62,184 +62,192 @@ _CSS = """\
     --accent:       #0078d4;
     --accent-light: #deecf9;
     --bg:           #ffffff;
-    --surface:      #f8f9fa;
+    --surface:      #f3f4f6;
     --border:       #d0d7de;
     --text:         #24292f;
     --muted:        #656d76;
     --code-bg:      #f6f8fa;
     --shadow:       0 1px 3px rgba(0,0,0,.08);
+    --sidebar-w:    270px;
 }
 *, *::before, *::after { box-sizing: border-box; }
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-                 "Helvetica Neue", Arial, sans-serif;
-    font-size: 15px;
-    line-height: 1.6;
-    color: var(--text);
-    background: var(--bg);
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem 4rem;
+/* ── skip link ─────────────────────────────────────────────────────────── */
+.skip-link {
+    position: absolute; left: -9999px; top: 0; z-index: 9999;
+    background: var(--accent); color: #fff; font-weight: 700;
+    padding: .5em 1.2em; border-radius: 0 0 4px 4px; text-decoration: none;
 }
+.skip-link:focus { left: 0; }
 
-/* ── typography ───────────────────────────────────────────────────────── */
-h1 {
-    font-size: 1.85rem;
+/* ── layout ────────────────────────────────────────────────────────────── */
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 15px; line-height: 1.6; color: var(--text); background: var(--bg); }
+.layout { display: flex; min-height: 100vh; }
+
+/* ── sidebar ───────────────────────────────────────────────────────────── */
+.sidebar {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+}
+.sidebar-header {
+    padding: .9rem 1.1rem .7rem;
+    background: var(--accent);
+    flex-shrink: 0;
+}
+.sidebar-title {
+    font-weight: 700; font-size: .9rem; color: #fff;
+    display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sidebar-subtitle { font-size: .72rem; color: rgba(255,255,255,.75); margin-top: .15em; }
+.sidebar-search {
+    padding: .5rem .8rem; border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.sidebar-search input {
+    width: 100%; padding: .3em .6em; border: 1px solid var(--border);
+    border-radius: 4px; font-size: .82em; background: var(--bg); color: var(--text);
+}
+.sidebar-search input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.sidebar-nav { flex: 1; overflow-y: auto; padding: .4rem 0; }
+.sidebar-nav ul { list-style: none; margin: 0; padding: 0; }
+.sidebar-nav li { margin: 0; }
+.sidebar-nav a {
+    display: block; padding: .28em 1.1em;
+    font-size: .83em; color: var(--text); text-decoration: none;
+    border-left: 3px solid transparent; transition: background .12s, border-color .12s;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sidebar-nav a:hover { background: var(--accent-light); color: var(--accent); border-left-color: var(--accent); }
+.sidebar-nav a.active { background: var(--accent-light); color: var(--accent); border-left-color: var(--accent); font-weight: 600; }
+.nav-group-label {
+    display: block; padding: .55em 1.1em .2em;
+    font-size: .72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--muted);
+}
+.nav-sub a { padding-left: 2em; }
+.sidebar-footer {
+    padding: .6rem .8rem; border-top: 1px solid var(--border);
+    display: flex; gap: .35em; flex-shrink: 0;
+}
+.sidebar-footer button {
+    flex: 1; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 4px; padding: .28em .4em; cursor: pointer;
+    font-size: .75em; color: var(--text); transition: background .1s;
+}
+.sidebar-footer button:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+
+/* ── main content ──────────────────────────────────────────────────────── */
+.main-content {
+    flex: 1; min-width: 0;
+    padding: 2rem 2.5rem 4rem;
+    max-width: 980px;
+}
+.doc-header { margin-bottom: 1.5rem; }
+.doc-header h1 {
+    font-size: 1.75rem;
     border-bottom: 3px solid var(--accent);
-    padding-bottom: .4em;
-    margin-bottom: .5em;
+    padding-bottom: .35em; margin: 0 0 .3em;
 }
-h2 {
-    font-size: 1.3rem;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: .25em;
-    margin-top: 2.5rem;
-}
-h3 { font-size: 1.05rem; margin-top: 1.5rem; }
-h4 { font-size: 1rem;    margin-top: 1rem;   }
+.doc-meta { color: var(--muted); font-size: .82em; margin: 0; }
 
+/* ── typography ────────────────────────────────────────────────────────── */
+h2 { font-size: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: .2em; margin-top: 2.2rem; }
+h3 { font-size: 1.05rem; margin-top: 1.4rem; }
+h4 { font-size: .95rem; margin-top: .9rem; }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
+blockquote { border-left: 4px solid var(--accent); margin: .6em 0; padding: .2em .9em; background: var(--accent-light); border-radius: 0 4px 4px 0; color: var(--muted); }
+p { margin: .45em 0; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-blockquote {
-    border-left: 4px solid var(--accent);
-    margin: .75em 0;
-    padding: .25em .9em;
-    background: var(--accent-light);
-    border-radius: 0 4px 4px 0;
-    color: var(--muted);
-}
-p { margin: .5em 0; }
-
-/* ── code ─────────────────────────────────────────────────────────────── */
-code {
-    font-family: "Cascadia Code", Consolas, "SFMono-Regular", monospace;
-    font-size: .875em;
-    background: var(--code-bg);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: .1em .4em;
-}
-pre {
-    background: var(--code-bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 1em 1.25em;
-    overflow-x: auto;
-    margin: .75em 0;
-}
+/* ── code ──────────────────────────────────────────────────────────────── */
+code { font-family: "Cascadia Code", Consolas, "SFMono-Regular", monospace; font-size: .875em; background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px; padding: .1em .4em; }
+pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: .9em 1.2em; overflow-x: auto; margin: .6em 0; }
 pre code { background: none; border: none; padding: 0; font-size: .85em; }
 
-/* ── tables ───────────────────────────────────────────────────────────── */
-table { border-collapse: collapse; width: 100%; margin: .75em 0; font-size: .9em; }
+/* ── tables ────────────────────────────────────────────────────────────── */
+table { border-collapse: collapse; width: 100%; margin: .6em 0; font-size: .9em; }
 thead tr { background: var(--accent); color: #fff; }
-th { padding: .45em .75em; text-align: left; font-weight: 600; white-space: nowrap; }
-td { padding: .35em .75em; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { padding: .4em .75em; text-align: left; font-weight: 600; white-space: nowrap; }
+td { padding: .3em .75em; border-bottom: 1px solid var(--border); vertical-align: top; }
 tbody tr:nth-child(even) td { background: var(--surface); }
 tbody tr:hover td { background: var(--accent-light); transition: background .1s; }
 
-/* ── details / summary ───────────────────────────────────────────────── */
-details {
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    margin: .5em 0;
-    background: var(--bg);
-    box-shadow: var(--shadow);
-}
+/* ── details / summary ─────────────────────────────────────────────────── */
+details { border: 1px solid var(--border); border-radius: 6px; margin: .4em 0; background: var(--bg); box-shadow: var(--shadow); }
 details[open] { background: var(--surface); }
-summary {
-    cursor: pointer;
-    font-weight: 500;
-    padding: .6em 1em;
-    list-style: none;
-    user-select: none;
-    border-radius: 5px;
-}
+summary { cursor: pointer; font-weight: 500; padding: .55em 1em; list-style: none; user-select: none; border-radius: 5px; }
 summary::-webkit-details-marker { display: none; }
-summary::before {
-    content: "\\25B6\\00A0";
-    font-size: .75em;
-    color: var(--muted);
-}
-details[open] > summary::before { content: "\\25BC\\00A0"; }
-.details-body { padding: .75em 1em 1em; border-top: 1px solid var(--border); }
+summary::before { content: "\25B6\00A0"; font-size: .75em; color: var(--muted); }
+details[open] > summary::before { content: "\25BC\00A0"; }
+.details-body { padding: .7em 1em 1em; border-top: 1px solid var(--border); }
 
-/* ── table of contents ───────────────────────────────────────────────── */
-.toc {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1rem 1.5rem;
-    margin: 1.5rem 0 2rem;
-    box-shadow: var(--shadow);
+/* ── measure cards ─────────────────────────────────────────────────────── */
+details.measure-card {
+    border-left: 3px solid var(--accent);
+    margin: .35em 0;
 }
-.toc .toc-label {
-    font-size: .8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    color: var(--muted);
-    display: block;
-    margin-bottom: .5em;
+details.measure-card > summary {
+    display: flex; align-items: center; gap: .5em; flex-wrap: wrap;
+    font-size: .92em;
 }
-.toc ul  { margin: .25em 0; padding-left: 1.5em; }
-.toc > ul { padding-left: 1em; }
-.toc li  { margin: .2em 0; }
+.measure-card-name { font-weight: 600; }
+.measure-card-badges { display: flex; gap: .3em; margin-left: auto; flex-wrap: wrap; align-items: center; }
+.badge-fmt { background: var(--code-bg); color: var(--muted); border: 1px solid var(--border); border-radius: 3px; padding: .05em .45em; font-size: .75em; font-family: "Cascadia Code", Consolas, monospace; }
+.badge-hidden { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; border-radius: 3px; padding: .05em .35em; font-size: .72em; }
+.badge-folder { background: var(--accent-light); color: var(--accent); border: 1px solid #b3d4ef; border-radius: 3px; padding: .05em .35em; font-size: .72em; }
 
-/* ── toolbar ──────────────────────────────────────────────────────────── */
-.toolbar {
-    display: flex;
-    gap: .5em;
-    justify-content: flex-end;
-    margin-bottom: 1rem;
-}
-.toolbar button {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: .3em .8em;
-    cursor: pointer;
-    font-size: .85em;
-    color: var(--text);
-}
-.toolbar button:hover {
-    background: var(--accent-light);
-    border-color: var(--accent);
-    color: var(--accent);
-}
-
-/* ── footer ───────────────────────────────────────────────────────────── */
-footer {
-    margin-top: 3rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border);
-    color: var(--muted);
-    font-size: .85em;
-    text-align: center;
-}
-
-/* ── lineage badges ──────────────────────────────────────────────────── */
-.lineage-row { display: flex; flex-wrap: wrap; gap: .35em; align-items: center; margin: .3em 0; font-size: .85em; }
+/* ── lineage badges ────────────────────────────────────────────────────── */
+.lineage-row { display: flex; flex-wrap: wrap; gap: .35em; align-items: center; margin: .3em 0; font-size: .83em; }
 .lineage-label { color: var(--muted); font-weight: 600; min-width: 7em; }
 .badge-compatible { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 3px; padding: .1em .4em; font-size: .78em; }
 .badge-incompatible { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 3px; padding: .1em .4em; font-size: .78em; }
 .badge-removed { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; border-radius: 3px; padding: .1em .4em; font-size: .78em; }
 .badge-dep { background: var(--code-bg); color: var(--muted); border: 1px solid var(--border); border-radius: 3px; padding: .1em .4em; font-size: .78em; }
 
-/* ── print ────────────────────────────────────────────────────────────── */
+/* ── back-to-top ───────────────────────────────────────────────────────── */
+.back-to-top {
+    position: fixed; bottom: 1.5rem; right: 1.5rem;
+    width: 2.4rem; height: 2.4rem; border-radius: 50%;
+    background: var(--accent); color: #fff; border: none;
+    font-size: 1.1rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.22);
+    opacity: 0; transition: opacity .2s; z-index: 100; line-height: 1;
+}
+.back-to-top.visible { opacity: 1; }
+.back-to-top:hover { background: #005a9e; }
+
+/* ── footer ────────────────────────────────────────────────────────────── */
+footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--muted); font-size: .82em; text-align: center; }
+
+/* ── responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .layout { flex-direction: column; }
+    .sidebar { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 1px solid var(--border); }
+    .sidebar-nav { max-height: 240px; }
+    .main-content { padding: 1.25rem 1.1rem 3rem; }
+}
+
+/* ── print ─────────────────────────────────────────────────────────────── */
 @media print {
-    .no-print { display: none !important; }
-    details { display: block !important; border: none; box-shadow: none; padding: 0; }
+    .sidebar, .back-to-top, .skip-link { display: none !important; }
+    .layout { display: block; }
+    .main-content { padding: 0; max-width: 100%; }
+    .doc-header h1 { font-size: 18pt; }
+    details { display: block !important; border: none; box-shadow: none; padding: 0; border-left: none !important; }
     summary { display: none !important; }
     .details-body { padding: 0; border: none; }
-    h1, h2 { page-break-after: avoid; }
+    h2 { font-size: 14pt; margin-top: 1.5em; page-break-after: avoid; }
     table, pre, blockquote { page-break-inside: avoid; }
     thead { display: table-header-group; }
     a[href^="#"]::after { content: ""; }
-    body { max-width: 100%; font-size: 11pt; }
-    h1 { font-size: 18pt; }
-    h2 { font-size: 14pt; margin-top: 1.5em; }
+    body { font-size: 11pt; }
     tbody tr:hover td { background: inherit; }
 }
 """
@@ -247,9 +255,57 @@ footer {
 # ── embedded JS ───────────────────────────────────────────────────────────
 
 _JS = """\
+// Expand / collapse all
 function toggleAll(open) {
     document.querySelectorAll('details').forEach(function(d) { d.open = open; });
 }
+
+// Back-to-top button
+(function () {
+    var btn = document.getElementById('back-to-top');
+    if (!btn) return;
+    var onScroll = function () { btn.classList.toggle('visible', window.scrollY > 320); };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    btn.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+}());
+
+// Active section in sidebar (IntersectionObserver)
+(function () {
+    var links = document.querySelectorAll('.sidebar-nav a[href^="#"]');
+    if (!links.length || !window.IntersectionObserver) return;
+    var map = {};
+    links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+    var current = '';
+    var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+            if (e.isIntersecting) {
+                current = e.target.id;
+                Object.values(map).forEach(function (a) { a.classList.remove('active'); });
+                if (map[current]) {
+                    map[current].classList.add('active');
+                    // scroll link into sidebar view
+                    map[current].scrollIntoView({ block: 'nearest' });
+                }
+            }
+        });
+    }, { rootMargin: '-8% 0px -80% 0px', threshold: 0 });
+    Object.keys(map).forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) observer.observe(el);
+    });
+}());
+
+// Sidebar search filter
+(function () {
+    var inp = document.getElementById('sidebar-search');
+    if (!inp) return;
+    inp.addEventListener('input', function () {
+        var q = this.value.toLowerCase();
+        document.querySelectorAll('.sidebar-nav li').forEach(function (li) {
+            li.style.display = li.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+    });
+}());
 """
 
 # ── low-level HTML helpers ────────────────────────────────────────────────
@@ -317,7 +373,7 @@ def _section_anchor(heading: str) -> str:
     return text
 
 
-def _html_page(title: str, body: str) -> str:
+def _html_page(title: str, sidebar: str, main: str) -> str:
     return (
         "<!DOCTYPE html>\n"
         '<html lang="en">\n'
@@ -328,10 +384,33 @@ def _html_page(title: str, body: str) -> str:
         f"<style>\n{_CSS}</style>\n"
         "</head>\n"
         "<body>\n"
-        f"{body}\n"
+        '<a href="#main-content" class="skip-link">Skip to content</a>\n'
+        '<div class="layout">\n'
+        f'<aside class="sidebar no-print" aria-label="Document navigation">\n{sidebar}\n</aside>\n'
+        f'<main id="main-content" class="main-content">\n{main}\n</main>\n'
+        "</div>\n"
+        '<button id="back-to-top" class="back-to-top no-print" aria-label="Back to top">↑</button>\n'
         f"<script>\n{_JS}</script>\n"
         "</body>\n"
         "</html>\n"
+    )
+
+
+def _sidebar_html(title: str, subtitle: str, nav_html: str) -> str:
+    """Render the sidebar: header + search + nav + expand/collapse buttons."""
+    return (
+        f'<div class="sidebar-header">'
+        f'<span class="sidebar-title">{_e(title)}</span>'
+        f'<span class="sidebar-subtitle">{_e(subtitle)}</span>'
+        f'</div>\n'
+        f'<div class="sidebar-search">'
+        f'<input type="search" id="sidebar-search" placeholder="🔍 Filter…" aria-label="Filter navigation">'
+        f'</div>\n'
+        f'<nav class="sidebar-nav" aria-label="Table of contents">\n{nav_html}\n</nav>\n'
+        f'<div class="sidebar-footer">'
+        f'<button onclick="toggleAll(true)" title="Expand all sections">⊞ Expand</button>'
+        f'<button onclick="toggleAll(false)" title="Collapse all sections">⊟ Collapse</button>'
+        f'</div>'
     )
 
 
@@ -356,20 +435,49 @@ class HtmlGenerator:
 
     def generate(self, model: SemanticModel) -> str:
         """Generate a self-contained HTML document for a semantic model."""
-        # Build measure lineage once for the whole model; failures are silent
         try:
             self._lineage_map: dict = ModelLineage(model).resolve_all()
         except Exception:
             self._lineage_map = {}
-        body = self._model_body(model)
+
+        # Build sidebar
+        nav_html = self._model_sidebar_nav(model)
+        sidebar = _sidebar_html(model.name, "Semantic Model", nav_html)
+
+        # Build main content
+        parts: list[str] = []
+        parts.append(
+            f'<div class="doc-header">'
+            f'<h1>{_e(model.name)} — Semantic Model</h1>'
+            f'<p class="doc-meta">Generated by pbi-semantic-doc</p>'
+            f'</div>'
+        )
+        parts.append(self._model_inner(model, heading_offset=0))
+        parts.append(self._footer())
+        main = "\n\n".join(parts)
+
         self._lineage_map = {}
-        return _html_page(title=f"DOC — {model.name}", body=body)
+        return _html_page(title=f"DOC — {model.name}", sidebar=sidebar, main=main)
 
     def generate_report(self, metrics) -> str:
         """Generate a self-contained HTML document for a report."""
         self._lineage_map = {}
-        body = self._report_body(metrics)
-        return _html_page(title=f"DOC — {metrics.report_name}", body=body)
+
+        nav_html = self._report_sidebar_nav(metrics)
+        sidebar = _sidebar_html(metrics.report_name, "Report Analysis", nav_html)
+
+        parts: list[str] = []
+        parts.append(
+            f'<div class="doc-header">'
+            f'<h1>{_e(metrics.report_name)} — Report Analysis</h1>'
+            f'<p class="doc-meta">Generated by pbi-semantic-doc</p>'
+            f'</div>'
+        )
+        parts.append(self._report_inner(metrics, heading_offset=0))
+        parts.append(self._footer())
+        main = "\n\n".join(parts)
+
+        return _html_page(title=f"DOC — {metrics.report_name}", sidebar=sidebar, main=main)
 
     def generate_combined(
         self,
@@ -378,65 +486,98 @@ class HtmlGenerator:
         project_name: str,
     ) -> str:
         """Generate a unified HTML document covering both model and report."""
-        parts: list[str] = []
+        # Build combined sidebar nav
+        nav_items: list[str] = []
+        if model:
+            nav_items.append('<li><span class="nav-group-label">Semantic Model</span>')
+            nav_items.append('<ul class="nav-sub">')
+            nav_items.append('<li><a href="#sm-overview">Overview</a></li>')
+            ds = model.data_sources
+            if ds:
+                nav_items.append('<li><a href="#sm-data-sources">Data Sources</a></li>')
+            if model.relationships:
+                nav_items.append('<li><a href="#sm-relationships">Relationships</a></li>')
+            if model.roles:
+                nav_items.append('<li><a href="#sm-row-level-security">Row Level Security</a></li>')
+            for table in model.visible_tables:
+                raw_anchor = _section_anchor(f"Table: `{table.name}`")
+                anchor = f"sm-{raw_anchor}"
+                icon = _MODE_ICON.get(table.effective_mode, "📋")
+                nav_items.append(
+                    f'<li><a href="#{_attr(anchor)}" title="{_attr(table.name)}">'
+                    f'{icon} {_e(table.name)}</a></li>'
+                )
+            if model.all_measures:
+                n = len(model.all_measures)
+                nav_items.append(f'<li><a href="#sm-measures-index-az">📋 Measures ({n})</a></li>')
+            nav_items.append('</ul></li>')
 
-        # Toolbar
+        if report_metrics:
+            nav_items.append('<li><span class="nav-group-label">Report</span>')
+            nav_items.append('<ul class="nav-sub">')
+            nav_items.append('<li><a href="#rpt-overview">Overview</a></li>')
+            if report_metrics.visual_types_count:
+                nav_items.append('<li><a href="#rpt-visual-types-distribution">Visual Types</a></li>')
+            if report_metrics.custom_visuals:
+                nav_items.append('<li><a href="#rpt-custom-visuals">Custom Visuals</a></li>')
+            if report_metrics.has_bookmarks:
+                nav_items.append('<li><a href="#rpt-bookmarks">Bookmarks</a></li>')
+            if report_metrics.has_report_extensions:
+                nav_items.append('<li><a href="#rpt-report-extensions">Report Extensions</a></li>')
+            nav_items.append('<li><a href="#rpt-advanced-metrics">Advanced Metrics</a></li>')
+            nav_items.append('</ul></li>')
+
+        nav_html = f'<ul>\n{"".join(nav_items)}\n</ul>'
+        sidebar = _sidebar_html(project_name, "Power BI Documentation", nav_html)
+
+        # Build main content
+        parts: list[str] = []
         parts.append(
-            '<div class="toolbar no-print">'
-            '<button onclick="toggleAll(true)">⊞ Expand All</button>'
-            '<button onclick="toggleAll(false)">⊟ Collapse All</button>'
-            "</div>"
+            f'<div class="doc-header">'
+            f'<h1>{_e(project_name)} — Power BI Documentation</h1>'
+            f'<p class="doc-meta">Generated by pbi-semantic-doc</p>'
+            f'</div>'
         )
 
-        # Title
-        parts.append(_heading(1, f"{_e(project_name)} &mdash; Power BI Documentation"))
-
-        # Combined TOC
-        parts.append(self._combined_toc(model, report_metrics))
-
-        # Semantic model section
         if model:
             try:
                 self._lineage_map = ModelLineage(model).resolve_all()
             except Exception:
                 self._lineage_map = {}
             parts.append('<section id="semantic-model">')
-            parts.append(_heading(2, "Semantic Model"))
-            parts.append(self._model_inner(model, heading_offset=1))
+            parts.append('<h2>Semantic Model</h2>')
+            parts.append(self._model_inner_prefixed(model, prefix="sm-"))
             parts.append("</section>")
             self._lineage_map = {}
 
-        # Horizontal rule between sections
         if model and report_metrics:
             parts.append("<hr>")
 
-        # Report section
         if report_metrics:
             parts.append('<section id="report">')
-            parts.append(_heading(2, "Report"))
-            parts.append(self._report_inner(report_metrics, heading_offset=1))
+            parts.append('<h2>Report</h2>')
+            parts.append(self._report_inner_prefixed(report_metrics, prefix="rpt-"))
             parts.append("</section>")
 
         parts.append(self._footer())
+        main = "\n\n".join(parts)
 
-        body = "\n\n".join(parts)
-        return _html_page(title=f"DOC — {project_name}", body=body)
+        return _html_page(title=f"DOC — {project_name}", sidebar=sidebar, main=main)
 
     # ── model body (standalone) ───────────────────────────────────────────
 
     def _model_body(self, model: SemanticModel) -> str:
+        # This is used internally but generate() now calls _html_page directly
+        # Keep for backward compatibility
+        nav_html = self._model_sidebar_nav(model)
+        sidebar = _sidebar_html(model.name, "Semantic Model", nav_html)
         parts: list[str] = []
-
         parts.append(
-            '<div class="toolbar no-print">'
-            '<button onclick="toggleAll(true)">⊞ Expand All</button>'
-            '<button onclick="toggleAll(false)">⊟ Collapse All</button>'
-            "</div>"
+            f'<div class="doc-header">'
+            f'<h1>{_e(model.name)} — Semantic Model</h1>'
+            f'<p class="doc-meta">Generated by pbi-semantic-doc</p>'
+            f'</div>'
         )
-        parts.append(
-            _heading(1, f"{_e(model.name)} &mdash; Semantic Model Documentation")
-        )
-        parts.append(self._model_toc(model))
         parts.append(self._model_inner(model, heading_offset=0))
         parts.append(self._footer())
         return "\n\n".join(parts)
@@ -466,21 +607,38 @@ class HtmlGenerator:
 
         return "\n\n".join(parts)
 
+    def _model_inner_prefixed(self, model: SemanticModel, prefix: str = "") -> str:
+        """Model content with section IDs prefixed (for combined doc to avoid anchor collisions)."""
+        # We temporarily override _overview_section and _table_section anchors
+        # by using heading_offset=0 but passing the prefix through the section id
+        # Simple approach: generate normal inner, then do a string replace on section ids
+        raw = self._model_inner(model, heading_offset=0)
+        # Prefix section IDs: id="overview" -> id="sm-overview", href="#overview" -> href="#sm-overview"
+        if prefix:
+            raw = re.sub(r' id="([^"]+)"', lambda m: f' id="{prefix}{m.group(1)}"', raw)
+            raw = re.sub(r' href="#([^"]+)"', lambda m: f' href="#{prefix}{m.group(1)}"', raw)
+        return raw
+
+    def _report_inner_prefixed(self, metrics, prefix: str = "") -> str:
+        """Report content with section IDs prefixed."""
+        raw = self._report_inner(metrics, heading_offset=0)
+        if prefix:
+            raw = re.sub(r' id="([^"]+)"', lambda m: f' id="{prefix}{m.group(1)}"', raw)
+            raw = re.sub(r' href="#([^"]+)"', lambda m: f' href="#{prefix}{m.group(1)}"', raw)
+        return raw
+
     # ── report body (standalone) ──────────────────────────────────────────
 
     def _report_body(self, metrics) -> str:
+        nav_html = self._report_sidebar_nav(metrics)
+        sidebar = _sidebar_html(metrics.report_name, "Report Analysis", nav_html)
         parts: list[str] = []
-
         parts.append(
-            '<div class="toolbar no-print">'
-            '<button onclick="toggleAll(true)">⊞ Expand All</button>'
-            '<button onclick="toggleAll(false)">⊟ Collapse All</button>'
-            "</div>"
+            f'<div class="doc-header">'
+            f'<h1>{_e(metrics.report_name)} — Report Analysis</h1>'
+            f'<p class="doc-meta">Generated by pbi-semantic-doc</p>'
+            f'</div>'
         )
-        parts.append(
-            _heading(1, f"{_e(metrics.report_name)} &mdash; Report Analysis")
-        )
-        parts.append(self._report_toc(metrics))
         parts.append(self._report_inner(metrics, heading_offset=0))
         parts.append(self._footer())
         return "\n\n".join(parts)
@@ -515,138 +673,61 @@ class HtmlGenerator:
 
         return "\n\n".join(parts)
 
-    # ── TOC helpers ───────────────────────────────────────────────────────
+    # ── sidebar nav builders ──────────────────────────────────────────────
 
-    def _model_toc(self, model: SemanticModel) -> str:
+    def _model_sidebar_nav(self, model: SemanticModel, h_offset: int = 0) -> str:
+        """Build sidebar navigation list for the model."""
         items: list[str] = []
-        items.append('<li><a href="#overview">Overview</a></li>')
+
+        # Top-level sections
+        items.append(f'<li><a href="#overview">Overview</a></li>')
 
         ds = model.data_sources
         if ds:
-            n = len(ds)
-            items.append(
-                f'<li><a href="#data-sources">Data Sources</a>'
-                f" &mdash; {n} connector{'s' if n != 1 else ''}</li>"
-            )
+            items.append(f'<li><a href="#data-sources">Data Sources</a></li>')
 
         if model.relationships:
-            n = len(model.relationships)
-            items.append(
-                f'<li><a href="#relationships">Relationships</a>'
-                f" &mdash; {n} relationship{'s' if n != 1 else ''}</li>"
-            )
+            items.append(f'<li><a href="#relationships">Relationships</a></li>')
 
         if model.roles:
-            n = len(model.roles)
-            items.append(
-                f'<li><a href="#row-level-security">Row Level Security</a>'
-                f" &mdash; {n} role{'s' if n != 1 else ''}</li>"
-            )
+            items.append(f'<li><a href="#row-level-security">Row Level Security</a></li>')
 
+        # Tables group
         if model.visible_tables:
-            table_items: list[str] = []
+            items.append('<li><span class="nav-group-label">Tables</span><ul class="nav-sub">')
             for table in model.visible_tables:
                 anchor = _section_anchor(f"Table: `{table.name}`")
-                n_cols = len([c for c in table.columns if not c.is_hidden])
-                n_meas = len(table.measures)
                 mode = table.effective_mode
-                mode_icon = _MODE_ICON.get(mode, "🧮" if mode == "calculated" else "")
-                parts = []
-                if mode_icon:
-                    parts.append(f"{mode_icon} {_MODE_LABEL.get(mode, mode)}")
-                parts.append(f"{n_cols} col{'s' if n_cols != 1 else ''}")
-                if n_meas:
-                    parts.append(f"{n_meas} measure{'s' if n_meas != 1 else ''}")
-                detail = " &middot; ".join(_e(p) for p in parts)
-                table_items.append(
-                    f'<li><a href="#{_attr(anchor)}">{_e(table.name)}</a>'
-                    f" &mdash; {detail}</li>"
+                icon = _MODE_ICON.get(mode, "🧮" if mode == "calculated" else "📋")
+                n_meas = len(table.measures)
+                meas_note = f" · {n_meas}m" if n_meas else ""
+                items.append(
+                    f'<li><a href="#{_attr(anchor)}" title="{_attr(table.name)}">'
+                    f'{icon} {_e(table.name)}{_e(meas_note)}</a></li>'
                 )
-            items.append(
-                f"<li><strong>Tables</strong>"
-                f"<ul>\n{''.join(table_items)}\n</ul></li>"
-            )
+            items.append('</ul></li>')
 
+        # Measures index
         if model.all_measures:
             n = len(model.all_measures)
-            items.append(
-                f'<li><a href="#measures-index-az">Measures Index</a>'
-                f" &mdash; {n} measure{'s' if n != 1 else ''}</li>"
-            )
+            items.append(f'<li><a href="#measures-index-az">📋 Measures Index ({n})</a></li>')
 
-        list_html = "\n".join(items)
-        return (
-            '<nav class="toc">\n'
-            '<span class="toc-label">Contents</span>\n'
-            f"<ul>\n{list_html}\n</ul>\n"
-            "</nav>"
-        )
+        return f'<ul>\n{"".join(items)}\n</ul>'
 
-    def _report_toc(self, metrics) -> str:
+    def _report_sidebar_nav(self, metrics) -> str:
+        """Build sidebar navigation list for the report."""
         items: list[str] = []
         items.append('<li><a href="#overview">Overview</a></li>')
-
         if metrics.visual_types_count:
-            n = len(metrics.visual_types_count)
-            items.append(
-                f'<li><a href="#visual-types-distribution">Visual Types Distribution</a>'
-                f" &mdash; {n} type{'s' if n != 1 else ''}</li>"
-            )
+            items.append('<li><a href="#visual-types-distribution">Visual Types</a></li>')
         if metrics.custom_visuals:
-            n = len(metrics.custom_visuals)
-            items.append(
-                f'<li><a href="#custom-visuals">Custom Visuals</a>'
-                f" &mdash; {n} marketplace visual{'s' if n != 1 else ''}</li>"
-            )
+            items.append('<li><a href="#custom-visuals">Custom Visuals</a></li>')
         if metrics.has_bookmarks:
-            n = metrics.total_bookmarks
-            items.append(
-                f'<li><a href="#bookmarks">Bookmarks</a>'
-                f" &mdash; {n} bookmark{'s' if n != 1 else ''}</li>"
-            )
+            items.append('<li><a href="#bookmarks">Bookmarks</a></li>')
         if metrics.has_report_extensions:
-            n = len(metrics.report_level_measures)
-            items.append(
-                f'<li><a href="#report-extensions">Report Extensions</a>'
-                f" &mdash; {n} report-level measure{'s' if n != 1 else ''}</li>"
-            )
+            items.append('<li><a href="#report-extensions">Report Extensions</a></li>')
         items.append('<li><a href="#advanced-metrics">Advanced Metrics</a></li>')
-
-        list_html = "\n".join(items)
-        return (
-            '<nav class="toc">\n'
-            '<span class="toc-label">Contents</span>\n'
-            f"<ul>\n{list_html}\n</ul>\n"
-            "</nav>"
-        )
-
-    def _combined_toc(self, model, report_metrics) -> str:
-        items: list[str] = []
-        if model:
-            tables = len(model.visible_tables)
-            measures = sum(len(t.measures) for t in model.visible_tables)
-            rels = len(model.relationships)
-            items.append(
-                f'<li><a href="#semantic-model">Semantic Model</a>'
-                f" &mdash; {tables} table{'s' if tables != 1 else ''},"
-                f" {measures} measure{'s' if measures != 1 else ''},"
-                f" {rels} relationship{'s' if rels != 1 else ''}</li>"
-            )
-        if report_metrics:
-            pages = report_metrics.total_pages
-            visuals = report_metrics.total_visuals
-            items.append(
-                f'<li><a href="#report">Report</a>'
-                f" &mdash; {pages} page{'s' if pages != 1 else ''},"
-                f" {visuals} visual{'s' if visuals != 1 else ''}</li>"
-            )
-        list_html = "\n".join(items)
-        return (
-            '<nav class="toc">\n'
-            '<span class="toc-label">Contents</span>\n'
-            f"<ul>\n{list_html}\n</ul>\n"
-            "</nav>"
-        )
+        return f'<ul>\n{"".join(items)}\n</ul>'
 
     # ── semantic model sections ───────────────────────────────────────────
 
@@ -946,37 +1027,50 @@ class HtmlGenerator:
         return _details(summary_html, _table(headers, rows))
 
     def _measure_html(self, measure: Measure, h: int = 0, table_name: str = "") -> str:
-        parts: list[str] = []
-        hidden_tag = " <em>(hidden)</em>" if measure.is_hidden else ""
-        folder_tag = (
-            f" &middot; 📁 {_code(measure.display_folder)}"
+        # Build summary line
+        hidden_badge = ' <span class="badge-hidden">hidden</span>' if measure.is_hidden else ""
+        fmt_badge = (
+            f' <span class="badge-fmt">{_e(measure.format_string)}</span>'
+            if measure.format_string
+            else ""
+        )
+        folder_badge = (
+            f' <span class="badge-folder">📁 {_e(measure.display_folder)}</span>'
             if measure.display_folder
             else ""
         )
-        parts.append(_heading(4 + h, f"{_code(measure.name)}{hidden_tag}{folder_tag}"))
+        summary_html = (
+            f'<span class="measure-card-name">{_code(measure.name)}</span>'
+            f'<span class="measure-card-badges">{fmt_badge}{folder_badge}{hidden_badge}</span>'
+        )
+
+        # Build body content
+        content_parts: list[str] = []
 
         if measure.description:
-            parts.append(f"<p>{_e(measure.description)}</p>")
+            content_parts.append(f"<p>{_e(measure.description)}</p>")
 
         auto_desc = measure.auto_description()
         if auto_desc and not measure.description:
-            parts.append(f"<p><em>{_e(auto_desc)}</em></p>")
-
-        if measure.format_string:
-            parts.append(
-                f"<p><strong>Format:</strong> {_code(measure.format_string)}</p>"
-            )
+            content_parts.append(f"<p><em>{_e(auto_desc)}</em></p>")
 
         if measure.expression:
-            parts.append(_pre(measure.expression, lang="dax"))
+            content_parts.append(_pre(measure.expression, lang="dax"))
 
-        # Lineage section — only when lineage data is available
+        # Lineage section
         if table_name and hasattr(self, "_lineage_map"):
             lin = self._lineage_map.get((table_name, measure.name))
             if lin and lin.has_lineage_info:
-                parts.append(self._measure_lineage_html(lin))
+                content_parts.append(self._measure_lineage_html(lin))
 
-        return "\n".join(parts)
+        body_html = "\n".join(content_parts) if content_parts else "<p><em>No expression.</em></p>"
+
+        return (
+            f'<details class="measure-card">\n'
+            f'<summary>{summary_html}</summary>\n'
+            f'<div class="details-body">\n{body_html}\n</div>\n'
+            f'</details>'
+        )
 
     def _measure_lineage_html(self, lin: MeasureLineage) -> str:
         """Render a collapsible lineage card for a single measure."""
@@ -1100,20 +1194,24 @@ class HtmlGenerator:
 
     def _measures_index(self, model: SemanticModel, h: int = 0) -> str:
         n = len(model.all_measures)
-        summary_html = (
-            f"📋 {n} measure{'s' if n != 1 else ''} &mdash; click to expand"
-        )
-        headers = ["Measure", "Table", "Folder"]
-        rows = []
+        summary_html = f"📋 {n} measure{'s' if n != 1 else ''} — click to expand"
+
+        cards: list[str] = []
         for table_name, measure in model.all_measures:
-            folder = _e(measure.display_folder) if measure.display_folder else ""
-            rows.append([_code(measure.name), _code(table_name), folder])
+            # Table badge before each measure card
+            cards.append(
+                f'<p style="margin:.6em 0 .1em;font-size:.78em;color:var(--muted);">'
+                f'Table: {_code(table_name)}</p>'
+            )
+            cards.append(self._measure_html(measure, h=0, table_name=table_name))
+
+        body_html = "\n".join(cards)
 
         return (
             '<section id="measures-index-az">\n'
             + _heading(2 + h, "Measures Index (A\u2013Z)")
             + "\n"
-            + _details(summary_html, _table(headers, rows))
+            + _details(summary_html, body_html)
             + "\n</section>"
         )
 

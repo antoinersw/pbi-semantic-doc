@@ -95,11 +95,11 @@ class TestHtmlGeneratorModel:
         assert "measures-index-az" in self.html
 
     def test_contains_toc_nav(self):
-        assert '<nav class="toc"' in self.html
+        assert 'class="sidebar-nav"' in self.html
 
     def test_contains_toolbar(self):
         assert "toggleAll" in self.html
-        assert "Expand All" in self.html
+        assert "Expand" in self.html
 
     def test_css_embedded(self):
         assert "<style>" in self.html
@@ -250,7 +250,7 @@ class TestHtmlGeneratorReport:
         assert "advanced-metrics" in self.html
 
     def test_toc_nav_present(self):
-        assert '<nav class="toc"' in self.html
+        assert 'class="sidebar-nav"' in self.html
 
     def test_print_media_query(self):
         assert "@media print" in self.html
