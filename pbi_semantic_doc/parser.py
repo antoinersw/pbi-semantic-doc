@@ -1019,38 +1019,59 @@ class TmdlParser:
     def _extract_native_query(self, expression: str) -> Optional[str]:
         """Extract native SQL from M expression (2 patterns).
 
-        The extracted SQL is unescaped so that M string escape sequences
-        (e.g. #(lf), #(tab)) are converted to real whitespace characters,
-        making the SQL human-readable in the generated documentation.
+        Uses a two-step approach for robustness on very long SQL strings:
+          1. Locate the opening " of the SQL string (paren-aware, so that
+             commas inside the source argument like AmazonRedshift.Database(h,d)
+             are handled correctly).
+          2. Locate the closing " by scanning forward for the M string
+             terminator pattern: `"  ,  null` or `"  ,  [`.
 
-        M string literal notes:
-          - The first argument of Value.NativeQuery() may contain commas
-            inside nested parentheses (e.g. AmazonRedshift.Database(host, db)),
-            so we use a 1-level paren-aware pattern instead of [^,]+.
-          - M uses "" to represent a literal double-quote inside a string,
-            so the SQL content pattern is ((?:[^"]|"")*)  rather than [^"]+.
+        M string literals also use "" to encode a literal double-quote, which
+        is handled by _unescape_m_string() after extraction.
         """
-        # Pattern 1: Value.NativeQuery(source_expr, "SQL ...")
-        # source_expr may contain nested parens with commas, e.g.:
+        # ── Pattern 1: Value.NativeQuery(source_expr, "SQL ...") ─────────────
+        # The source_expr may contain nested parens with commas, e.g.:
         #   AmazonRedshift.Database(pHost, pDb)
         #   Sql.Database("srv", "db", [option=...])
-        m = re.search(
+        # Step 1: find where the SQL string starts (right after the opening ")
+        start_m = re.search(
             r'Value\.NativeQuery\s*\('
             r'(?:[^(),]|\([^()]*\))*'   # first arg — 1-level paren-aware
-            r',\s*'
-            r'"((?:[^"]|"")*)"',        # SQL string — handles M "" escape
-            expression, re.DOTALL
+            r',\s*"',
+            expression, re.DOTALL | re.IGNORECASE,
         )
-        if m:
-            return self._unescape_m_string(m.group(1)).strip()
+        if start_m:
+            start_pos = start_m.end()
+            remaining = expression[start_pos:]
+            # Step 2: find the closing " — it must be followed by , null or , [
+            # (the optional 3rd/4th arguments or the closing paren of NativeQuery)
+            end_m = re.search(r'"\s*,\s*(?:null\b|\[)', remaining, re.IGNORECASE)
+            if end_m:
+                raw_sql = remaining[: end_m.start()]
+            else:
+                # Fallback: strip trailing quote/paren garbage
+                raw_sql = remaining.rstrip('") \t\r\n')
+            if raw_sql:
+                sql = self._unescape_m_string(raw_sql)
+                # Trim any preamble before WITH / SELECT
+                upper = sql.upper()
+                with_pos = upper.find("WITH")
+                sel_pos = upper.find("SELECT")
+                if with_pos >= 0 and (sel_pos < 0 or with_pos < sel_pos):
+                    sql = sql[with_pos:]
+                elif sel_pos >= 0:
+                    sql = sql[sel_pos:]
+                sql = sql.strip()
+                if sql:
+                    return sql
 
-        # Pattern 2: [Query="SQL ..."]
+        # ── Pattern 2: [Query="SQL ..."] ─────────────────────────────────────
         m = re.search(
-            r'\[Query\s*=\s*"((?:[^"]|"")*)"\]',   # also handles "" escape
-            expression, re.DOTALL
+            r'\[Query\s*=\s*"((?:[^"]|"")*)"\]',
+            expression, re.DOTALL,
         )
         if m:
-            return self._unescape_m_string(m.group(1)).strip()
+            return self._unescape_m_string(m.group(1)).strip() or None
 
         return None
 
