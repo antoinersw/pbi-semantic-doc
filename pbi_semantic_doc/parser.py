@@ -1012,25 +1012,43 @@ class TmdlParser:
             lambda m: chr(int(m.group(1), 16)),
             s,
         )
+        # M string double-quote escape: "" → " (must be done last)
+        s = s.replace('""', '"')
         return s
 
     def _extract_native_query(self, expression: str) -> Optional[str]:
-        """Extract native SQL from M expression (3 patterns).
+        """Extract native SQL from M expression (2 patterns).
 
         The extracted SQL is unescaped so that M string escape sequences
         (e.g. #(lf), #(tab)) are converted to real whitespace characters,
         making the SQL human-readable in the generated documentation.
+
+        M string literal notes:
+          - The first argument of Value.NativeQuery() may contain commas
+            inside nested parentheses (e.g. AmazonRedshift.Database(host, db)),
+            so we use a 1-level paren-aware pattern instead of [^,]+.
+          - M uses "" to represent a literal double-quote inside a string,
+            so the SQL content pattern is ((?:[^"]|"")*)  rather than [^"]+.
         """
-        # Pattern 1: Value.NativeQuery(source, "SELECT ...")
+        # Pattern 1: Value.NativeQuery(source_expr, "SQL ...")
+        # source_expr may contain nested parens with commas, e.g.:
+        #   AmazonRedshift.Database(pHost, pDb)
+        #   Sql.Database("srv", "db", [option=...])
         m = re.search(
-            r'Value\.NativeQuery\s*\([^,]+,\s*"([^"]+)"',
+            r'Value\.NativeQuery\s*\('
+            r'(?:[^(),]|\([^()]*\))*'   # first arg — 1-level paren-aware
+            r',\s*'
+            r'"((?:[^"]|"")*)"',        # SQL string — handles M "" escape
             expression, re.DOTALL
         )
         if m:
             return self._unescape_m_string(m.group(1)).strip()
 
-        # Pattern 2: [Query="SELECT ..."]
-        m = re.search(r'\[Query\s*=\s*"([^"]+)"\]', expression, re.DOTALL)
+        # Pattern 2: [Query="SQL ..."]
+        m = re.search(
+            r'\[Query\s*=\s*"((?:[^"]|"")*)"\]',   # also handles "" escape
+            expression, re.DOTALL
+        )
         if m:
             return self._unescape_m_string(m.group(1)).strip()
 

@@ -390,6 +390,60 @@ in
         plain = "SELECT id, name FROM dbo.Sales WHERE year = 2024"
         assert unescape(plain) == plain
 
+    def test_native_query_nested_parens_in_source(self):
+        """Source arg with nested parens+comma (e.g. AmazonRedshift.Database(host, db))
+        must not prevent the SQL string from being extracted."""
+        expr = (
+            'let\n'
+            '    Origine = Value.NativeQuery('
+            'AmazonRedshift.Database(pRedshiftHost_PROD,pRedshiftDatabase_PROD), '
+            '"SELECT#(lf)  id#(lf)FROM my_table", null, [EnableFolding=true])\n'
+            'in Origine'
+        )
+        qa = self._make_partition_expression(expr)
+        assert qa.native_query is not None, "SQL not extracted — nested-parens bug"
+        assert "\n" in qa.native_query
+        assert "#(lf)" not in qa.native_query
+
+    def test_native_query_double_quote_escape(self):
+        """M uses \"\" to represent a literal double-quote; it must be unescaped."""
+        expr = (
+            'let\n'
+            '    S = AmazonRedshift.Database(pHost,pDb),\n'
+            '    R = Value.NativeQuery(S, '
+            '"SELECT col AS ""Range - Dim""#(lf)FROM t", null, [EnableFolding=true])\n'
+            'in R'
+        )
+        qa = self._make_partition_expression(expr)
+        assert qa.native_query is not None
+        assert '"Range - Dim"' in qa.native_query
+        assert '""' not in qa.native_query
+
+    def test_native_query_redshift_with_cte_and_aliases(self):
+        """Integration: Redshift-style CTE query with nested-parens source, #(lf),
+        and \"\" column aliases — all must be handled correctly."""
+        sql_escaped = (
+            'WITH#(lf)'
+            'cte AS (#(lf)'
+            '  SELECT id, name AS ""Label""#(lf)'
+            '  FROM schema.table#(lf)'
+            ')#(lf)'
+            'SELECT * FROM cte'
+        )
+        expr = (
+            f'let\n'
+            f'    Origine = Value.NativeQuery('
+            f'AmazonRedshift.Database(pHost,pDb), "{sql_escaped}", null, [EnableFolding=true])\n'
+            f'in Origine'
+        )
+        qa = self._make_partition_expression(expr)
+        assert qa.native_query is not None
+        assert "#(lf)" not in qa.native_query
+        assert '""' not in qa.native_query
+        assert '"Label"' in qa.native_query
+        lines = qa.native_query.splitlines()
+        assert lines[0].startswith("WITH")
+
 
 # ---------------------------------------------------------------------------
 # Query folding assessment tests

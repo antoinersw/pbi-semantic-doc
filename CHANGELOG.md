@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.5.1] — 2026-03-16
+
+### Fixed
+- **Native SQL extraction — nested-parens source argument**: `Value.NativeQuery()` calls where the first argument itself contains parentheses with commas (e.g. `AmazonRedshift.Database(host, db)`) were silently skipped — `[^,]+` stopped at the comma inside the nested call, so the SQL was never extracted and only the raw M expression was shown. Fixed with a 1-level paren-aware pattern `(?:[^(),]|\([^()]*\))*`.
+- **Native SQL extraction — M `""` double-quote escape**: SQL column aliases written as `""Name""` in the M string literal (M's escape for a literal `"`) were left as `""Name""` in the output instead of being converted to `"Name"`. Fixed by matching `((?:[^"]|"")*)` for the SQL string content and adding `s.replace('""', '"')` as the final step in `_unescape_m_string()`.
+- Both fixes apply to Pattern 1 (`Value.NativeQuery(...)`) and Pattern 2 (`[Query="..."]`).
+
+### Tests
+- 329 tests — all passing (+3 new regression tests for the two bugs above)
+
+---
+
 ## [0.5.0] — 2026-03-16
 
 ### Added
