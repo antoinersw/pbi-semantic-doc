@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DOC — Artificial Intelligence Sample</title>
+<style>
+:root {
+    --accent:       #0078d4;
+    --accent-light: #deecf9;
+    --bg:           #ffffff;
+    --surface:      #f8f9fa;
+    --border:       #d0d7de;
+    --text:         #24292f;
+    --muted:        #656d76;
+    --code-bg:      #f6f8fa;
+    --shadow:       0 1px 3px rgba(0,0,0,.08);
+}
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--bg);
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+}
+
+/* ── typography ───────────────────────────────────────────────────────── */
+h1 {
+    font-size: 1.85rem;
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: .4em;
+    margin-bottom: .5em;
+}
+h2 {
+    font-size: 1.3rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: .25em;
+    margin-top: 2.5rem;
+}
+h3 { font-size: 1.05rem; margin-top: 1.5rem; }
+h4 { font-size: 1rem;    margin-top: 1rem;   }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+blockquote {
+    border-left: 4px solid var(--accent);
+    margin: .75em 0;
+    padding: .25em .9em;
+    background: var(--accent-light);
+    border-radius: 0 4px 4px 0;
+    color: var(--muted);
+}
+p { margin: .5em 0; }
+
+/* ── code ─────────────────────────────────────────────────────────────── */
+code {
+    font-family: "Cascadia Code", Consolas, "SFMono-Regular", monospace;
+    font-size: .875em;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: .1em .4em;
+}
+pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1em 1.25em;
+    overflow-x: auto;
+    margin: .75em 0;
+}
+pre code { background: none; border: none; padding: 0; font-size: .85em; }
+
+/* ── tables ───────────────────────────────────────────────────────────── */
+table { border-collapse: collapse; width: 100%; margin: .75em 0; font-size: .9em; }
+thead tr { background: var(--accent); color: #fff; }
+th { padding: .45em .75em; text-align: left; font-weight: 600; white-space: nowrap; }
+td { padding: .35em .75em; border-bottom: 1px solid var(--border); vertical-align: top; }
+tbody tr:nth-child(even) td { background: var(--surface); }
+tbody tr:hover td { background: var(--accent-light); transition: background .1s; }
+
+/* ── details / summary ───────────────────────────────────────────────── */
+details {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin: .5em 0;
+    background: var(--bg);
+    box-shadow: var(--shadow);
+}
+details[open] { background: var(--surface); }
+summary {
+    cursor: pointer;
+    font-weight: 500;
+    padding: .6em 1em;
+    list-style: none;
+    user-select: none;
+    border-radius: 5px;
+}
+summary::-webkit-details-marker { display: none; }
+summary::before {
+    content: "\25B6\00A0";
+    font-size: .75em;
+    color: var(--muted);
+}
+details[open] > summary::before { content: "\25BC\00A0"; }
+.details-body { padding: .75em 1em 1em; border-top: 1px solid var(--border); }
+
+/* ── table of contents ───────────────────────────────────────────────── */
+.toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0 2rem;
+    box-shadow: var(--shadow);
+}
+.toc .toc-label {
+    font-size: .8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+    display: block;
+    margin-bottom: .5em;
+}
+.toc ul  { margin: .25em 0; padding-left: 1.5em; }
+.toc > ul { padding-left: 1em; }
+.toc li  { margin: .2em 0; }
+
+/* ── toolbar ──────────────────────────────────────────────────────────── */
+.toolbar {
+    display: flex;
+    gap: .5em;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+}
+.toolbar button {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: .3em .8em;
+    cursor: pointer;
+    font-size: .85em;
+    color: var(--text);
+}
+.toolbar button:hover {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* ── footer ───────────────────────────────────────────────────────────── */
+footer {
+    margin-top: 3rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: .85em;
+    text-align: center;
+}
+
+/* ── print ────────────────────────────────────────────────────────────── */
+@media print {
+    .no-print { display: none !important; }
+    details { display: block !important; border: none; box-shadow: none; padding: 0; }
+    summary { display: none !important; }
+    .details-body { padding: 0; border: none; }
+    h1, h2 { page-break-after: avoid; }
+    table, pre, blockquote { page-break-inside: avoid; }
+    thead { display: table-header-group; }
+    a[href^="#"]::after { content: ""; }
+    body { max-width: 100%; font-size: 11pt; }
+    h1 { font-size: 18pt; }
+    h2 { font-size: 14pt; margin-top: 1.5em; }
+    tbody tr:hover td { background: inherit; }
+}
+</style>
+</head>
+<body>
+<div class="toolbar no-print"><button onclick="toggleAll(true)">⊞ Expand All</button><button onclick="toggleAll(false)">⊟ Collapse All</button></div>
+
+<h1>Artificial Intelligence Sample &mdash; Power BI Documentation</h1>
+
+<nav class="toc">
+<span class="toc-label">Contents</span>
+<ul>
+<li><a href="#semantic-model">Semantic Model</a> &mdash; 9 tables, 21 measures, 12 relationships</li>
+<li><a href="#report">Report</a> &mdash; 3 pages, 235 visuals</li>
+</ul>
+</nav>
+
+<section id="semantic-model">
+
+<h2>Semantic Model</h2>
+
+<section id="overview">
+<h3>Overview</h3>
+<table>
+<thead><tr><th></th><th></th></tr></thead>
+<tbody>
+<tr><td>Tables</td><td>9 visible, 3 hidden</td></tr>
+<tr><td>Columns</td><td>101 visible, 29 hidden</td></tr>
+<tr><td>Measures</td><td>22</td></tr>
+<tr><td>Relationships</td><td>12 (2 inactive)</td></tr>
+<tr><td>RLS Roles</td><td>2</td></tr>
+<tr><td><strong>Complexity Index</strong></td><td><strong>🟢 24%</strong></td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="data-sources">
+<h3>Data Sources</h3>
+<table>
+<thead><tr><th>Table</th><th>Connector</th><th>Server / Path</th><th>Database</th><th>Mode</th><th>Steps</th><th>Query Folding</th></tr></thead>
+<tbody>
+<tr><td><code>Accounts</code></td><td>Excel</td><td>C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx <em>(param)</em></td><td>&lt;File.Contents()&gt;</td><td>Import</td><td>3</td><td>— N/A</td></tr>
+<tr><td><code>Campaigns</code></td><td>Excel</td><td>C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx <em>(param)</em></td><td>&lt;File.Contents()&gt;</td><td>Import</td><td>4</td><td>— N/A</td></tr>
+<tr><td><code>Case Calendar</code></td><td>—</td><td>—</td><td>—</td><td>Calculated (DAX)</td><td>—</td><td>—</td></tr>
+<tr><td><code>Cases</code></td><td>Excel</td><td>C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx <em>(param)</em></td><td>&lt;File.Contents()&gt;</td><td>Import</td><td>6</td><td>— N/A</td></tr>
+<tr><td><code>Contacts</code></td><td>Excel</td><td>C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx <em>(param)</em></td><td>&lt;File.Contents()&gt;</td><td>Import</td><td>3</td><td>— N/A</td></tr>
+<tr><td><code>Industries</code></td><td>Excel</td><td>C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx <em>(param)</em></td><td>&lt;File.Contents()&gt;</td><td>Import</td><td>4</td><td>— N/A</td></tr>
+<tr><td><code>Opportunities</code></td><td>Excel</td><td>C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx <em>(param)</em></td><td>&lt;File.Contents()&gt;</td><td>Import</td><td>5</td><td>— N/A</td></tr>
+<tr><td><code>Opportunity Calendar</code></td><td>—</td><td>—</td><td>—</td><td>Calculated (DAX)</td><td>—</td><td>—</td></tr>
+<tr><td><code>Opportunity Forecast Adjustment</code></td><td>—</td><td>—</td><td>—</td><td>Calculated (DAX)</td><td>—</td><td>—</td></tr>
+<tr><td><code>Owners</code></td><td>Excel</td><td>C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx <em>(param)</em></td><td>&lt;File.Contents()&gt;</td><td>Import</td><td>6</td><td>— N/A</td></tr>
+<tr><td><code>Products</code></td><td>Excel</td><td>C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx <em>(param)</em></td><td>&lt;File.Contents()&gt;</td><td>Import</td><td>5</td><td>— N/A</td></tr>
+<tr><td><code>Territories</code></td><td>Excel</td><td>C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx <em>(param)</em></td><td>&lt;File.Contents()&gt;</td><td>Import</td><td>3</td><td>— N/A</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="relationships">
+<h3>Relationships</h3>
+<details>
+<summary>🔗 12 relationships — click to expand</summary>
+<div class="details-body">
+<table>
+<thead><tr><th>From</th><th></th><th>To</th><th>Cardinality</th><th>Cross-filter</th><th>Active</th></tr></thead>
+<tbody>
+<tr><td><code>Accounts</code>['Account Owner]</td><td>→</td><td><code>Owners</code>['Sales owner]</td><td>many-to-one</td><td>single</td><td>✅</td></tr>
+<tr><td><code>Opportunities</code>[AccountSeq]</td><td>→</td><td><code>Accounts</code>[AccountSeq]</td><td>many-to-one</td><td>single</td><td>✅</td></tr>
+<tr><td><code>Cases</code>[AccountSeq]</td><td>→</td><td><code>Accounts</code>[AccountSeq]</td><td>many-to-one</td><td>single</td><td>✅</td></tr>
+<tr><td><code>Contacts</code>[AccountSeq]</td><td>→</td><td><code>Accounts</code>[AccountSeq]</td><td>many-to-one</td><td>single</td><td>✅</td></tr>
+<tr><td><code>Accounts</code>[IndustrySeq]</td><td>→</td><td><code>Industries</code>[IndustrySeq]</td><td>many-to-one</td><td>single</td><td>✅</td></tr>
+<tr><td><code>Opportunities</code>[ProductSeq]</td><td>→</td><td><code>Products</code>[ProductSeq]</td><td>many-to-one</td><td>single</td><td>✅</td></tr>
+<tr><td><code>Cases</code>[ProductSeq]</td><td>→</td><td><code>Products</code>[ProductSeq]</td><td>many-to-one</td><td>single</td><td>✅</td></tr>
+<tr><td><code>Opportunities</code>[SystemUserSeq]</td><td>→</td><td><code>Owners</code>[SystemUserSeq]</td><td>many-to-one</td><td>single</td><td>⬜</td></tr>
+<tr><td><code>Cases</code>[SystemUserSeq]</td><td>→</td><td><code>Owners</code>[SystemUserSeq]</td><td>many-to-one</td><td>single</td><td>⬜</td></tr>
+<tr><td><code>Opportunities</code>[CloseDate]</td><td>→</td><td><code>Opportunity Calendar'</code>[DAY]</td><td>many-to-one</td><td>single</td><td>✅</td></tr>
+<tr><td><code>Opportunities</code>[CampaignSeq]</td><td>→</td><td><code>Campaigns</code>[CampaignSeq]</td><td>many-to-one</td><td>single</td><td>✅</td></tr>
+<tr><td><code>Cases</code>['Case Created On]</td><td>→</td><td><code>Case Calendar'</code>[Date]</td><td>many-to-one</td><td>single</td><td>✅</td></tr>
+</tbody>
+</table>
+</div>
+</details>
+</section>
+
+<section id="row-level-security">
+<h3>Row Level Security</h3>
+<table>
+<thead><tr><th>Role</th><th>Permission</th><th>Table</th><th>Filter</th></tr></thead>
+<tbody>
+<tr><td><strong>admin_role</strong></td><td>read</td><td><code>Owners</code></td><td><code>[Manager] == "Weiler, Anne"</code></td></tr>
+<tr><td><strong>user_role</strong></td><td>read</td><td><code>Owners</code></td><td><code>[Manager] == "Low, Spencer" &amp;&amp; [Manager] == "Weiler, Anne"</code></td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="table-accounts">
+<h3 id="table-accounts">Table: <code>Accounts</code></h3>
+<details>
+<summary>📥 Import &middot; 18 cols &middot; Folding: — N/A &mdash; click to expand</summary>
+<div class="details-body">
+<blockquote>📥 <strong>Excel</strong> (C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx → &lt;File.Contents()&gt;) <em>(parameterized)</em> &middot; Query Folding: — N/A</blockquote>
+<details>
+<summary><strong>Columns (18 visible, 3 hidden &mdash; click to expand)</strong></summary>
+<div class="details-body">
+<table>
+<thead><tr><th>Column</th><th>Type</th><th>Description</th><th>Format</th><th>Hidden</th></tr></thead>
+<tbody>
+<tr><td><code>Account Name</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Street</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>City</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>State or Province</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Postal Code</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Country</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Latitude</code></td><td>double</td><td></td><td></td><td></td></tr>
+<tr><td><code>Longitude</code></td><td>double</td><td></td><td></td><td></td></tr>
+<tr><td><code>Phone</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Annual Revenue</code></td><td>int64</td><td></td><td><code>0</code></td><td></td></tr>
+<tr><td><code>Number of Employees</code></td><td>int64</td><td></td><td><code>0</code></td><td></td></tr>
+<tr><td><code>AccountID</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Industry Lookup</code></td><td>unknown</td><td></td><td></td><td></td></tr>
+<tr><td><code>Territory</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Region</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>AccountOwnerSeq</code></td><td>int64</td><td></td><td><code>0</code></td><td></td></tr>
+<tr><td><code>Industry</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Account Number</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Account Owner</code></td><td>string</td><td></td><td></td><td>✗</td></tr>
+<tr><td><code>AccountSeq</code></td><td>int64</td><td></td><td><code>0</code></td><td>✗</td></tr>
+<tr><td><code>IndustrySeq</code></td><td>int64</td><td></td><td><code>0</code></td><td>✗</td></tr>
+</tbody>
+</table>
+</div>
+</details>
+<details>
+<summary>🔌 <strong>Power Query</strong> &mdash; 3 steps</summary>
+<div class="details-body">
+<table>
+<thead><tr><th>#</th><th>Step</th><th>Type</th><th>Foldable</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>Source</code></td><td>source</td><td>✅</td></tr>
+<tr><td>2</td><td><code>AccountTbl_Table</code></td><td>navigation</td><td>✅</td></tr>
+<tr><td>3</td><td><code>#"Changed Type"</code></td><td>type_cast</td><td>✅</td></tr>
+</tbody>
+</table>
+<p><strong>Query Folding:</strong> — Excel connector does not support query folding</p>
+<p><strong>Full M Expression:</strong></p>
+<pre><code class="language-m">let
+Source = Excel.Workbook(File.Contents("C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx"), null, true),
+AccountTbl_Table = Source{[Item="AccountTbl",Kind="Table"]}[Data],
+#"Changed Type" = Table.TransformColumnTypes(AccountTbl_Table,{{"AccountSeq", Int64.Type}, {"AccountID", type text}, {"Account Name", type text}, {"Street", type text}, {"City", type text}, {"State or Province", type any}, {"Postal Code", type text}, {"Country", type text}, {"Latitude", type number}, {"Longitude", type number}, {"Territory", type text}, {"Region", type text}, {"Phone", type text}, {"Number of Employees", Int64.Type}, {"Annual Revenue", Int64.Type}, {"IndustrySeq", Int64.Type}, {"Industry", type text}, {"AccountOwnerSeq", Int64.Type}, {"Account Owner", type text}})
+in
+#"Changed Type"</code></pre>
+</div>
+</details>
+</div>
+</details>
+</section>
+
+<section id="table-campaigns">
+<h3 id="table-campaigns">Table: <code>Campaigns</code></h3>
+<details>
+<summary>📥 Import &middot; 3 cols &middot; Folding: — N/A &mdash; click to expand</summary>
+<div class="details-body">
+<blockquote>📥 <strong>Excel</strong> (C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx → &lt;File.Contents()&gt;) <em>(parameterized)</em> &middot; Query Folding: — N/A</blockquote>
+<details>
+<summary><strong>Columns (3 visible, 1 hidden &mdash; click to expand)</strong></summary>
+<div class="details-body">
+<table>
+<thead><tr><th>Column</th><th>Type</th><th>Description</th><th>Format</th><th>Hidden</th></tr></thead>
+<tbody>
+<tr><td><code>Type</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Campaign Name</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Factor</code></td><td>int64</td><td></td><td><code>0</code></td><td></td></tr>
+<tr><td><code>CampaignSeq</code></td><td>int64</td><td></td><td><code>0</code></td><td>✗</td></tr>
+</tbody>
+</table>
+</div>
+</details>
+<details>
+<summary>🔌 <strong>Power Query</strong> &mdash; 4 steps</summary>
+<div class="details-body">
+<table>
+<thead><tr><th>#</th><th>Step</th><th>Type</th><th>Foldable</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>Source</code></td><td>source</td><td>✅</td></tr>
+<tr><td>2</td><td><code>CampaignsTbl_Table</code></td><td>navigation</td><td>✅</td></tr>
+<tr><td>3</td><td><code>#"Changed Type"</code></td><td>type_cast</td><td>✅</td></tr>
+<tr><td>4</td><td><code>#"Renamed Columns"</code></td><td>rename</td><td>✅</td></tr>
+</tbody>
+</table>
+<p><strong>Query Folding:</strong> — Excel connector does not support query folding</p>
+<p><strong>Full M Expression:</strong></p>
+<pre><code class="language-m">let
+Source = Excel.Workbook(File.Contents("C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx"), null, true),
+CampaignsTbl_Table = Source{[Item="CampaignsTbl",Kind="Table"]}[Data],
+#"Changed Type" = Table.TransformColumnTypes(CampaignsTbl_Table,{{"CampaignSeq", Int64.Type}, {"Type", type text}, {"Name", type text}, {"Factor", Int64.Type}}),
+#"Renamed Columns" = Table.RenameColumns(#"Changed Type",{{"Name", "Campaign Name"}})
+in
+#"Renamed Columns"</code></pre>
+</div>
+</details>
+</div>
+</details>
+</section>
+
+<section id="table-case-calendar">
+<h3 id="table-case-calendar">Table: <code>Case Calendar</code></h3>
+<details>
+<summary>🧮 Calculated (DAX) &middot; 14 cols &mdash; click to expand</summary>
+<div class="details-body">
+<blockquote>🧮 <strong>Calculated table</strong> (DAX)</blockquote>
+<details>
+<summary><strong>Columns (14 visible, 3 hidden &mdash; click to expand)</strong></summary>
+<div class="details-body">
+<table>
+<thead><tr><th>Column</th><th>Type</th><th>Description</th><th>Format</th><th>Hidden</th></tr></thead>
+<tbody>
+<tr><td><code>Date</code></td><td>unknown</td><td></td><td><code>Short Date</code></td><td></td></tr>
+<tr><td><code>DAY</code></td><td>unknown</td><td></td><td></td><td></td></tr>
+<tr><td><code>DaySeq</code></td><td>unknown</td><td></td><td><code>0</code></td><td></td></tr>
+<tr><td><code>YEAR</code></td><td>unknown</td><td></td><td><code>0</code></td><td></td></tr>
+<tr><td><code>MONTH</code></td><td>unknown</td><td></td><td></td><td></td></tr>
+<tr><td><code>YEAR MONTH</code></td><td>unknown</td><td></td><td></td><td></td></tr>
+<tr><td><code>YEAR WEEK</code></td><td>unknown</td><td></td><td></td><td></td></tr>
+<tr><td><code>WEEK</code></td><td>unknown</td><td></td><td><code>General Date</code></td><td></td></tr>
+<tr><td><code>RELATIVE WEEK</code></td><td>unknown</td><td></td><td></td><td></td></tr>
+<tr><td><code>RELATIVE DAY</code></td><td>int64</td><td></td><td><code>0</code></td><td></td></tr>
+<tr><td><code>RELATIVE 07 DAY PERIOD</code></td><td>unknown</td><td></td><td></td><td></td></tr>
+<tr><td><code>RELATIVE 30 DAY PERIOD</code></td><td>unknown</td><td></td><td></td><td></td></tr>
+<tr><td><code>RELATIVE MONTH</code></td><td>unknown</td><td></td><td><code>0</code></td><td></td></tr>
+<tr><td><code>Weekday</code></td><td>unknown</td><td></td><td></td><td></td></tr>
+<tr><td><code>MONTH NUMBER</code></td><td>unknown</td><td></td><td><code>0</code></td><td>✗</td></tr>
+<tr><td><code>YEAR MONTH NUMBER</code></td><td>unknown</td><td></td><td><code>0</code></td><td>✗</td></tr>
+<tr><td><code>WeekdaySeq</code></td><td>unknown</td><td></td><td><code>0</code></td><td>✗</td></tr>
+</tbody>
+</table>
+</div>
+</details>
+</div>
+</details>
+</section>
+
+<section id="table-cases">
+<h3 id="table-cases">Table: <code>Cases</code></h3>
+<details>
+<summary>📥 Import &middot; 19 cols &middot; 10 measures &middot; Folding: — N/A &mdash; click to expand</summary>
+<div class="details-body">
+<blockquote>📥 <strong>Excel</strong> (C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx → &lt;File.Contents()&gt;) <em>(parameterized)</em> &middot; Query Folding: — N/A</blockquote>
+<details>
+<summary><strong>Columns (19 visible, 4 hidden &mdash; click to expand)</strong></summary>
+<div class="details-body">
+<table>
+<thead><tr><th>Column</th><th>Type</th><th>Description</th><th>Format</th><th>Hidden</th></tr></thead>
+<tbody>
+<tr><td><code>Status</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Agent</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Title</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Origin</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Is Escalated</code></td><td>boolean</td><td></td><td></td><td></td></tr>
+<tr><td><code>Subject</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>CSAT Label</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Resolution Minutes</code></td><td>int64</td><td></td><td><code>#,0.0</code></td><td></td></tr>
+<tr><td><code>Severity</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Is SLA Violation</code></td><td>boolean</td><td></td><td></td><td></td></tr>
+<tr><td><code>CSAT</code></td><td>int64</td><td></td><td><code>0</code></td><td></td></tr>
+<tr><td><code>SLA Compliance Goal</code></td><td>unknown</td><td></td><td><code>0%;-0%;0%</code></td><td></td></tr>
+<tr><td><code>Resolution Minutes Goal</code></td><td>unknown</td><td></td><td><code>0</code></td><td></td></tr>
+<tr><td><code>CSAT Goal</code></td><td>unknown</td><td></td><td><code>0.00</code></td><td></td></tr>
+<tr><td><code>Escalations Goal</code></td><td>unknown</td><td></td><td><code>0%;-0%;0%</code></td><td></td></tr>
+<tr><td><code>Minutes to First Contact</code></td><td>int64</td><td></td><td></td><td></td></tr>
+<tr><td><code>Activities</code></td><td>int64</td><td></td><td><code>0</code></td><td></td></tr>
+<tr><td><code>Topic</code></td><td>unknown</td><td></td><td></td><td></td></tr>
+<tr><td><code>CaseSeq</code></td><td>int64</td><td></td><td><code>0</code></td><td></td></tr>
+<tr><td><code>Case Created On</code></td><td>dateTime</td><td></td><td></td><td>✗</td></tr>
+<tr><td><code>SystemUserSeq</code></td><td>int64</td><td></td><td><code>0</code></td><td>✗</td></tr>
+<tr><td><code>AccountSeq</code></td><td>int64</td><td></td><td><code>0</code></td><td>✗</td></tr>
+<tr><td><code>ProductSeq</code></td><td>int64</td><td></td><td><code>0</code></td><td>✗</td></tr>
+</tbody>
+</table>
+</div>
+</details>
+<h4>Measures</h4>
+<h5><code>Case Count</code></h5>
+<p><strong>Format:</strong> <code>#,0</code></p>
+<pre><code class="language-dax">COUNTROWS('Cases')</code></pre>
+<h5><code>Cases % by Product</code></h5>
+<p><em>Uses CALCULATE · Removes filters · Safe division</em></p>
+<p><strong>Format:</strong> <code>0.00%;-0.00%;0.00%</code></p>
+<pre><code class="language-dax">DIVIDE(
+[Case Count],
+CALCULATE(
+[Case Count],All('Products')
+)
+)</code></pre>
+<h5><code>Cases % by Subject</code></h5>
+<p><em>Uses CALCULATE · Removes filters · Safe division</em></p>
+<p><strong>Format:</strong> <code>0.0%;-0.0%;0.0%</code></p>
+<pre><code class="language-dax">DIVIDE(
+[Case Count],
+CALCULATE(
+[Case Count],All('Cases'[Subject])
+)
+)</code></pre>
+<h5><code>Cases MoM%</code></h5>
+<p><em>Time intelligence · Uses CALCULATE · Uses variables · Safe division</em></p>
+<p><strong>Format:</strong> <code>0.0%;-0.0%;0.0%</code></p>
+<pre><code class="language-dax">VAR __PREV_MONTH = CALCULATE([Case Count], DATEADD('Case Calendar'[Date], -1, MONTH))
+RETURN
+DIVIDE([Case Count] - __PREV_MONTH, __PREV_MONTH)</code></pre>
+<h5><code>CSAT Impact</code></h5>
+<p><em>Uses variables · Division (check for zero)</em></p>
+<p><strong>Format:</strong> <code>0.00%;-0.00%;0.00%</code></p>
+<pre><code class="language-dax">VAR FactorAvg =
+AVERAGE ( 'Cases'[CSAT] )
+VAR AllAvg =
+CALCULATE ( AVERAGE ( 'Cases'[CSAT] ), ALL ( 'Cases' ) )
+VAR AllAvgExcept =
+CALCULATE (
+AVERAGE ( 'Cases'[CSAT] ),
+FILTER ( ALL ( 'Cases' ), 'Cases'[Topic] &lt;&gt; SELECTEDVALUE ( 'Cases'[Topic] ) )
+)
+RETURN
+1 - ( AllAvgExcept / AllAvg )</code></pre>
+<h5><code>CSAT Impact - Agent</code></h5>
+<p><em>Uses variables · Division (check for zero)</em></p>
+<p><strong>Format:</strong> <code>0.00%;-0.00%;0.00%</code></p>
+<pre><code class="language-dax">VAR FactorAvg =
+AVERAGE ( 'Cases'[CSAT] )
+VAR AllAvg =
+CALCULATE ( AVERAGE ( 'Cases'[CSAT] ), ALL ( 'Cases' ) )
+VAR AllAvgExcept =
+CALCULATE (
+AVERAGE ( 'Cases'[CSAT] ),
+FILTER ( ALL ( 'Cases' ), 'Cases'[Agent] &lt;&gt; SELECTEDVALUE ( 'Cases'[Agent] ) )
+)
+RETURN
+1 - ( AllAvgExcept / AllAvg )</code></pre>
+<h5><code>CSAT Impact - Products</code></h5>
+<p><em>Uses variables · Division (check for zero)</em></p>
+<p><strong>Format:</strong> <code>0.00%;-0.00%;0.00%</code></p>
+<pre><code class="language-dax">VAR FactorAvg =
+AVERAGE ( 'Cases'[CSAT] )
+VAR AllAvg =
+CALCULATE ( AVERAGE ( 'Cases'[CSAT] ), ALL ( 'Cases' ) )
+VAR AllAvgExcept =
+CALCULATE (
+AVERAGE ( 'Cases'[CSAT] ),
+FILTER ( ALL ( 'Cases' ), 'Cases'[ProductSeq] &lt;&gt; SELECTEDVALUE ( 'Cases'[ProductSeq] )  )
+)
+RETURN
+1 - ( AllAvgExcept / AllAvg )</code></pre>
+<h5><code>CSAT Impact - Subject</code></h5>
+<p><em>Uses variables · Division (check for zero)</em></p>
+<p><strong>Format:</strong> <code>0.00%;-0.00%;0.00%</code></p>
+<pre><code class="language-dax">VAR FactorAvg =
+AVERAGE ( 'Cases'[CSAT] )
+VAR AllAvg =
+CALCULATE ( AVERAGE ( 'Cases'[CSAT] ), ALL ( 'Cases' ) )
+VAR AllAvgExcept =
+CALCULATE (
+AVERAGE ( 'Cases'[CSAT] ),
+FILTER ( ALL ( 'Cases' ), 'Cases'[Subject] &lt;&gt; SELECTEDVALUE ( 'Cases'[Subject] ) )
+)
+RETURN
+1 - ( AllAvgExcept / AllAvg )</code></pre>
+<h5><code>Escalations</code></h5>
+<p><em>Uses CALCULATE · Safe division</em></p>
+<p><strong>Format:</strong> <code>#,0%;-#,0%;#,0%</code></p>
+<pre><code class="language-dax">DIVIDE(CALCULATE(COUNTROWS('Cases'),'Cases'[Is Escalated] = TRUE()) , [Case Count],0)</code></pre>
+<h5><code>SLA Compliance</code></h5>
+<p><em>Uses CALCULATE · Safe division</em></p>
+<p><strong>Format:</strong> <code>#,0%;-#,0%;#,0%</code></p>
+<pre><code class="language-dax">DIVIDE(CALCULATE(COUNTROWS('Cases'),'Cases'[Is SLA Violation] = FALSE()) , [Case Count],0)</code></pre>
+<details>
+<summary>🔌 <strong>Power Query</strong> &mdash; 6 steps</summary>
+<div class="details-body">
+<table>
+<thead><tr><th>#</th><th>Step</th><th>Type</th><th>Foldable</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>Source</code></td><td>source</td><td>✅</td></tr>
+<tr><td>2</td><td><code>IncidentTbl_Table</code></td><td>navigation</td><td>✅</td></tr>
+<tr><td>3</td><td><code>#"Removed Other Columns"</code></td><td>select_columns</td><td>✅</td></tr>
+<tr><td>4</td><td><code>#"Inserted Text Before Delimiter"</code></td><td>add_column</td><td>❓</td></tr>
+<tr><td>5</td><td><code>#"Changed Type"</code></td><td>type_cast</td><td>✅</td></tr>
+<tr><td>6</td><td><code>#"Renamed Columns"</code></td><td>rename</td><td>✅</td></tr>
+</tbody>
+</table>
+<p><strong>Query Folding:</strong> — Excel connector does not support query folding</p>
+<p><strong>Full M Expression:</strong></p>
+<pre><code class="language-m">let
+Source = Excel.Workbook(File.Contents("C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx"), null, true),
+IncidentTbl_Table = Source{[Item="IncidentTbl",Kind="Table"]}[Data],
+#"Removed Other Columns" = Table.SelectColumns(IncidentTbl_Table,{"IncidentSeq", "CreatedOn", "Resolution Minutes", "Minutes to First Contact", "Activities", "Status", "SystemUserSeq", "Owner", "AccountSeq", "ProductSeq", "Title", "Origin", "Severity", "Is Escalated", "Is SLA Violation", "Subject", "CustomerSatScore"}),
+#"Inserted Text Before Delimiter" = Table.AddColumn(#"Removed Other Columns", "CSAT", each Text.BeforeDelimiter([CustomerSatScore], "-"), type text),
+#"Changed Type" = Table.TransformColumnTypes(#"Inserted Text Before Delimiter",{{"CreatedOn", type date}, {"Resolution Minutes", Int64.Type}, {"Status", type text}, {"Owner", type text}, {"Title", type text}, {"Origin", type text}, {"Severity", type text}, {"Is Escalated", type logical}, {"Is SLA Violation", type logical}, {"Subject", type text}, {"CustomerSatScore", type text}, {"CSAT", Int64.Type}, {"Minutes to First Contact", Int64.Type}, {"Activities", Int64.Type}, {"IncidentSeq", Int64.Type}, {"SystemUserSeq", Int64.Type}, {"AccountSeq", Int64.Type}, {"ProductSeq", Int64.Type}}),
+#"Renamed Columns" = Table.RenameColumns(#"Changed Type",{{"IncidentSeq", "CaseSeq"}, {"CustomerSatScore", "CSAT Label"}, {"CreatedOn", "Case Created On"}, {"Owner", "Agent"}})
+in
+#"Renamed Columns"</code></pre>
+</div>
+</details>
+</div>
+</details>
+</section>
+
+<section id="table-contacts">
+<h3 id="table-contacts">Table: <code>Contacts</code></h3>
+<details>
+<summary>📥 Import &middot; 13 cols &middot; Folding: — N/A &mdash; click to expand</summary>
+<div class="details-body">
+<blockquote>📥 <strong>Excel</strong> (C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx → &lt;File.Contents()&gt;) <em>(parameterized)</em> &middot; Query Folding: — N/A</blockquote>
+<details>
+<summary><strong>Columns (13 visible, 2 hidden &mdash; click to expand)</strong></summary>
+<div class="details-body">
+<table>
+<thead><tr><th>Column</th><th>Type</th><th>Description</th><th>Format</th><th>Hidden</th></tr></thead>
+<tbody>
+<tr><td><code>Contact</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Job Title</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Street</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>City</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>State or Province</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Postal Code</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Country</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Latitude</code></td><td>double</td><td></td><td></td><td></td></tr>
+<tr><td><code>Longitude</code></td><td>double</td><td></td><td></td><td></td></tr>
+<tr><td><code>Phone</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>ContactSeq</code></td><td>int64</td><td></td><td><code>0</code></td><td></td></tr>
+<tr><td><code>FirstName</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>LastName</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>ContactID</code></td><td>string</td><td></td><td></td><td>✗</td></tr>
+<tr><td><code>AccountSeq</code></td><td>int64</td><td></td><td><code>0</code></td><td>✗</td></tr>
+</tbody>
+</table>
+</div>
+</details>
+<details>
+<summary>🔌 <strong>Power Query</strong> &mdash; 3 steps</summary>
+<div class="details-body">
+<table>
+<thead><tr><th>#</th><th>Step</th><th>Type</th><th>Foldable</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>Source</code></td><td>source</td><td>✅</td></tr>
+<tr><td>2</td><td><code>ContactTbl_Table</code></td><td>navigation</td><td>✅</td></tr>
+<tr><td>3</td><td><code>#"Changed Type"</code></td><td>type_cast</td><td>✅</td></tr>
+</tbody>
+</table>
+<p><strong>Query Folding:</strong> — Excel connector does not support query folding</p>
+<p><strong>Full M Expression:</strong></p>
+<pre><code class="language-m">let
+Source = Excel.Workbook(File.Contents("C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx"), null, true),
+ContactTbl_Table = Source{[Item="ContactTbl",Kind="Table"]}[Data],
+#"Changed Type" = Table.TransformColumnTypes(ContactTbl_Table,{{"ContactID", type text}, {"Contact", type text}, {"Job Title", type text}, {"Street", type text}, {"City", type text}, {"State or Province", type text}, {"Postal Code", type text}, {"Country", type text}, {"Latitude", type number}, {"Longitude", type number}, {"Phone", type text}, {"ContactSeq", Int64.Type}, {"AccountSeq", Int64.Type}})
+in
+#"Changed Type"</code></pre>
+</div>
+</details>
+</div>
+</details>
+</section>
+
+<section id="table-opportunities">
+<h3 id="table-opportunities">Table: <code>Opportunities</code></h3>
+<details>
+<summary>📥 Import &middot; 19 cols &middot; 10 measures &middot; Folding: — N/A &mdash; click to expand</summary>
+<div class="details-body">
+<blockquote>📥 <strong>Excel</strong> (C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx → &lt;File.Contents()&gt;) <em>(parameterized)</em> &middot; Query Folding: — N/A</blockquote>
+<details>
+<summary><strong>Columns (19 visible, 6 hidden &mdash; click to expand)</strong></summary>
+<div class="details-body">
+<table>
+<thead><tr><th>Column</th><th>Type</th><th>Description</th><th>Format</th><th>Hidden</th></tr></thead>
+<tbody>
+<tr><td><code>Budget</code></td><td>int64</td><td></td><td><code>\$#,0.###############;(\$#,0.###############);\$#,0.###############</code></td><td></td></tr>
+<tr><td><code>Topic</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Purchase Process</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Decision Maker Identified</code></td><td>boolean</td><td></td><td></td><td></td></tr>
+<tr><td><code>Status</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>PipelineStep</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Value</code></td><td>int64</td><td></td><td><code>\$#,0;(\$#,0);\$#,0</code></td><td></td></tr>
+<tr><td><code>Weeks Open</code></td><td>unknown</td><td></td><td><code>0</code></td><td></td></tr>
+<tr><td><code>DaysToClose</code></td><td>int64</td><td></td><td><code>0</code></td><td></td></tr>
+<tr><td><code>Discount</code></td><td>double</td><td></td><td><code>0.0%;-0.0%;0.0%</code></td><td></td></tr>
+<tr><td><code>Probability</code></td><td>double</td><td></td><td><code>0.0%;-0.0%;0.0%</code></td><td></td></tr>
+<tr><td><code>Rating</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Days Remaining In Pipeline</code></td><td>unknown</td><td></td><td><code>0</code></td><td></td></tr>
+<tr><td><code>Probability (raw)</code></td><td>double</td><td></td><td><code>0.0%;-0.0%;0.0%</code></td><td></td></tr>
+<tr><td><code>Opportunity Owner Name</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>OpportunitySeq</code></td><td>int64</td><td></td><td><code>0</code></td><td></td></tr>
+<tr><td><code>Product Name</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Campaign Name</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Blank</code></td><td>unknown</td><td></td><td><code>0</code></td><td></td></tr>
+<tr><td><code>CloseDate</code></td><td>dateTime</td><td></td><td><code>Short Date</code></td><td>✗</td></tr>
+<tr><td><code>Opportunity Created On</code></td><td>dateTime</td><td></td><td><code>Long Date</code></td><td>✗</td></tr>
+<tr><td><code>AccountSeq</code></td><td>int64</td><td></td><td><code>0</code></td><td>✗</td></tr>
+<tr><td><code>ProductSeq</code></td><td>int64</td><td></td><td><code>0</code></td><td>✗</td></tr>
+<tr><td><code>SystemUserSeq</code></td><td>string</td><td></td><td></td><td>✗</td></tr>
+<tr><td><code>CampaignSeq</code></td><td>string</td><td></td><td></td><td>✗</td></tr>
+</tbody>
+</table>
+</div>
+</details>
+<h4>Measures</h4>
+<h5><code>Close %</code></h5>
+<p><em>Division (check for zero)</em></p>
+<p><strong>Format:</strong> <code>0.0%;-0.0%;0.0%</code></p>
+<pre><code class="language-dax">[Count of Won]/([Count of Won]+[Count of Lost])</code></pre>
+<h5><code>Count of Lost</code></h5>
+<p><em>Preserves filters · Row filter</em></p>
+<p><strong>Format:</strong> <code>#,0</code></p>
+<pre><code class="language-dax">COUNTAX(
+FILTER(
+KEEPFILTERS(Opportunities),Opportunities[Status] = "Lost"
+),
+Opportunities[OpportunitySeq]
+)</code></pre>
+<h5><code>Count of Won</code></h5>
+<p><em>Preserves filters · Row filter</em></p>
+<p><strong>Format:</strong> <code>#,0</code></p>
+<pre><code class="language-dax">COUNTAX(
+FILTER(
+KEEPFILTERS(Opportunities),Opportunities[Status] = "Won"
+),
+Opportunities[OpportunitySeq]
+)</code></pre>
+<h5><code>Forecast</code></h5>
+<p><strong>Format:</strong> <code>\$#,0.###############;(\$#,0.###############);\$#,0.###############</code></p>
+<pre><code class="language-dax">([Revenue Won]+[Revenue In Pipeline])</code></pre>
+<h5><code>Forecast %</code></h5>
+<p><em>Division (check for zero)</em></p>
+<p><strong>Format:</strong> <code>#,0%;-#,0%;#,0%</code></p>
+<pre><code class="language-dax">(([Revenue Won]+[Revenue In Pipeline]))/ [Rev Goal]</code></pre>
+<h5><code>Opportunity Count</code></h5>
+<p><strong>Format:</strong> <code>#,0</code></p>
+<pre><code class="language-dax">COUNTAX(Opportunities,TRUE())</code></pre>
+<h5><code>Opportunity Count In Pipeline</code></h5>
+<p><em>Aggregation: COUNT</em></p>
+<p><strong>Format:</strong> <code>#,0</code></p>
+<pre><code class="language-dax">CALCULATE (
+COUNT( Opportunities[Value] ),
+FILTER (
+Opportunities,
+Opportunities[Status] = "Open"
+--  &amp;&amp; Opportunities[PipelineStep] IN { "3-Pipeline", "4-Mandate", "5-Close" }
+)
+)</code></pre>
+<h5><code>Revenue In Pipeline</code></h5>
+<p><em>Uses variables · Division (check for zero)</em></p>
+<p><strong>Format:</strong> <code>\$#,0.0;(\$#,0.0);\$#,0.0</code></p>
+<pre><code class="language-dax">VAR Revenue =
+CALCULATE (
+SUMX ( Opportunities, Opportunities[Value] ),
+FILTER (
+Opportunities,
+Opportunities[Status] = "Open"
+&amp;&amp; VALUE(LEFT(Opportunities[PipelineStep],1)) &gt;=2
+)
+)
+RETURN
+Revenue + ( Revenue * ( 'Opportunity Forecast Adjustment'[Forecast Adjustment Value] / 100 ) )</code></pre>
+<h5><code>Revenue Open</code></h5>
+<p><em>Iterator: SUMX · Uses CALCULATE · Row filter</em></p>
+<p><strong>Format:</strong> <code>\$#,0.###############;(\$#,0.###############);\$#,0.###############</code></p>
+<pre><code class="language-dax">CALCULATE(
+SUMX(Opportunities, Opportunities[Value]),
+FILTER(Opportunities, Opportunities[Status] = "Open")
+)</code></pre>
+<h5><code>Revenue Won</code></h5>
+<p><em>Iterator: SUMX · Uses CALCULATE · Row filter</em></p>
+<p><strong>Format:</strong> <code>\$#,0.0;(\$#,0.0);\$#,0.0</code></p>
+<pre><code class="language-dax">CALCULATE(
+SUMX(Opportunities, Opportunities[Value]),
+FILTER(Opportunities, Opportunities[Status] = "Won")
+)</code></pre>
+<details>
+<summary>🔌 <strong>Power Query</strong> &mdash; 5 steps</summary>
+<div class="details-body">
+<table>
+<thead><tr><th>#</th><th>Step</th><th>Type</th><th>Foldable</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>Source</code></td><td>source</td><td>✅</td></tr>
+<tr><td>2</td><td><code>OpportunityTbl_Table</code></td><td>navigation</td><td>✅</td></tr>
+<tr><td>3</td><td><code>#"Removed Other Columns"</code></td><td>select_columns</td><td>✅</td></tr>
+<tr><td>4</td><td><code>#"Changed Type"</code></td><td>type_cast</td><td>✅</td></tr>
+<tr><td>5</td><td><code>#"Renamed Columns"</code></td><td>rename</td><td>✅</td></tr>
+</tbody>
+</table>
+<p><strong>Query Folding:</strong> — Excel connector does not support query folding</p>
+<p><strong>Full M Expression:</strong></p>
+<pre><code class="language-m">let
+Source = Excel.Workbook(File.Contents("C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx"), null, true),
+OpportunityTbl_Table = Source{[Item="OpportunityTbl",Kind="Table"]}[Data],
+#"Removed Other Columns" = Table.SelectColumns(OpportunityTbl_Table,{"OpportunitySeq", "CreatedonDate", "DaysToClose", "CloseDate", "SystemUserSeq", "Opportunity Owner Name", "AccountSeq", "ProductSeq", "ProductName", "CampaignSeq", "Campaign Name", "Budget", "Topic", "Purchase Process", "Decision Maker Identified", "Discount", "Value", "PipelineStep", "Probability (raw)", "Probability", "Rating", "Status"}),
+#"Changed Type" = Table.TransformColumnTypes(#"Removed Other Columns",{{"OpportunitySeq", Int64.Type}, {"CreatedonDate", type date}, {"DaysToClose", Int64.Type}, {"CloseDate", type date}, {"SystemUserSeq", type text}, {"Opportunity Owner Name", type text}, {"AccountSeq", Int64.Type}, {"ProductSeq", Int64.Type}, {"ProductName", type text}, {"Budget", Int64.Type}, {"Topic", type text}, {"Purchase Process", type text}, {"Decision Maker Identified", type logical}, {"Discount", type number}, {"Value", Int64.Type}, {"PipelineStep", type text}, {"Probability (raw)", type number}, {"Probability", type number}, {"Rating", type text}, {"Status", type text}}),
+#"Renamed Columns" = Table.RenameColumns(#"Changed Type",{{"CreatedonDate", "Opportunity Created On"}, {"ProductName", "Product Name"}})
+in
+#"Renamed Columns"</code></pre>
+</div>
+</details>
+</div>
+</details>
+</section>
+
+<section id="table-opportunity-calendar">
+<h3 id="table-opportunity-calendar">Table: <code>Opportunity Calendar</code></h3>
+<details>
+<summary>🧮 Calculated (DAX) &middot; 9 cols &mdash; click to expand</summary>
+<div class="details-body">
+<blockquote>🧮 <strong>Calculated table</strong> (DAX)</blockquote>
+<details>
+<summary><strong>Columns (9 visible, 6 hidden &mdash; click to expand)</strong></summary>
+<div class="details-body">
+<table>
+<thead><tr><th>Column</th><th>Type</th><th>Description</th><th>Format</th><th>Hidden</th></tr></thead>
+<tbody>
+<tr><td><code>DaySeq</code></td><td>unknown</td><td></td><td><code>0</code></td><td></td></tr>
+<tr><td><code>YEAR</code></td><td>unknown</td><td></td><td><code>0</code></td><td></td></tr>
+<tr><td><code>MONTH</code></td><td>unknown</td><td></td><td></td><td></td></tr>
+<tr><td><code>YEAR MONTH</code></td><td>unknown</td><td></td><td></td><td></td></tr>
+<tr><td><code>YEAR WEEK</code></td><td>unknown</td><td></td><td></td><td></td></tr>
+<tr><td><code>RELATIVE WEEK</code></td><td>unknown</td><td></td><td></td><td></td></tr>
+<tr><td><code>RELATIVE 07 DAY PERIOD</code></td><td>unknown</td><td></td><td></td><td></td></tr>
+<tr><td><code>RELATIVE 30 DAY PERIOD</code></td><td>unknown</td><td></td><td></td><td></td></tr>
+<tr><td><code>RELATIVE MONTH</code></td><td>unknown</td><td></td><td><code>0</code></td><td></td></tr>
+<tr><td><code>Date</code></td><td>unknown</td><td></td><td><code>Short Date</code></td><td>✗</td></tr>
+<tr><td><code>DAY</code></td><td>unknown</td><td></td><td><code>Short Date</code></td><td>✗</td></tr>
+<tr><td><code>MONTH NUMBER</code></td><td>unknown</td><td></td><td><code>0</code></td><td>✗</td></tr>
+<tr><td><code>YEAR MONTH NUMBER</code></td><td>unknown</td><td></td><td><code>0</code></td><td>✗</td></tr>
+<tr><td><code>WEEK</code></td><td>unknown</td><td></td><td><code>General Date</code></td><td>✗</td></tr>
+<tr><td><code>RELATIVE DAY</code></td><td>unknown</td><td></td><td><code>General Date</code></td><td>✗</td></tr>
+</tbody>
+</table>
+</div>
+</details>
+</div>
+</details>
+</section>
+
+<section id="table-owners">
+<h3 id="table-owners">Table: <code>Owners</code></h3>
+<details>
+<summary>📥 Import &middot; 2 cols &middot; 1 measure &middot; Folding: — N/A &mdash; click to expand</summary>
+<div class="details-body">
+<blockquote>📥 <strong>Excel</strong> (C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx → &lt;File.Contents()&gt;) <em>(parameterized)</em> &middot; Query Folding: — N/A</blockquote>
+<details>
+<summary><strong>Columns (2 visible, 1 hidden &mdash; click to expand)</strong></summary>
+<div class="details-body">
+<table>
+<thead><tr><th>Column</th><th>Type</th><th>Description</th><th>Format</th><th>Hidden</th></tr></thead>
+<tbody>
+<tr><td><code>Sales owner</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Manager</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>SystemUserSeq</code></td><td>int64</td><td></td><td><code>0</code></td><td>✗</td></tr>
+</tbody>
+</table>
+</div>
+</details>
+<h4>Measures</h4>
+<h5><code>Rev Goal</code></h5>
+<p><em>Uses variables · IF logic</em></p>
+<p><strong>Format:</strong> <code>\$#,0.###############;(\$#,0.###############);\$#,0.###############</code></p>
+<pre><code class="language-dax">VAR RevenueInPipeline =
+CALCULATE (
+SUMX ( Opportunities, Opportunities[Value] ),
+FILTER (
+Opportunities,
+Opportunities[Status] = "Open"
+&amp;&amp; VALUE(LEFT(Opportunities[PipelineStep],1)) &gt;=3
+)
+)
+VAR BaseGoal =
+MROUND(([Revenue Won]+ (RevenueInPipeline*.75)),100000)
+RETURN
+IF(BaseGoal &gt; 0, BaseGoal, MROUND(([Revenue Won]+ (RevenueInPipeline*.75)),10000))</code></pre>
+<details>
+<summary>🔌 <strong>Power Query</strong> &mdash; 6 steps</summary>
+<div class="details-body">
+<table>
+<thead><tr><th>#</th><th>Step</th><th>Type</th><th>Foldable</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>Source</code></td><td>source</td><td>✅</td></tr>
+<tr><td>2</td><td><code>OwnerTbl_Table</code></td><td>navigation</td><td>✅</td></tr>
+<tr><td>3</td><td><code>#"Changed Type"</code></td><td>type_cast</td><td>✅</td></tr>
+<tr><td>4</td><td><code>#"Removed Columns"</code></td><td>remove_columns</td><td>✅</td></tr>
+<tr><td>5</td><td><code>#"Changed Type1"</code></td><td>type_cast</td><td>✅</td></tr>
+<tr><td>6</td><td><code>#"Renamed Columns"</code></td><td>rename</td><td>✅</td></tr>
+</tbody>
+</table>
+<p><strong>Query Folding:</strong> — Excel connector does not support query folding</p>
+<p><strong>Full M Expression:</strong></p>
+<pre><code class="language-m">let
+Source = Excel.Workbook(File.Contents("C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx"), null, true),
+OwnerTbl_Table = Source{[Item="OwnerTbl",Kind="Table"]}[Data],
+#"Changed Type" = Table.TransformColumnTypes(OwnerTbl_Table,{{"Owner", type text}, {"Factor", Int64.Type}}),
+#"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Factor"}),
+#"Changed Type1" = Table.TransformColumnTypes(#"Removed Columns",{{"SystemUserSeq", Int64.Type}}),
+#"Renamed Columns" = Table.RenameColumns(#"Changed Type1",{{"Owner", "Sales owner"}})
+in
+#"Renamed Columns"</code></pre>
+</div>
+</details>
+</div>
+</details>
+</section>
+
+<section id="table-products">
+<h3 id="table-products">Table: <code>Products</code></h3>
+<details>
+<summary>📥 Import &middot; 4 cols &middot; Folding: — N/A &mdash; click to expand</summary>
+<div class="details-body">
+<blockquote>📥 <strong>Excel</strong> (C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx → &lt;File.Contents()&gt;) <em>(parameterized)</em> &middot; Query Folding: — N/A</blockquote>
+<details>
+<summary><strong>Columns (4 visible, 1 hidden &mdash; click to expand)</strong></summary>
+<div class="details-body">
+<table>
+<thead><tr><th>Column</th><th>Type</th><th>Description</th><th>Format</th><th>Hidden</th></tr></thead>
+<tbody>
+<tr><td><code>Product category</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>Product</code></td><td>string</td><td></td><td></td><td></td></tr>
+<tr><td><code>MinOppValue</code></td><td>decimal</td><td></td><td><code>\$#,0.###############;(\$#,0.###############);\$#,0.###############</code></td><td></td></tr>
+<tr><td><code>MaxOppValue</code></td><td>decimal</td><td></td><td><code>\$#,0.###############;(\$#,0.###############);\$#,0.###############</code></td><td></td></tr>
+<tr><td><code>ProductSeq</code></td><td>int64</td><td></td><td><code>0</code></td><td>✗</td></tr>
+</tbody>
+</table>
+</div>
+</details>
+<details>
+<summary>🔌 <strong>Power Query</strong> &mdash; 5 steps</summary>
+<div class="details-body">
+<table>
+<thead><tr><th>#</th><th>Step</th><th>Type</th><th>Foldable</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>Source</code></td><td>source</td><td>✅</td></tr>
+<tr><td>2</td><td><code>ProductTbl_Table</code></td><td>navigation</td><td>✅</td></tr>
+<tr><td>3</td><td><code>#"Removed Columns"</code></td><td>remove_columns</td><td>✅</td></tr>
+<tr><td>4</td><td><code>#"Changed Type"</code></td><td>type_cast</td><td>✅</td></tr>
+<tr><td>5</td><td><code>#"Renamed Columns"</code></td><td>rename</td><td>✅</td></tr>
+</tbody>
+</table>
+<p><strong>Query Folding:</strong> — Excel connector does not support query folding</p>
+<p><strong>Full M Expression:</strong></p>
+<pre><code class="language-m">let
+Source = Excel.Workbook(File.Contents("C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx"), null, true),
+ProductTbl_Table = Source{[Item="ProductTbl",Kind="Table"]}[Data],
+#"Removed Columns" = Table.RemoveColumns(ProductTbl_Table,{"Factor"}),
+#"Changed Type" = Table.TransformColumnTypes(#"Removed Columns",{{"ProductSeq", Int64.Type}, {"Product", type text}, {"Product LOB", type text}, {"MinOppValue", Currency.Type}, {"MaxOppValue", Currency.Type}}),
+#"Renamed Columns" = Table.RenameColumns(#"Changed Type",{{"Product LOB", "Product category"}})
+in
+#"Renamed Columns"</code></pre>
+</div>
+</details>
+</div>
+</details>
+</section>
+
+<section id="measures-index-az">
+<h3>Measures Index (A–Z)</h3>
+<details>
+<summary>📋 22 measures &mdash; click to expand</summary>
+<div class="details-body">
+<table>
+<thead><tr><th>Measure</th><th>Table</th><th>Folder</th></tr></thead>
+<tbody>
+<tr><td><code>Case Count</code></td><td><code>Cases</code></td><td></td></tr>
+<tr><td><code>Cases % by Product</code></td><td><code>Cases</code></td><td></td></tr>
+<tr><td><code>Cases % by Subject</code></td><td><code>Cases</code></td><td></td></tr>
+<tr><td><code>Cases MoM%</code></td><td><code>Cases</code></td><td></td></tr>
+<tr><td><code>Close %</code></td><td><code>Opportunities</code></td><td></td></tr>
+<tr><td><code>Count of Lost</code></td><td><code>Opportunities</code></td><td></td></tr>
+<tr><td><code>Count of Won</code></td><td><code>Opportunities</code></td><td></td></tr>
+<tr><td><code>CSAT Impact</code></td><td><code>Cases</code></td><td></td></tr>
+<tr><td><code>CSAT Impact - Agent</code></td><td><code>Cases</code></td><td></td></tr>
+<tr><td><code>CSAT Impact - Products</code></td><td><code>Cases</code></td><td></td></tr>
+<tr><td><code>CSAT Impact - Subject</code></td><td><code>Cases</code></td><td></td></tr>
+<tr><td><code>Escalations</code></td><td><code>Cases</code></td><td></td></tr>
+<tr><td><code>Forecast</code></td><td><code>Opportunities</code></td><td></td></tr>
+<tr><td><code>Forecast %</code></td><td><code>Opportunities</code></td><td></td></tr>
+<tr><td><code>Forecast Adjustment Value</code></td><td><code>Opportunity Forecast Adjustment</code></td><td></td></tr>
+<tr><td><code>Opportunity Count</code></td><td><code>Opportunities</code></td><td></td></tr>
+<tr><td><code>Opportunity Count In Pipeline</code></td><td><code>Opportunities</code></td><td></td></tr>
+<tr><td><code>Rev Goal</code></td><td><code>Owners</code></td><td></td></tr>
+<tr><td><code>Revenue In Pipeline</code></td><td><code>Opportunities</code></td><td></td></tr>
+<tr><td><code>Revenue Open</code></td><td><code>Opportunities</code></td><td></td></tr>
+<tr><td><code>Revenue Won</code></td><td><code>Opportunities</code></td><td></td></tr>
+<tr><td><code>SLA Compliance</code></td><td><code>Cases</code></td><td></td></tr>
+</tbody>
+</table>
+</div>
+</details>
+</section>
+
+</section>
+
+<hr>
+
+<section id="report">
+
+<h2>Report</h2>
+
+<section id="overview">
+<h3>Overview</h3>
+<table>
+<thead><tr><th></th><th></th></tr></thead>
+<tbody>
+<tr><td>Report Format</td><td>pbir</td></tr>
+<tr><td>Total Pages</td><td>3 (hidden: 0)</td></tr>
+<tr><td>Total Visuals</td><td>235 (avg 78.3/page, min 77, max 81)</td></tr>
+<tr><td>Bookmarks</td><td>17</td></tr>
+<tr><td>Report-Level Measures</td><td>0</td></tr>
+<tr><td><strong>Complexity Index</strong></td><td><strong>🟡 48%</strong></td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="visual-types-distribution">
+<h3>Visual Types Distribution</h3>
+<details>
+<summary>📊 10 visual types across 235 visuals &mdash; click to expand</summary>
+<div class="details-body">
+<table>
+<thead><tr><th>Visual Type</th><th>Count</th><th>Percentage</th></tr></thead>
+<tbody>
+<tr><td>actionButton</td><td>193</td><td>82.1%</td></tr>
+<tr><td>unknown</td><td>12</td><td>5.1%</td></tr>
+<tr><td>shape</td><td>9</td><td>3.8%</td></tr>
+<tr><td>textbox</td><td>7</td><td>3.0%</td></tr>
+<tr><td>barChart</td><td>5</td><td>2.1%</td></tr>
+<tr><td>image</td><td>3</td><td>1.3%</td></tr>
+<tr><td>custom</td><td>3</td><td>1.3%</td></tr>
+<tr><td>clusteredBarChart</td><td>1</td><td>0.4%</td></tr>
+<tr><td>slicer</td><td>1</td><td>0.4%</td></tr>
+<tr><td>lineChart</td><td>1</td><td>0.4%</td></tr>
+</tbody>
+</table>
+</div>
+</details>
+</section>
+
+<section id="custom-visuals">
+<h3>Custom Visuals</h3>
+<details>
+<summary>🔌 3 marketplace visuals &mdash; click to expand</summary>
+<div class="details-body">
+<ul>
+<li><code>decompositionTreeVisual</code></li>
+<li><code>keyDriversVisual</code></li>
+<li><code>qnaVisual</code></li>
+</ul>
+</div>
+</details>
+</section>
+
+<section id="bookmarks">
+<h3>Bookmarks</h3>
+<details>
+<summary>🔖 17 bookmarks &mdash; click to expand</summary>
+<div class="details-body">
+<p>Total: 17</p>
+<ul>
+<li>Sales P - Funnel 1</li>
+<li>Key - Discount</li>
+<li>Last 12</li>
+<li>CSAT - KEY - High</li>
+<li>Services - KPI - Tabular</li>
+<li>Services - KPI - Chart</li>
+<li>Sales P - Chart 2</li>
+<li>Sales P - Tabular 2</li>
+<li>Service - SLA - Key Influencers</li>
+<li>Sales P - Chart 1</li>
+<li>CSAT - KEY - Low</li>
+<li>Key - Day to close</li>
+<li>CSAT - KEY - VS</li>
+<li>Services - KPI2 - Chart</li>
+<li>Service - KPI2 - Ribbon</li>
+<li>Last 90</li>
+<li>Service - SLA -PKPI</li>
+</ul>
+</div>
+</details>
+</section>
+
+<section id="advanced-metrics">
+<h3>Advanced Metrics</h3>
+<table>
+<thead><tr><th>Metric</th><th>Value</th></tr></thead>
+<tbody>
+<tr><td>Pages with Drillthrough</td><td>0</td></tr>
+<tr><td>Total Filters</td><td>0</td></tr>
+<tr><td>Visuals with Mobile Layout</td><td>37</td></tr>
+</tbody>
+</table>
+</section>
+
+</section>
+
+<footer>
+<p><em>Generated by <a href="https://github.com/ViciusLio/pbi-semantic-doc">pbi-semantic-doc</a> &middot; 2026-03-16 14:05 UTC</em></p>
+</footer>
+<script>
+function toggleAll(open) {
+    document.querySelectorAll('details').forEach(function(d) { d.open = open; });
+}
+</script>
+</body>
+</html>
