@@ -10,8 +10,13 @@ All notable changes to this project will be documented in this file.
 - **Measures grouped by display folder** (HTML): measures are now rendered in collapsible `<details class="folder-group">` blocks that mirror the Power BI folder hierarchy (`Economics\Baseline`, `Delivery\Actual`, etc.). Multi-level paths create nested groups. Measures without a folder remain flat. The folder badge is suppressed inside a group (already contextual). The Measures Index (A–Z) keeps folder badges for context.
 - New CSS classes `folder-group` and `badge-count` for the folder card style.
 
+### Changed
+- **Measures Index (A–Z) is now conditional**: shown only when measures span **2+ tables**. If a model uses a single dedicated measures table (PBI best practice), the index is suppressed — measures are already shown inline, a duplicate would be noise.
+- **Combined-doc sidebar — collapsible Tables group**: the Tables list in the combined-doc sidebar now uses the same `<details class="nav-details">` toggle as the standalone sidebar. Large models (150+ tables) no longer flood the nav — click **📊 Tables (N)** to expand.
+- Table entries in both sidebars now show measure count badge (`· Nm`).
+
 ### Tests
-- 329 tests — all passing
+- 330 tests — all passing (updated `test_contains_measures_inline`, added `test_measures_index_appears_for_multi_table_model`)
 
 ---
 

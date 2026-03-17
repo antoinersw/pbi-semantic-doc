@@ -91,8 +91,11 @@ class TestHtmlGeneratorModel:
     def test_contains_table_section(self):
         assert "Sales" in self.html
 
-    def test_contains_measures_index(self):
-        assert "measures-index-az" in self.html
+    def test_contains_measures_inline(self):
+        # Single-table model: measures appear inline in the table section,
+        # no separate Measures Index (which is only shown for 2+ tables).
+        assert "Total Sales" in self.html
+        assert "measures-index-az" not in self.html
 
     def test_contains_toc_nav(self):
         assert 'class="sidebar-nav"' in self.html
@@ -113,6 +116,17 @@ class TestHtmlGeneratorModel:
 
     def test_print_media_query(self):
         assert "@media print" in self.html
+
+    def test_measures_index_appears_for_multi_table_model(self):
+        """Measures Index (A-Z) must appear when measures span 2+ tables."""
+        from pbi_semantic_doc.parser import SemanticModel, Table, Column, Measure
+        t1 = Table(name="Sales", columns=[Column(name="ID", data_type="int64")],
+                   measures=[Measure(name="Total Sales", expression="SUM(Sales[Amount])")])
+        t2 = Table(name="Budget", columns=[Column(name="ID", data_type="int64")],
+                   measures=[Measure(name="Total Budget", expression="SUM(Budget[Amount])")])
+        model = SemanticModel(name="MultiModel", tables=[t1, t2])
+        html = HtmlGenerator().generate(model)
+        assert "measures-index-az" in html
 
     def test_table_name_in_code_tag(self):
         assert "<code>Sales</code>" in self.html

@@ -540,15 +540,30 @@ class HtmlGenerator:
                 nav_items.append('<li><a href="#sm-relationships">Relationships</a></li>')
             if model.roles:
                 nav_items.append('<li><a href="#sm-row-level-security">Row Level Security</a></li>')
-            for table in model.visible_tables:
-                raw_anchor = _section_anchor(f"Table: `{table.name}`")
-                anchor = f"sm-{raw_anchor}"
-                icon = _MODE_ICON.get(table.effective_mode, "📋")
+            if model.visible_tables:
+                n_tables = len(model.visible_tables)
+                table_links: list[str] = []
+                for table in model.visible_tables:
+                    raw_anchor = _section_anchor(f"Table: `{table.name}`")
+                    anchor = f"sm-{raw_anchor}"
+                    mode = table.effective_mode
+                    icon = _MODE_ICON.get(mode, "🧮" if mode == "calculated" else "📋")
+                    n_meas = len(table.measures)
+                    meas_note = f" · {n_meas}m" if n_meas else ""
+                    table_links.append(
+                        f'<li><a href="#{_attr(anchor)}" title="{_attr(table.name)}">'
+                        f'{icon} {_e(table.name)}{_e(meas_note)}</a></li>'
+                    )
+                table_list = "\n".join(table_links)
                 nav_items.append(
-                    f'<li><a href="#{_attr(anchor)}" title="{_attr(table.name)}">'
-                    f'{icon} {_e(table.name)}</a></li>'
+                    f'<li class="nav-tables-group">'
+                    f'<details class="nav-details">'
+                    f'<summary class="nav-group-summary">📊 Tables ({n_tables})</summary>'
+                    f'<ul class="nav-sub">{table_list}</ul>'
+                    f'</details></li>'
                 )
-            if model.all_measures:
+            tables_with_measures = [t for t in model.visible_tables if t.measures]
+            if len(tables_with_measures) >= 2:
                 n = len(model.all_measures)
                 nav_items.append(f'<li><a href="#sm-measures-index-az">📋 Measures ({n})</a></li>')
             nav_items.append('</ul></li>')
@@ -643,7 +658,11 @@ class HtmlGenerator:
         for table in model.visible_tables:
             parts.append(self._table_section(table, h))
 
-        if model.all_measures:
+        # Show Measures Index (A-Z) only when measures span 2+ different tables.
+        # If all measures already live in a single table they're shown inline there —
+        # a separate index would just be a duplicate.
+        tables_with_measures = [t for t in model.visible_tables if t.measures]
+        if len(tables_with_measures) >= 2:
             parts.append(self._measures_index(model, h))
 
         return "\n\n".join(parts)
@@ -756,8 +775,9 @@ class HtmlGenerator:
                 f'</details></li>'
             )
 
-        # Measures index
-        if model.all_measures:
+        # Measures index — only when measures span 2+ tables
+        tables_with_measures = [t for t in model.visible_tables if t.measures]
+        if len(tables_with_measures) >= 2:
             n = len(model.all_measures)
             items.append(f'<li><a href="#measures-index-az">📋 Measures Index ({n})</a></li>')
 
