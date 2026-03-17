@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.5.6] — 2026-03-17
+
+### Changed
+- Version bump only — 0.5.5 was already occupied on PyPI.
+
+---
+
 ## [0.5.5] — 2026-03-17
 
 ### Added
