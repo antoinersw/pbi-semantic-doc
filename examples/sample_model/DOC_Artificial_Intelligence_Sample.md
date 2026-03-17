@@ -1,0 +1,872 @@
+# Artificial Intelligence Sample — Semantic Model Documentation
+
+## Contents
+
+- [Overview](#overview)
+- [Data Sources](#data-sources) — 1 connector
+- [Relationships](#relationships) — 12 relationships
+- [Row Level Security](#row-level-security) — 2 roles
+- **Tables**
+  - [Accounts](#table-accounts) — 📥 Import · 18 cols
+  - [Campaigns](#table-campaigns) — 📥 Import · 3 cols
+  - [Case Calendar](#table-case-calendar) — 🧮 Calculated · 14 cols
+  - [Cases](#table-cases) — 📥 Import · 19 cols · 10 measures
+  - [Contacts](#table-contacts) — 📥 Import · 13 cols
+  - [Opportunities](#table-opportunities) — 📥 Import · 19 cols · 10 measures
+  - [Opportunity Calendar](#table-opportunity-calendar) — 🧮 Calculated · 9 cols
+  - [Owners](#table-owners) — 📥 Import · 2 cols · 1 measure
+  - [Products](#table-products) — 📥 Import · 4 cols
+- [Measures Index](#measures-index-az) — 22 measures
+
+## Overview
+
+| | |
+|---|---|
+| Tables | 9 visible, 3 hidden |
+| Columns | 101 visible, 29 hidden |
+| Measures | 22 |
+| Relationships | 12 (2 inactive) |
+| RLS Roles | 2 |
+| **Complexity Index** | **🟢 24%** |
+
+## Data Sources
+
+| Table | Connector | Server / Path | Database | Mode | Steps | Query Folding |
+|-------|-----------|--------------|----------|------|-------|---------------|
+| `Accounts` | Excel | C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx *(param)* | <File.Contents()> | Import | 3 | — N/A |
+| `Campaigns` | Excel | C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx *(param)* | <File.Contents()> | Import | 4 | — N/A |
+| `Case Calendar` | — | — | — | Calculated (DAX) | — | — |
+| `Cases` | Excel | C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx *(param)* | <File.Contents()> | Import | 6 | — N/A |
+| `Contacts` | Excel | C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx *(param)* | <File.Contents()> | Import | 3 | — N/A |
+| `Industries` | Excel | C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx *(param)* | <File.Contents()> | Import | 4 | — N/A |
+| `Opportunities` | Excel | C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx *(param)* | <File.Contents()> | Import | 5 | — N/A |
+| `Opportunity Calendar` | — | — | — | Calculated (DAX) | — | — |
+| `Opportunity Forecast Adjustment` | — | — | — | Calculated (DAX) | — | — |
+| `Owners` | Excel | C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx *(param)* | <File.Contents()> | Import | 6 | — N/A |
+| `Products` | Excel | C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx *(param)* | <File.Contents()> | Import | 5 | — N/A |
+| `Territories` | Excel | C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx *(param)* | <File.Contents()> | Import | 3 | — N/A |
+
+## Relationships
+
+<details>
+<summary>🔗 12 relationships — click to expand</summary>
+
+| From | | To | Cardinality | Cross-filter | Active |
+|---|---|---|---|---|---|
+| `Accounts`['Account Owner] | → | `Owners`['Sales owner] | many-to-one | single | ✅ |
+| `Opportunities`[AccountSeq] | → | `Accounts`[AccountSeq] | many-to-one | single | ✅ |
+| `Cases`[AccountSeq] | → | `Accounts`[AccountSeq] | many-to-one | single | ✅ |
+| `Contacts`[AccountSeq] | → | `Accounts`[AccountSeq] | many-to-one | single | ✅ |
+| `Accounts`[IndustrySeq] | → | `Industries`[IndustrySeq] | many-to-one | single | ✅ |
+| `Opportunities`[ProductSeq] | → | `Products`[ProductSeq] | many-to-one | single | ✅ |
+| `Cases`[ProductSeq] | → | `Products`[ProductSeq] | many-to-one | single | ✅ |
+| `Opportunities`[SystemUserSeq] | → | `Owners`[SystemUserSeq] | many-to-one | single | ⬜ |
+| `Cases`[SystemUserSeq] | → | `Owners`[SystemUserSeq] | many-to-one | single | ⬜ |
+| `Opportunities`[CloseDate] | → | `Opportunity Calendar'`[DAY] | many-to-one | single | ✅ |
+| `Opportunities`[CampaignSeq] | → | `Campaigns`[CampaignSeq] | many-to-one | single | ✅ |
+| `Cases`['Case Created On] | → | `Case Calendar'`[Date] | many-to-one | single | ✅ |
+
+</details>
+
+## Row Level Security
+
+| Role | Permission | Table | Filter |
+|------|-----------|-------|--------|
+| **admin_role** | read | `Owners` | `[Manager] == "Weiler, Anne"` |
+| **user_role** | read | `Owners` | `[Manager] == "Low, Spencer" && [Manager] == "Weiler, Anne"` |
+
+## Table: `Accounts`
+
+<details>
+<summary>📥 Import · 18 cols · Folding: — N/A — click to expand</summary>
+
+> 📥 **Excel** (C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx → <File.Contents()>) *(parameterized)* · Query Folding: — N/A
+
+<details>
+<summary>### Columns (18 visible, 3 hidden — click to expand)</summary>
+
+| Column | Type | Description | Format | Hidden |
+|---|---|---|---|---|
+| `Account Name` | string |  |  | |
+| `Street` | string |  |  | |
+| `City` | string |  |  | |
+| `State or Province` | string |  |  | |
+| `Postal Code` | string |  |  | |
+| `Country` | string |  |  | |
+| `Latitude` | double |  |  | |
+| `Longitude` | double |  |  | |
+| `Phone` | string |  |  | |
+| `Annual Revenue` | int64 |  | `0` | |
+| `Number of Employees` | int64 |  | `0` | |
+| `AccountID` | string |  |  | |
+| `Industry Lookup` | unknown |  |  | |
+| `Territory` | string |  |  | |
+| `Region` | string |  |  | |
+| `AccountOwnerSeq` | int64 |  | `0` | |
+| `Industry` | string |  |  | |
+| `Account Number` | string |  |  | |
+| `Account Owner` | string |  |  | ✗ |
+| `AccountSeq` | int64 |  | `0` | ✗ |
+| `IndustrySeq` | int64 |  | `0` | ✗ |
+
+</details>
+
+<details>
+<summary>🔌 Power Query — 3 steps</summary>
+
+| # | Step | Type | Foldable |
+|---|------|------|----------|
+| 1 | `Source` | source | ✅ |
+| 2 | `AccountTbl_Table` | navigation | ✅ |
+| 3 | `#"Changed Type"` | type_cast | ✅ |
+
+**Query Folding:** — Excel connector does not support query folding
+
+**Full M Expression:**
+
+```m
+let
+Source = Excel.Workbook(File.Contents("C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx"), null, true),
+AccountTbl_Table = Source{[Item="AccountTbl",Kind="Table"]}[Data],
+#"Changed Type" = Table.TransformColumnTypes(AccountTbl_Table,{{"AccountSeq", Int64.Type}, {"AccountID", type text}, {"Account Name", type text}, {"Street", type text}, {"City", type text}, {"State or Province", type any}, {"Postal Code", type text}, {"Country", type text}, {"Latitude", type number}, {"Longitude", type number}, {"Territory", type text}, {"Region", type text}, {"Phone", type text}, {"Number of Employees", Int64.Type}, {"Annual Revenue", Int64.Type}, {"IndustrySeq", Int64.Type}, {"Industry", type text}, {"AccountOwnerSeq", Int64.Type}, {"Account Owner", type text}})
+in
+#"Changed Type"
+```
+
+</details>
+
+</details>
+
+## Table: `Campaigns`
+
+<details>
+<summary>📥 Import · 3 cols · Folding: — N/A — click to expand</summary>
+
+> 📥 **Excel** (C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx → <File.Contents()>) *(parameterized)* · Query Folding: — N/A
+
+<details>
+<summary>### Columns (3 visible, 1 hidden — click to expand)</summary>
+
+| Column | Type | Description | Format | Hidden |
+|---|---|---|---|---|
+| `Type` | string |  |  | |
+| `Campaign Name` | string |  |  | |
+| `Factor` | int64 |  | `0` | |
+| `CampaignSeq` | int64 |  | `0` | ✗ |
+
+</details>
+
+<details>
+<summary>🔌 Power Query — 4 steps</summary>
+
+| # | Step | Type | Foldable |
+|---|------|------|----------|
+| 1 | `Source` | source | ✅ |
+| 2 | `CampaignsTbl_Table` | navigation | ✅ |
+| 3 | `#"Changed Type"` | type_cast | ✅ |
+| 4 | `#"Renamed Columns"` | rename | ✅ |
+
+**Query Folding:** — Excel connector does not support query folding
+
+**Full M Expression:**
+
+```m
+let
+Source = Excel.Workbook(File.Contents("C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx"), null, true),
+CampaignsTbl_Table = Source{[Item="CampaignsTbl",Kind="Table"]}[Data],
+#"Changed Type" = Table.TransformColumnTypes(CampaignsTbl_Table,{{"CampaignSeq", Int64.Type}, {"Type", type text}, {"Name", type text}, {"Factor", Int64.Type}}),
+#"Renamed Columns" = Table.RenameColumns(#"Changed Type",{{"Name", "Campaign Name"}})
+in
+#"Renamed Columns"
+```
+
+</details>
+
+</details>
+
+## Table: `Case Calendar`
+
+<details>
+<summary>🧮 Calculated (DAX) · 14 cols — click to expand</summary>
+
+> 🧮 **Calculated table** (DAX)
+
+<details>
+<summary>### Columns (14 visible, 3 hidden — click to expand)</summary>
+
+| Column | Type | Description | Format | Hidden |
+|---|---|---|---|---|
+| `Date` | unknown |  | `Short Date` | |
+| `DAY` | unknown |  |  | |
+| `DaySeq` | unknown |  | `0` | |
+| `YEAR` | unknown |  | `0` | |
+| `MONTH` | unknown |  |  | |
+| `YEAR MONTH` | unknown |  |  | |
+| `YEAR WEEK` | unknown |  |  | |
+| `WEEK` | unknown |  | `General Date` | |
+| `RELATIVE WEEK` | unknown |  |  | |
+| `RELATIVE DAY` | int64 |  | `0` | |
+| `RELATIVE 07 DAY PERIOD` | unknown |  |  | |
+| `RELATIVE 30 DAY PERIOD` | unknown |  |  | |
+| `RELATIVE MONTH` | unknown |  | `0` | |
+| `Weekday` | unknown |  |  | |
+| `MONTH NUMBER` | unknown |  | `0` | ✗ |
+| `YEAR MONTH NUMBER` | unknown |  | `0` | ✗ |
+| `WeekdaySeq` | unknown |  | `0` | ✗ |
+
+</details>
+
+</details>
+
+## Table: `Cases`
+
+<details>
+<summary>📥 Import · 19 cols · 10 measures · Folding: — N/A — click to expand</summary>
+
+> 📥 **Excel** (C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx → <File.Contents()>) *(parameterized)* · Query Folding: — N/A
+
+<details>
+<summary>### Columns (19 visible, 4 hidden — click to expand)</summary>
+
+| Column | Type | Description | Format | Hidden |
+|---|---|---|---|---|
+| `Status` | string |  |  | |
+| `Agent` | string |  |  | |
+| `Title` | string |  |  | |
+| `Origin` | string |  |  | |
+| `Is Escalated` | boolean |  |  | |
+| `Subject` | string |  |  | |
+| `CSAT Label` | string |  |  | |
+| `Resolution Minutes` | int64 |  | `#,0.0` | |
+| `Severity` | string |  |  | |
+| `Is SLA Violation` | boolean |  |  | |
+| `CSAT` | int64 |  | `0` | |
+| `SLA Compliance Goal` | unknown |  | `0%;-0%;0%` | |
+| `Resolution Minutes Goal` | unknown |  | `0` | |
+| `CSAT Goal` | unknown |  | `0.00` | |
+| `Escalations Goal` | unknown |  | `0%;-0%;0%` | |
+| `Minutes to First Contact` | int64 |  |  | |
+| `Activities` | int64 |  | `0` | |
+| `Topic` | unknown |  |  | |
+| `CaseSeq` | int64 |  | `0` | |
+| `Case Created On` | dateTime |  |  | ✗ |
+| `SystemUserSeq` | int64 |  | `0` | ✗ |
+| `AccountSeq` | int64 |  | `0` | ✗ |
+| `ProductSeq` | int64 |  | `0` | ✗ |
+
+</details>
+
+### Measures
+
+#### `Case Count`
+
+**Format:** `#,0`
+
+```dax
+COUNTROWS('Cases')
+```
+#### `Cases % by Product`
+
+*Uses CALCULATE · Removes filters · Safe division*
+
+**Format:** `0.00%;-0.00%;0.00%`
+
+```dax
+DIVIDE(
+[Case Count],
+CALCULATE(
+[Case Count],All('Products')
+)
+)
+```
+#### `Cases % by Subject`
+
+*Uses CALCULATE · Removes filters · Safe division*
+
+**Format:** `0.0%;-0.0%;0.0%`
+
+```dax
+DIVIDE(
+[Case Count],
+CALCULATE(
+[Case Count],All('Cases'[Subject])
+)
+)
+```
+#### `Cases MoM%`
+
+*Time intelligence · Uses CALCULATE · Uses variables · Safe division*
+
+**Format:** `0.0%;-0.0%;0.0%`
+
+```dax
+VAR __PREV_MONTH = CALCULATE([Case Count], DATEADD('Case Calendar'[Date], -1, MONTH))
+RETURN
+DIVIDE([Case Count] - __PREV_MONTH, __PREV_MONTH)
+```
+#### `CSAT Impact`
+
+*Uses variables · Division (check for zero)*
+
+**Format:** `0.00%;-0.00%;0.00%`
+
+```dax
+VAR FactorAvg =
+AVERAGE ( 'Cases'[CSAT] )
+VAR AllAvg =
+CALCULATE ( AVERAGE ( 'Cases'[CSAT] ), ALL ( 'Cases' ) )
+VAR AllAvgExcept =
+CALCULATE (
+AVERAGE ( 'Cases'[CSAT] ),
+FILTER ( ALL ( 'Cases' ), 'Cases'[Topic] <> SELECTEDVALUE ( 'Cases'[Topic] ) )
+)
+RETURN
+1 - ( AllAvgExcept / AllAvg )
+```
+#### `CSAT Impact - Agent`
+
+*Uses variables · Division (check for zero)*
+
+**Format:** `0.00%;-0.00%;0.00%`
+
+```dax
+VAR FactorAvg =
+AVERAGE ( 'Cases'[CSAT] )
+VAR AllAvg =
+CALCULATE ( AVERAGE ( 'Cases'[CSAT] ), ALL ( 'Cases' ) )
+VAR AllAvgExcept =
+CALCULATE (
+AVERAGE ( 'Cases'[CSAT] ),
+FILTER ( ALL ( 'Cases' ), 'Cases'[Agent] <> SELECTEDVALUE ( 'Cases'[Agent] ) )
+)
+RETURN
+1 - ( AllAvgExcept / AllAvg )
+```
+#### `CSAT Impact - Products`
+
+*Uses variables · Division (check for zero)*
+
+**Format:** `0.00%;-0.00%;0.00%`
+
+```dax
+VAR FactorAvg =
+AVERAGE ( 'Cases'[CSAT] )
+VAR AllAvg =
+CALCULATE ( AVERAGE ( 'Cases'[CSAT] ), ALL ( 'Cases' ) )
+VAR AllAvgExcept =
+CALCULATE (
+AVERAGE ( 'Cases'[CSAT] ),
+FILTER ( ALL ( 'Cases' ), 'Cases'[ProductSeq] <> SELECTEDVALUE ( 'Cases'[ProductSeq] )  )
+)
+RETURN
+1 - ( AllAvgExcept / AllAvg )
+```
+#### `CSAT Impact - Subject`
+
+*Uses variables · Division (check for zero)*
+
+**Format:** `0.00%;-0.00%;0.00%`
+
+```dax
+VAR FactorAvg =
+AVERAGE ( 'Cases'[CSAT] )
+VAR AllAvg =
+CALCULATE ( AVERAGE ( 'Cases'[CSAT] ), ALL ( 'Cases' ) )
+VAR AllAvgExcept =
+CALCULATE (
+AVERAGE ( 'Cases'[CSAT] ),
+FILTER ( ALL ( 'Cases' ), 'Cases'[Subject] <> SELECTEDVALUE ( 'Cases'[Subject] ) )
+)
+RETURN
+1 - ( AllAvgExcept / AllAvg )
+```
+#### `Escalations`
+
+*Uses CALCULATE · Safe division*
+
+**Format:** `#,0%;-#,0%;#,0%`
+
+```dax
+DIVIDE(CALCULATE(COUNTROWS('Cases'),'Cases'[Is Escalated] = TRUE()) , [Case Count],0)
+```
+#### `SLA Compliance`
+
+*Uses CALCULATE · Safe division*
+
+**Format:** `#,0%;-#,0%;#,0%`
+
+```dax
+DIVIDE(CALCULATE(COUNTROWS('Cases'),'Cases'[Is SLA Violation] = FALSE()) , [Case Count],0)
+```
+
+<details>
+<summary>🔌 Power Query — 6 steps</summary>
+
+| # | Step | Type | Foldable |
+|---|------|------|----------|
+| 1 | `Source` | source | ✅ |
+| 2 | `IncidentTbl_Table` | navigation | ✅ |
+| 3 | `#"Removed Other Columns"` | select_columns | ✅ |
+| 4 | `#"Inserted Text Before Delimiter"` | add_column | ❓ |
+| 5 | `#"Changed Type"` | type_cast | ✅ |
+| 6 | `#"Renamed Columns"` | rename | ✅ |
+
+**Query Folding:** — Excel connector does not support query folding
+
+**Full M Expression:**
+
+```m
+let
+Source = Excel.Workbook(File.Contents("C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx"), null, true),
+IncidentTbl_Table = Source{[Item="IncidentTbl",Kind="Table"]}[Data],
+#"Removed Other Columns" = Table.SelectColumns(IncidentTbl_Table,{"IncidentSeq", "CreatedOn", "Resolution Minutes", "Minutes to First Contact", "Activities", "Status", "SystemUserSeq", "Owner", "AccountSeq", "ProductSeq", "Title", "Origin", "Severity", "Is Escalated", "Is SLA Violation", "Subject", "CustomerSatScore"}),
+#"Inserted Text Before Delimiter" = Table.AddColumn(#"Removed Other Columns", "CSAT", each Text.BeforeDelimiter([CustomerSatScore], "-"), type text),
+#"Changed Type" = Table.TransformColumnTypes(#"Inserted Text Before Delimiter",{{"CreatedOn", type date}, {"Resolution Minutes", Int64.Type}, {"Status", type text}, {"Owner", type text}, {"Title", type text}, {"Origin", type text}, {"Severity", type text}, {"Is Escalated", type logical}, {"Is SLA Violation", type logical}, {"Subject", type text}, {"CustomerSatScore", type text}, {"CSAT", Int64.Type}, {"Minutes to First Contact", Int64.Type}, {"Activities", Int64.Type}, {"IncidentSeq", Int64.Type}, {"SystemUserSeq", Int64.Type}, {"AccountSeq", Int64.Type}, {"ProductSeq", Int64.Type}}),
+#"Renamed Columns" = Table.RenameColumns(#"Changed Type",{{"IncidentSeq", "CaseSeq"}, {"CustomerSatScore", "CSAT Label"}, {"CreatedOn", "Case Created On"}, {"Owner", "Agent"}})
+in
+#"Renamed Columns"
+```
+
+</details>
+
+</details>
+
+## Table: `Contacts`
+
+<details>
+<summary>📥 Import · 13 cols · Folding: — N/A — click to expand</summary>
+
+> 📥 **Excel** (C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx → <File.Contents()>) *(parameterized)* · Query Folding: — N/A
+
+<details>
+<summary>### Columns (13 visible, 2 hidden — click to expand)</summary>
+
+| Column | Type | Description | Format | Hidden |
+|---|---|---|---|---|
+| `Contact` | string |  |  | |
+| `Job Title` | string |  |  | |
+| `Street` | string |  |  | |
+| `City` | string |  |  | |
+| `State or Province` | string |  |  | |
+| `Postal Code` | string |  |  | |
+| `Country` | string |  |  | |
+| `Latitude` | double |  |  | |
+| `Longitude` | double |  |  | |
+| `Phone` | string |  |  | |
+| `ContactSeq` | int64 |  | `0` | |
+| `FirstName` | string |  |  | |
+| `LastName` | string |  |  | |
+| `ContactID` | string |  |  | ✗ |
+| `AccountSeq` | int64 |  | `0` | ✗ |
+
+</details>
+
+<details>
+<summary>🔌 Power Query — 3 steps</summary>
+
+| # | Step | Type | Foldable |
+|---|------|------|----------|
+| 1 | `Source` | source | ✅ |
+| 2 | `ContactTbl_Table` | navigation | ✅ |
+| 3 | `#"Changed Type"` | type_cast | ✅ |
+
+**Query Folding:** — Excel connector does not support query folding
+
+**Full M Expression:**
+
+```m
+let
+Source = Excel.Workbook(File.Contents("C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx"), null, true),
+ContactTbl_Table = Source{[Item="ContactTbl",Kind="Table"]}[Data],
+#"Changed Type" = Table.TransformColumnTypes(ContactTbl_Table,{{"ContactID", type text}, {"Contact", type text}, {"Job Title", type text}, {"Street", type text}, {"City", type text}, {"State or Province", type text}, {"Postal Code", type text}, {"Country", type text}, {"Latitude", type number}, {"Longitude", type number}, {"Phone", type text}, {"ContactSeq", Int64.Type}, {"AccountSeq", Int64.Type}})
+in
+#"Changed Type"
+```
+
+</details>
+
+</details>
+
+## Table: `Opportunities`
+
+<details>
+<summary>📥 Import · 19 cols · 10 measures · Folding: — N/A — click to expand</summary>
+
+> 📥 **Excel** (C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx → <File.Contents()>) *(parameterized)* · Query Folding: — N/A
+
+<details>
+<summary>### Columns (19 visible, 6 hidden — click to expand)</summary>
+
+| Column | Type | Description | Format | Hidden |
+|---|---|---|---|---|
+| `Budget` | int64 |  | `\$#,0.###############;(\$#,0.###############);\$#,0.###############` | |
+| `Topic` | string |  |  | |
+| `Purchase Process` | string |  |  | |
+| `Decision Maker Identified` | boolean |  |  | |
+| `Status` | string |  |  | |
+| `PipelineStep` | string |  |  | |
+| `Value` | int64 |  | `\$#,0;(\$#,0);\$#,0` | |
+| `Weeks Open` | unknown |  | `0` | |
+| `DaysToClose` | int64 |  | `0` | |
+| `Discount` | double |  | `0.0%;-0.0%;0.0%` | |
+| `Probability` | double |  | `0.0%;-0.0%;0.0%` | |
+| `Rating` | string |  |  | |
+| `Days Remaining In Pipeline` | unknown |  | `0` | |
+| `Probability (raw)` | double |  | `0.0%;-0.0%;0.0%` | |
+| `Opportunity Owner Name` | string |  |  | |
+| `OpportunitySeq` | int64 |  | `0` | |
+| `Product Name` | string |  |  | |
+| `Campaign Name` | string |  |  | |
+| `Blank` | unknown |  | `0` | |
+| `CloseDate` | dateTime |  | `Short Date` | ✗ |
+| `Opportunity Created On` | dateTime |  | `Long Date` | ✗ |
+| `AccountSeq` | int64 |  | `0` | ✗ |
+| `ProductSeq` | int64 |  | `0` | ✗ |
+| `SystemUserSeq` | string |  |  | ✗ |
+| `CampaignSeq` | string |  |  | ✗ |
+
+</details>
+
+### Measures
+
+#### `Close %`
+
+*Division (check for zero)*
+
+**Format:** `0.0%;-0.0%;0.0%`
+
+```dax
+[Count of Won]/([Count of Won]+[Count of Lost])
+```
+#### `Count of Lost`
+
+*Preserves filters · Row filter*
+
+**Format:** `#,0`
+
+```dax
+COUNTAX(
+FILTER(
+KEEPFILTERS(Opportunities),Opportunities[Status] = "Lost"
+),
+Opportunities[OpportunitySeq]
+)
+```
+#### `Count of Won`
+
+*Preserves filters · Row filter*
+
+**Format:** `#,0`
+
+```dax
+COUNTAX(
+FILTER(
+KEEPFILTERS(Opportunities),Opportunities[Status] = "Won"
+),
+Opportunities[OpportunitySeq]
+)
+```
+#### `Forecast`
+
+**Format:** `\$#,0.###############;(\$#,0.###############);\$#,0.###############`
+
+```dax
+([Revenue Won]+[Revenue In Pipeline])
+```
+#### `Forecast %`
+
+*Division (check for zero)*
+
+**Format:** `#,0%;-#,0%;#,0%`
+
+```dax
+(([Revenue Won]+[Revenue In Pipeline]))/ [Rev Goal]
+```
+#### `Opportunity Count`
+
+**Format:** `#,0`
+
+```dax
+COUNTAX(Opportunities,TRUE())
+```
+#### `Opportunity Count In Pipeline`
+
+*Aggregation: COUNT*
+
+**Format:** `#,0`
+
+```dax
+CALCULATE (
+COUNT( Opportunities[Value] ),
+FILTER (
+Opportunities,
+Opportunities[Status] = "Open"
+--  && Opportunities[PipelineStep] IN { "3-Pipeline", "4-Mandate", "5-Close" }
+)
+)
+```
+#### `Revenue In Pipeline`
+
+*Uses variables · Division (check for zero)*
+
+**Format:** `\$#,0.0;(\$#,0.0);\$#,0.0`
+
+```dax
+VAR Revenue =
+CALCULATE (
+SUMX ( Opportunities, Opportunities[Value] ),
+FILTER (
+Opportunities,
+Opportunities[Status] = "Open"
+&& VALUE(LEFT(Opportunities[PipelineStep],1)) >=2
+)
+)
+RETURN
+Revenue + ( Revenue * ( 'Opportunity Forecast Adjustment'[Forecast Adjustment Value] / 100 ) )
+```
+#### `Revenue Open`
+
+*Iterator: SUMX · Uses CALCULATE · Row filter*
+
+**Format:** `\$#,0.###############;(\$#,0.###############);\$#,0.###############`
+
+```dax
+CALCULATE(
+SUMX(Opportunities, Opportunities[Value]),
+FILTER(Opportunities, Opportunities[Status] = "Open")
+)
+```
+#### `Revenue Won`
+
+*Iterator: SUMX · Uses CALCULATE · Row filter*
+
+**Format:** `\$#,0.0;(\$#,0.0);\$#,0.0`
+
+```dax
+CALCULATE(
+SUMX(Opportunities, Opportunities[Value]),
+FILTER(Opportunities, Opportunities[Status] = "Won")
+)
+```
+
+<details>
+<summary>🔌 Power Query — 5 steps</summary>
+
+| # | Step | Type | Foldable |
+|---|------|------|----------|
+| 1 | `Source` | source | ✅ |
+| 2 | `OpportunityTbl_Table` | navigation | ✅ |
+| 3 | `#"Removed Other Columns"` | select_columns | ✅ |
+| 4 | `#"Changed Type"` | type_cast | ✅ |
+| 5 | `#"Renamed Columns"` | rename | ✅ |
+
+**Query Folding:** — Excel connector does not support query folding
+
+**Full M Expression:**
+
+```m
+let
+Source = Excel.Workbook(File.Contents("C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx"), null, true),
+OpportunityTbl_Table = Source{[Item="OpportunityTbl",Kind="Table"]}[Data],
+#"Removed Other Columns" = Table.SelectColumns(OpportunityTbl_Table,{"OpportunitySeq", "CreatedonDate", "DaysToClose", "CloseDate", "SystemUserSeq", "Opportunity Owner Name", "AccountSeq", "ProductSeq", "ProductName", "CampaignSeq", "Campaign Name", "Budget", "Topic", "Purchase Process", "Decision Maker Identified", "Discount", "Value", "PipelineStep", "Probability (raw)", "Probability", "Rating", "Status"}),
+#"Changed Type" = Table.TransformColumnTypes(#"Removed Other Columns",{{"OpportunitySeq", Int64.Type}, {"CreatedonDate", type date}, {"DaysToClose", Int64.Type}, {"CloseDate", type date}, {"SystemUserSeq", type text}, {"Opportunity Owner Name", type text}, {"AccountSeq", Int64.Type}, {"ProductSeq", Int64.Type}, {"ProductName", type text}, {"Budget", Int64.Type}, {"Topic", type text}, {"Purchase Process", type text}, {"Decision Maker Identified", type logical}, {"Discount", type number}, {"Value", Int64.Type}, {"PipelineStep", type text}, {"Probability (raw)", type number}, {"Probability", type number}, {"Rating", type text}, {"Status", type text}}),
+#"Renamed Columns" = Table.RenameColumns(#"Changed Type",{{"CreatedonDate", "Opportunity Created On"}, {"ProductName", "Product Name"}})
+in
+#"Renamed Columns"
+```
+
+</details>
+
+</details>
+
+## Table: `Opportunity Calendar`
+
+<details>
+<summary>🧮 Calculated (DAX) · 9 cols — click to expand</summary>
+
+> 🧮 **Calculated table** (DAX)
+
+<details>
+<summary>### Columns (9 visible, 6 hidden — click to expand)</summary>
+
+| Column | Type | Description | Format | Hidden |
+|---|---|---|---|---|
+| `DaySeq` | unknown |  | `0` | |
+| `YEAR` | unknown |  | `0` | |
+| `MONTH` | unknown |  |  | |
+| `YEAR MONTH` | unknown |  |  | |
+| `YEAR WEEK` | unknown |  |  | |
+| `RELATIVE WEEK` | unknown |  |  | |
+| `RELATIVE 07 DAY PERIOD` | unknown |  |  | |
+| `RELATIVE 30 DAY PERIOD` | unknown |  |  | |
+| `RELATIVE MONTH` | unknown |  | `0` | |
+| `Date` | unknown |  | `Short Date` | ✗ |
+| `DAY` | unknown |  | `Short Date` | ✗ |
+| `MONTH NUMBER` | unknown |  | `0` | ✗ |
+| `YEAR MONTH NUMBER` | unknown |  | `0` | ✗ |
+| `WEEK` | unknown |  | `General Date` | ✗ |
+| `RELATIVE DAY` | unknown |  | `General Date` | ✗ |
+
+</details>
+
+</details>
+
+## Table: `Owners`
+
+<details>
+<summary>📥 Import · 2 cols · 1 measure · Folding: — N/A — click to expand</summary>
+
+> 📥 **Excel** (C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx → <File.Contents()>) *(parameterized)* · Query Folding: — N/A
+
+<details>
+<summary>### Columns (2 visible, 1 hidden — click to expand)</summary>
+
+| Column | Type | Description | Format | Hidden |
+|---|---|---|---|---|
+| `Sales owner` | string |  |  | |
+| `Manager` | string |  |  | |
+| `SystemUserSeq` | int64 |  | `0` | ✗ |
+
+</details>
+
+### Measures
+
+#### `Rev Goal`
+
+*Uses variables · IF logic*
+
+**Format:** `\$#,0.###############;(\$#,0.###############);\$#,0.###############`
+
+```dax
+VAR RevenueInPipeline =
+CALCULATE (
+SUMX ( Opportunities, Opportunities[Value] ),
+FILTER (
+Opportunities,
+Opportunities[Status] = "Open"
+&& VALUE(LEFT(Opportunities[PipelineStep],1)) >=3
+)
+)
+VAR BaseGoal =
+MROUND(([Revenue Won]+ (RevenueInPipeline*.75)),100000)
+RETURN
+IF(BaseGoal > 0, BaseGoal, MROUND(([Revenue Won]+ (RevenueInPipeline*.75)),10000))
+```
+
+<details>
+<summary>🔌 Power Query — 6 steps</summary>
+
+| # | Step | Type | Foldable |
+|---|------|------|----------|
+| 1 | `Source` | source | ✅ |
+| 2 | `OwnerTbl_Table` | navigation | ✅ |
+| 3 | `#"Changed Type"` | type_cast | ✅ |
+| 4 | `#"Removed Columns"` | remove_columns | ✅ |
+| 5 | `#"Changed Type1"` | type_cast | ✅ |
+| 6 | `#"Renamed Columns"` | rename | ✅ |
+
+**Query Folding:** — Excel connector does not support query folding
+
+**Full M Expression:**
+
+```m
+let
+Source = Excel.Workbook(File.Contents("C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx"), null, true),
+OwnerTbl_Table = Source{[Item="OwnerTbl",Kind="Table"]}[Data],
+#"Changed Type" = Table.TransformColumnTypes(OwnerTbl_Table,{{"Owner", type text}, {"Factor", Int64.Type}}),
+#"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Factor"}),
+#"Changed Type1" = Table.TransformColumnTypes(#"Removed Columns",{{"SystemUserSeq", Int64.Type}}),
+#"Renamed Columns" = Table.RenameColumns(#"Changed Type1",{{"Owner", "Sales owner"}})
+in
+#"Renamed Columns"
+```
+
+</details>
+
+</details>
+
+## Table: `Products`
+
+<details>
+<summary>📥 Import · 4 cols · Folding: — N/A — click to expand</summary>
+
+> 📥 **Excel** (C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx → <File.Contents()>) *(parameterized)* · Query Folding: — N/A
+
+<details>
+<summary>### Columns (4 visible, 1 hidden — click to expand)</summary>
+
+| Column | Type | Description | Format | Hidden |
+|---|---|---|---|---|
+| `Product category` | string |  |  | |
+| `Product` | string |  |  | |
+| `MinOppValue` | decimal |  | `\$#,0.###############;(\$#,0.###############);\$#,0.###############` | |
+| `MaxOppValue` | decimal |  | `\$#,0.###############;(\$#,0.###############);\$#,0.###############` | |
+| `ProductSeq` | int64 |  | `0` | ✗ |
+
+</details>
+
+<details>
+<summary>🔌 Power Query — 5 steps</summary>
+
+| # | Step | Type | Foldable |
+|---|------|------|----------|
+| 1 | `Source` | source | ✅ |
+| 2 | `ProductTbl_Table` | navigation | ✅ |
+| 3 | `#"Removed Columns"` | remove_columns | ✅ |
+| 4 | `#"Changed Type"` | type_cast | ✅ |
+| 5 | `#"Renamed Columns"` | rename | ✅ |
+
+**Query Folding:** — Excel connector does not support query folding
+
+**Full M Expression:**
+
+```m
+let
+Source = Excel.Workbook(File.Contents("C:\Users\misewell\OneDrive - Microsoft\Documents\GitHub\ContosoBI\Contoso - Generic\Contoso - PowerBI Source Data.xlsx"), null, true),
+ProductTbl_Table = Source{[Item="ProductTbl",Kind="Table"]}[Data],
+#"Removed Columns" = Table.RemoveColumns(ProductTbl_Table,{"Factor"}),
+#"Changed Type" = Table.TransformColumnTypes(#"Removed Columns",{{"ProductSeq", Int64.Type}, {"Product", type text}, {"Product LOB", type text}, {"MinOppValue", Currency.Type}, {"MaxOppValue", Currency.Type}}),
+#"Renamed Columns" = Table.RenameColumns(#"Changed Type",{{"Product LOB", "Product category"}})
+in
+#"Renamed Columns"
+```
+
+</details>
+
+</details>
+
+## Measures Index (A–Z)
+
+<details>
+<summary>📋 22 measures — click to expand</summary>
+
+| Measure | Table | Folder |
+|---|---|---|
+| `Case Count` | `Cases` |  |
+| `Cases % by Product` | `Cases` |  |
+| `Cases % by Subject` | `Cases` |  |
+| `Cases MoM%` | `Cases` |  |
+| `Close %` | `Opportunities` |  |
+| `Count of Lost` | `Opportunities` |  |
+| `Count of Won` | `Opportunities` |  |
+| `CSAT Impact` | `Cases` |  |
+| `CSAT Impact - Agent` | `Cases` |  |
+| `CSAT Impact - Products` | `Cases` |  |
+| `CSAT Impact - Subject` | `Cases` |  |
+| `Escalations` | `Cases` |  |
+| `Forecast` | `Opportunities` |  |
+| `Forecast %` | `Opportunities` |  |
+| `Forecast Adjustment Value` | `Opportunity Forecast Adjustment` |  |
+| `Opportunity Count` | `Opportunities` |  |
+| `Opportunity Count In Pipeline` | `Opportunities` |  |
+| `Rev Goal` | `Owners` |  |
+| `Revenue In Pipeline` | `Opportunities` |  |
+| `Revenue Open` | `Opportunities` |  |
+| `Revenue Won` | `Opportunities` |  |
+| `SLA Compliance` | `Cases` |  |
+
+</details>
+
+---
+
+*Generated by [pbi-semantic-doc](https://github.com/ViciusLio/pbi-semantic-doc) · 2026-03-17 23:00 UTC*
