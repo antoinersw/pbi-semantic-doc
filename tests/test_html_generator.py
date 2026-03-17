@@ -91,11 +91,11 @@ class TestHtmlGeneratorModel:
     def test_contains_table_section(self):
         assert "Sales" in self.html
 
-    def test_contains_measures_inline(self):
-        # Single-table model: measures appear inline in the table section,
-        # no separate Measures Index (which is only shown for 2+ tables).
+    def test_contains_measures_index(self):
+        # Measures Index always shown when model has any measures —
+        # even single-table models benefit from the A-Z navigation hub.
+        assert "measures-index-az" in self.html
         assert "Total Sales" in self.html
-        assert "measures-index-az" not in self.html
 
     def test_contains_toc_nav(self):
         assert 'class="sidebar-nav"' in self.html

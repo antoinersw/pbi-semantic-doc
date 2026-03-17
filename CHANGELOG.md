@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.5.9] — 2026-03-17
+
+### Fixed
+- **Measures Index restored for all models**: the A–Z index section and its sidebar link are now always shown when a model has any measures. The previous "2+ tables" restriction (v0.5.5) was too aggressive — for models with 100+ measures in a single dedicated table (e.g. `Misure`) the index is the primary navigation tool. Inline measures inside the table card are still shown; the index is an additional alphabetical hub.
+
+### Tests
+- 330 tests — all passing
+
+---
+
 ## [0.5.8] — 2026-03-17
 
 ### Changed

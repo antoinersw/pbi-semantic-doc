@@ -698,8 +698,7 @@ class HtmlGenerator:
                     f'<ul class="nav-sub">{table_list}</ul>'
                     f'</details></li>'
                 )
-            tables_with_measures = [t for t in model.visible_tables if t.measures]
-            if len(tables_with_measures) >= 2:
+            if model.all_measures:
                 n = len(model.all_measures)
                 nav_items.append(f'<li><a href="#sm-measures-index-az">📋 Measures ({n})</a></li>')
             nav_items.append('</ul></li>')
@@ -790,10 +789,11 @@ class HtmlGenerator:
             parts.append(self._table_section(table, h))
 
         # Show Measures Index (A-Z) only when measures span 2+ different tables.
-        # If all measures already live in a single table they're shown inline there —
-        # a separate index would just be a duplicate.
-        tables_with_measures = [t for t in model.visible_tables if t.measures]
-        if len(tables_with_measures) >= 2:
+        # Always show Measures Index when the model has any measures.
+        # Even for single-table models (e.g. a dedicated "Misure" table) the A–Z
+        # index is a useful navigation hub — 101 measures in one section are much
+        # easier to browse alphabetically than scrolling through a table card.
+        if model.all_measures:
             parts.append(self._measures_index(model, h))
 
         return "\n\n".join(parts)
@@ -906,9 +906,8 @@ class HtmlGenerator:
                 f'</details></li>'
             )
 
-        # Measures index — only when measures span 2+ tables
-        tables_with_measures = [t for t in model.visible_tables if t.measures]
-        if len(tables_with_measures) >= 2:
+        # Measures index — always show when model has measures
+        if model.all_measures:
             n = len(model.all_measures)
             items.append(f'<li><a href="#measures-index-az">📋 Measures Index ({n})</a></li>')
 
