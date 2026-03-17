@@ -1,4 +1,18 @@
-# Artificial Intelligence Sample — Semantic Model Documentation
+# DOC — Artificial Intelligence Sample
+
+> Combined Power BI project documentation &middot; Generated 2026-03-18
+
+---
+
+## Contents
+
+- [Semantic Model](#semantic-model) — 9 tables, 21 measures, 12 relationships
+- [Report](#report) — 3 pages, 235 visuals
+
+
+---
+
+## Semantic Model
 
 ## Contents
 
@@ -265,6 +279,17 @@ in
 ```dax
 COUNTROWS('Cases')
 ```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Cases`
+
+✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Campaigns`, `Case Calendar`, `Contacts`, `Opportunities`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
 #### `Cases % by Product`
 
 *Uses CALCULATE · Removes filters · Safe division*
@@ -279,6 +304,21 @@ CALCULATE(
 )
 )
 ```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Cases`
+
+🔗 **Depends on:** `[Case Count]`
+
+⚠️ **Filter removed (ALL/ALLEXCEPT):** `Products`
+
+✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Campaigns`, `Case Calendar`, `Contacts`, `Opportunities`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
 #### `Cases % by Subject`
 
 *Uses CALCULATE · Removes filters · Safe division*
@@ -293,6 +333,21 @@ CALCULATE(
 )
 )
 ```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Cases`
+
+🔗 **Depends on:** `[Case Count]`
+
+⚠️ **Filter removed (ALL/ALLEXCEPT):** `Cases`
+
+✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Campaigns`, `Case Calendar`, `Contacts`, `Opportunities`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
 #### `Cases MoM%`
 
 *Time intelligence · Uses CALCULATE · Uses variables · Safe division*
@@ -304,6 +359,21 @@ VAR __PREV_MONTH = CALCULATE([Case Count], DATEADD('Case Calendar'[Date], -1, MO
 RETURN
 DIVIDE([Case Count] - __PREV_MONTH, __PREV_MONTH)
 ```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Cases`
+
+🔗 **Depends on:** `[Case Count]`
+
+✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Campaigns`, `Case Calendar`, `Contacts`, `Opportunities`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+🏷️ **Flags:** ⏱️ Time intelligence
+
+</details>
 #### `CSAT Impact`
 
 *Uses variables · Division (check for zero)*
@@ -323,6 +393,19 @@ FILTER ( ALL ( 'Cases' ), 'Cases'[Topic] <> SELECTEDVALUE ( 'Cases'[Topic] ) )
 RETURN
 1 - ( AllAvgExcept / AllAvg )
 ```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Cases`
+
+⚠️ **Filter removed (ALL/ALLEXCEPT):** `Cases`
+
+✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Campaigns`, `Case Calendar`, `Contacts`, `Opportunities`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
 #### `CSAT Impact - Agent`
 
 *Uses variables · Division (check for zero)*
@@ -342,6 +425,19 @@ FILTER ( ALL ( 'Cases' ), 'Cases'[Agent] <> SELECTEDVALUE ( 'Cases'[Agent] ) )
 RETURN
 1 - ( AllAvgExcept / AllAvg )
 ```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Cases`
+
+⚠️ **Filter removed (ALL/ALLEXCEPT):** `Cases`
+
+✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Campaigns`, `Case Calendar`, `Contacts`, `Opportunities`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
 #### `CSAT Impact - Products`
 
 *Uses variables · Division (check for zero)*
@@ -361,6 +457,19 @@ FILTER ( ALL ( 'Cases' ), 'Cases'[ProductSeq] <> SELECTEDVALUE ( 'Cases'[Product
 RETURN
 1 - ( AllAvgExcept / AllAvg )
 ```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Cases`
+
+⚠️ **Filter removed (ALL/ALLEXCEPT):** `Cases`
+
+✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Campaigns`, `Case Calendar`, `Contacts`, `Opportunities`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
 #### `CSAT Impact - Subject`
 
 *Uses variables · Division (check for zero)*
@@ -380,6 +489,19 @@ FILTER ( ALL ( 'Cases' ), 'Cases'[Subject] <> SELECTEDVALUE ( 'Cases'[Subject] )
 RETURN
 1 - ( AllAvgExcept / AllAvg )
 ```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Cases`
+
+⚠️ **Filter removed (ALL/ALLEXCEPT):** `Cases`
+
+✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Campaigns`, `Case Calendar`, `Contacts`, `Opportunities`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
 #### `Escalations`
 
 *Uses CALCULATE · Safe division*
@@ -389,6 +511,19 @@ RETURN
 ```dax
 DIVIDE(CALCULATE(COUNTROWS('Cases'),'Cases'[Is Escalated] = TRUE()) , [Case Count],0)
 ```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Cases`
+
+🔗 **Depends on:** `[Case Count]`
+
+✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Campaigns`, `Case Calendar`, `Contacts`, `Opportunities`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
 #### `SLA Compliance`
 
 *Uses CALCULATE · Safe division*
@@ -398,6 +533,19 @@ DIVIDE(CALCULATE(COUNTROWS('Cases'),'Cases'[Is Escalated] = TRUE()) , [Case Coun
 ```dax
 DIVIDE(CALCULATE(COUNTROWS('Cases'),'Cases'[Is SLA Violation] = FALSE()) , [Case Count],0)
 ```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Cases`
+
+🔗 **Depends on:** `[Case Count]`
+
+✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Campaigns`, `Case Calendar`, `Contacts`, `Opportunities`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
 
 <details>
 <summary>🔌 Power Query — 6 steps</summary>
@@ -538,6 +686,19 @@ in
 ```dax
 [Count of Won]/([Count of Won]+[Count of Lost])
 ```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+🔗 **Depends on:** `[Count of Won]`, `[Count of Lost]`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
 #### `Count of Lost`
 
 *Preserves filters · Row filter*
@@ -552,6 +713,17 @@ KEEPFILTERS(Opportunities),Opportunities[Status] = "Lost"
 Opportunities[OpportunitySeq]
 )
 ```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
 #### `Count of Won`
 
 *Preserves filters · Row filter*
@@ -566,6 +738,17 @@ KEEPFILTERS(Opportunities),Opportunities[Status] = "Won"
 Opportunities[OpportunitySeq]
 )
 ```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
 #### `Forecast`
 
 **Format:** `\$#,0.###############;(\$#,0.###############);\$#,0.###############`
@@ -573,6 +756,19 @@ Opportunities[OpportunitySeq]
 ```dax
 ([Revenue Won]+[Revenue In Pipeline])
 ```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+🔗 **Depends on:** `[Revenue Won]`, `[Revenue In Pipeline]`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
 #### `Forecast %`
 
 *Division (check for zero)*
@@ -582,6 +778,19 @@ Opportunities[OpportunitySeq]
 ```dax
 (([Revenue Won]+[Revenue In Pipeline]))/ [Rev Goal]
 ```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+🔗 **Depends on:** `[Revenue Won]`, `[Revenue In Pipeline]`, `[Rev Goal]`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
 #### `Opportunity Count`
 
 **Format:** `#,0`
@@ -589,6 +798,17 @@ Opportunities[OpportunitySeq]
 ```dax
 COUNTAX(Opportunities,TRUE())
 ```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
 #### `Opportunity Count In Pipeline`
 
 *Aggregation: COUNT*
@@ -605,6 +825,17 @@ Opportunities[Status] = "Open"
 )
 )
 ```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
 #### `Revenue In Pipeline`
 
 *Uses variables · Division (check for zero)*
@@ -624,6 +855,17 @@ Opportunities[Status] = "Open"
 RETURN
 Revenue + ( Revenue * ( 'Opportunity Forecast Adjustment'[Forecast Adjustment Value] / 100 ) )
 ```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
 #### `Revenue Open`
 
 *Iterator: SUMX · Uses CALCULATE · Row filter*
@@ -636,6 +878,17 @@ SUMX(Opportunities, Opportunities[Value]),
 FILTER(Opportunities, Opportunities[Status] = "Open")
 )
 ```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
 #### `Revenue Won`
 
 *Iterator: SUMX · Uses CALCULATE · Row filter*
@@ -648,6 +901,17 @@ SUMX(Opportunities, Opportunities[Value]),
 FILTER(Opportunities, Opportunities[Status] = "Won")
 )
 ```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
 
 <details>
 <summary>🔌 Power Query — 5 steps</summary>
@@ -754,6 +1018,19 @@ IF(BaseGoal > 0, BaseGoal, MROUND(([Revenue Won]+ (RevenueInPipeline*.75)),10000
 ```
 
 <details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+🔗 **Depends on:** `[Revenue Won]`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
+
+<details>
 <summary>🔌 Power Query — 6 steps</summary>
 
 | # | Step | Type | Foldable |
@@ -840,33 +1117,724 @@ in
 <details>
 <summary>📋 22 measures — click to expand</summary>
 
-| Measure | Table | Folder |
-|---|---|---|
-| `Case Count` | `Cases` |  |
-| `Cases % by Product` | `Cases` |  |
-| `Cases % by Subject` | `Cases` |  |
-| `Cases MoM%` | `Cases` |  |
-| `Close %` | `Opportunities` |  |
-| `Count of Lost` | `Opportunities` |  |
-| `Count of Won` | `Opportunities` |  |
-| `CSAT Impact` | `Cases` |  |
-| `CSAT Impact - Agent` | `Cases` |  |
-| `CSAT Impact - Products` | `Cases` |  |
-| `CSAT Impact - Subject` | `Cases` |  |
-| `Escalations` | `Cases` |  |
-| `Forecast` | `Opportunities` |  |
-| `Forecast %` | `Opportunities` |  |
-| `Forecast Adjustment Value` | `Opportunity Forecast Adjustment` |  |
-| `Opportunity Count` | `Opportunities` |  |
-| `Opportunity Count In Pipeline` | `Opportunities` |  |
-| `Rev Goal` | `Owners` |  |
-| `Revenue In Pipeline` | `Opportunities` |  |
-| `Revenue Open` | `Opportunities` |  |
-| `Revenue Won` | `Opportunities` |  |
-| `SLA Compliance` | `Cases` |  |
+#### `Case Count` · 📋 `Cases`
+
+**Format:** `#,0`
+
+```dax
+COUNTROWS('Cases')
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Cases`
+
+✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Campaigns`, `Case Calendar`, `Contacts`, `Opportunities`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
 
 </details>
 
 ---
 
-*Generated by [pbi-semantic-doc](https://github.com/ViciusLio/pbi-semantic-doc) · 2026-03-17 23:00 UTC*
+#### `Cases % by Product` · 📋 `Cases`
+
+*Uses CALCULATE · Removes filters · Safe division*
+
+**Format:** `0.00%;-0.00%;0.00%`
+
+```dax
+DIVIDE(
+[Case Count],
+CALCULATE(
+[Case Count],All('Products')
+)
+)
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Cases`
+
+🔗 **Depends on:** `[Case Count]`
+
+⚠️ **Filter removed (ALL/ALLEXCEPT):** `Products`
+
+✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Campaigns`, `Case Calendar`, `Contacts`, `Opportunities`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
+
+---
+
+#### `Cases % by Subject` · 📋 `Cases`
+
+*Uses CALCULATE · Removes filters · Safe division*
+
+**Format:** `0.0%;-0.0%;0.0%`
+
+```dax
+DIVIDE(
+[Case Count],
+CALCULATE(
+[Case Count],All('Cases'[Subject])
+)
+)
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Cases`
+
+🔗 **Depends on:** `[Case Count]`
+
+⚠️ **Filter removed (ALL/ALLEXCEPT):** `Cases`
+
+✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Campaigns`, `Case Calendar`, `Contacts`, `Opportunities`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
+
+---
+
+#### `Cases MoM%` · 📋 `Cases`
+
+*Time intelligence · Uses CALCULATE · Uses variables · Safe division*
+
+**Format:** `0.0%;-0.0%;0.0%`
+
+```dax
+VAR __PREV_MONTH = CALCULATE([Case Count], DATEADD('Case Calendar'[Date], -1, MONTH))
+RETURN
+DIVIDE([Case Count] - __PREV_MONTH, __PREV_MONTH)
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Cases`
+
+🔗 **Depends on:** `[Case Count]`
+
+✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Campaigns`, `Case Calendar`, `Contacts`, `Opportunities`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+🏷️ **Flags:** ⏱️ Time intelligence
+
+</details>
+
+---
+
+#### `Close %` · 📋 `Opportunities`
+
+*Division (check for zero)*
+
+**Format:** `0.0%;-0.0%;0.0%`
+
+```dax
+[Count of Won]/([Count of Won]+[Count of Lost])
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+🔗 **Depends on:** `[Count of Won]`, `[Count of Lost]`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
+
+---
+
+#### `Count of Lost` · 📋 `Opportunities`
+
+*Preserves filters · Row filter*
+
+**Format:** `#,0`
+
+```dax
+COUNTAX(
+FILTER(
+KEEPFILTERS(Opportunities),Opportunities[Status] = "Lost"
+),
+Opportunities[OpportunitySeq]
+)
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
+
+---
+
+#### `Count of Won` · 📋 `Opportunities`
+
+*Preserves filters · Row filter*
+
+**Format:** `#,0`
+
+```dax
+COUNTAX(
+FILTER(
+KEEPFILTERS(Opportunities),Opportunities[Status] = "Won"
+),
+Opportunities[OpportunitySeq]
+)
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
+
+---
+
+#### `CSAT Impact` · 📋 `Cases`
+
+*Uses variables · Division (check for zero)*
+
+**Format:** `0.00%;-0.00%;0.00%`
+
+```dax
+VAR FactorAvg =
+AVERAGE ( 'Cases'[CSAT] )
+VAR AllAvg =
+CALCULATE ( AVERAGE ( 'Cases'[CSAT] ), ALL ( 'Cases' ) )
+VAR AllAvgExcept =
+CALCULATE (
+AVERAGE ( 'Cases'[CSAT] ),
+FILTER ( ALL ( 'Cases' ), 'Cases'[Topic] <> SELECTEDVALUE ( 'Cases'[Topic] ) )
+)
+RETURN
+1 - ( AllAvgExcept / AllAvg )
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Cases`
+
+⚠️ **Filter removed (ALL/ALLEXCEPT):** `Cases`
+
+✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Campaigns`, `Case Calendar`, `Contacts`, `Opportunities`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
+
+---
+
+#### `CSAT Impact - Agent` · 📋 `Cases`
+
+*Uses variables · Division (check for zero)*
+
+**Format:** `0.00%;-0.00%;0.00%`
+
+```dax
+VAR FactorAvg =
+AVERAGE ( 'Cases'[CSAT] )
+VAR AllAvg =
+CALCULATE ( AVERAGE ( 'Cases'[CSAT] ), ALL ( 'Cases' ) )
+VAR AllAvgExcept =
+CALCULATE (
+AVERAGE ( 'Cases'[CSAT] ),
+FILTER ( ALL ( 'Cases' ), 'Cases'[Agent] <> SELECTEDVALUE ( 'Cases'[Agent] ) )
+)
+RETURN
+1 - ( AllAvgExcept / AllAvg )
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Cases`
+
+⚠️ **Filter removed (ALL/ALLEXCEPT):** `Cases`
+
+✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Campaigns`, `Case Calendar`, `Contacts`, `Opportunities`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
+
+---
+
+#### `CSAT Impact - Products` · 📋 `Cases`
+
+*Uses variables · Division (check for zero)*
+
+**Format:** `0.00%;-0.00%;0.00%`
+
+```dax
+VAR FactorAvg =
+AVERAGE ( 'Cases'[CSAT] )
+VAR AllAvg =
+CALCULATE ( AVERAGE ( 'Cases'[CSAT] ), ALL ( 'Cases' ) )
+VAR AllAvgExcept =
+CALCULATE (
+AVERAGE ( 'Cases'[CSAT] ),
+FILTER ( ALL ( 'Cases' ), 'Cases'[ProductSeq] <> SELECTEDVALUE ( 'Cases'[ProductSeq] )  )
+)
+RETURN
+1 - ( AllAvgExcept / AllAvg )
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Cases`
+
+⚠️ **Filter removed (ALL/ALLEXCEPT):** `Cases`
+
+✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Campaigns`, `Case Calendar`, `Contacts`, `Opportunities`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
+
+---
+
+#### `CSAT Impact - Subject` · 📋 `Cases`
+
+*Uses variables · Division (check for zero)*
+
+**Format:** `0.00%;-0.00%;0.00%`
+
+```dax
+VAR FactorAvg =
+AVERAGE ( 'Cases'[CSAT] )
+VAR AllAvg =
+CALCULATE ( AVERAGE ( 'Cases'[CSAT] ), ALL ( 'Cases' ) )
+VAR AllAvgExcept =
+CALCULATE (
+AVERAGE ( 'Cases'[CSAT] ),
+FILTER ( ALL ( 'Cases' ), 'Cases'[Subject] <> SELECTEDVALUE ( 'Cases'[Subject] ) )
+)
+RETURN
+1 - ( AllAvgExcept / AllAvg )
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Cases`
+
+⚠️ **Filter removed (ALL/ALLEXCEPT):** `Cases`
+
+✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Campaigns`, `Case Calendar`, `Contacts`, `Opportunities`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
+
+---
+
+#### `Escalations` · 📋 `Cases`
+
+*Uses CALCULATE · Safe division*
+
+**Format:** `#,0%;-#,0%;#,0%`
+
+```dax
+DIVIDE(CALCULATE(COUNTROWS('Cases'),'Cases'[Is Escalated] = TRUE()) , [Case Count],0)
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Cases`
+
+🔗 **Depends on:** `[Case Count]`
+
+✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Campaigns`, `Case Calendar`, `Contacts`, `Opportunities`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
+
+---
+
+#### `Forecast` · 📋 `Opportunities`
+
+**Format:** `\$#,0.###############;(\$#,0.###############);\$#,0.###############`
+
+```dax
+([Revenue Won]+[Revenue In Pipeline])
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+🔗 **Depends on:** `[Revenue Won]`, `[Revenue In Pipeline]`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
+
+---
+
+#### `Forecast %` · 📋 `Opportunities`
+
+*Division (check for zero)*
+
+**Format:** `#,0%;-#,0%;#,0%`
+
+```dax
+(([Revenue Won]+[Revenue In Pipeline]))/ [Rev Goal]
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+🔗 **Depends on:** `[Revenue Won]`, `[Revenue In Pipeline]`, `[Rev Goal]`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
+
+---
+
+#### `Forecast Adjustment Value` *(hidden)* · 📋 `Opportunity Forecast Adjustment`
+
+```dax
+SELECTEDVALUE('Opportunity Forecast Adjustment'[Forecast Adjustment], 0)
+isHidden
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunity Forecast Adjustment`
+
+❌ **Non-correlated:** `Accounts`, `Campaigns`, `Case Calendar`, `Cases`, `Contacts`, `Industries`, `Opportunities`, `Opportunity Calendar`, `Owners`, `Products`, `Territories`
+
+</details>
+
+---
+
+#### `Opportunity Count` · 📋 `Opportunities`
+
+**Format:** `#,0`
+
+```dax
+COUNTAX(Opportunities,TRUE())
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
+
+---
+
+#### `Opportunity Count In Pipeline` · 📋 `Opportunities`
+
+*Aggregation: COUNT*
+
+**Format:** `#,0`
+
+```dax
+CALCULATE (
+COUNT( Opportunities[Value] ),
+FILTER (
+Opportunities,
+Opportunities[Status] = "Open"
+--  && Opportunities[PipelineStep] IN { "3-Pipeline", "4-Mandate", "5-Close" }
+)
+)
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
+
+---
+
+#### `Rev Goal` · 📋 `Owners`
+
+*Uses variables · IF logic*
+
+**Format:** `\$#,0.###############;(\$#,0.###############);\$#,0.###############`
+
+```dax
+VAR RevenueInPipeline =
+CALCULATE (
+SUMX ( Opportunities, Opportunities[Value] ),
+FILTER (
+Opportunities,
+Opportunities[Status] = "Open"
+&& VALUE(LEFT(Opportunities[PipelineStep],1)) >=3
+)
+)
+VAR BaseGoal =
+MROUND(([Revenue Won]+ (RevenueInPipeline*.75)),100000)
+RETURN
+IF(BaseGoal > 0, BaseGoal, MROUND(([Revenue Won]+ (RevenueInPipeline*.75)),10000))
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+🔗 **Depends on:** `[Revenue Won]`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
+
+---
+
+#### `Revenue In Pipeline` · 📋 `Opportunities`
+
+*Uses variables · Division (check for zero)*
+
+**Format:** `\$#,0.0;(\$#,0.0);\$#,0.0`
+
+```dax
+VAR Revenue =
+CALCULATE (
+SUMX ( Opportunities, Opportunities[Value] ),
+FILTER (
+Opportunities,
+Opportunities[Status] = "Open"
+&& VALUE(LEFT(Opportunities[PipelineStep],1)) >=2
+)
+)
+RETURN
+Revenue + ( Revenue * ( 'Opportunity Forecast Adjustment'[Forecast Adjustment Value] / 100 ) )
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
+
+---
+
+#### `Revenue Open` · 📋 `Opportunities`
+
+*Iterator: SUMX · Uses CALCULATE · Row filter*
+
+**Format:** `\$#,0.###############;(\$#,0.###############);\$#,0.###############`
+
+```dax
+CALCULATE(
+SUMX(Opportunities, Opportunities[Value]),
+FILTER(Opportunities, Opportunities[Status] = "Open")
+)
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
+
+---
+
+#### `Revenue Won` · 📋 `Opportunities`
+
+*Iterator: SUMX · Uses CALCULATE · Row filter*
+
+**Format:** `\$#,0.0;(\$#,0.0);\$#,0.0`
+
+```dax
+CALCULATE(
+SUMX(Opportunities, Opportunities[Value]),
+FILTER(Opportunities, Opportunities[Status] = "Won")
+)
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Opportunities`
+
+✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
+
+---
+
+#### `SLA Compliance` · 📋 `Cases`
+
+*Uses CALCULATE · Safe division*
+
+**Format:** `#,0%;-#,0%;#,0%`
+
+```dax
+DIVIDE(CALCULATE(COUNTROWS('Cases'),'Cases'[Is SLA Violation] = FALSE()) , [Case Count],0)
+```
+
+<details>
+<summary>🔗 Lineage — click to expand</summary>
+
+📊 **Aggregates:** `Cases`
+
+🔗 **Depends on:** `[Case Count]`
+
+✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
+
+❌ **Non-correlated:** `Campaigns`, `Case Calendar`, `Contacts`, `Opportunities`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
+
+</details>
+
+</details>
+
+---
+
+*Generated by [pbi-semantic-doc](https://github.com/ViciusLio/pbi-semantic-doc) · 2026-03-17 23:15 UTC*
+
+---
+
+## Report
+
+## Contents
+
+- [Overview](#overview)
+- [Visual Types Distribution](#visual-types-distribution) — 10 types
+- [Custom Visuals](#custom-visuals) — 3 marketplace visuals
+- [Bookmarks](#bookmarks) — 17 bookmarks
+- [Advanced Metrics](#advanced-metrics)
+
+
+## Overview
+
+| | |
+|---|---|
+| Report Format | pbir |
+| Total Pages | 3 (hidden: 0) |
+| Total Visuals | 235 (avg 78.3/page, min 77, max 81) |
+| Bookmarks | 17 |
+| Report-Level Measures | 0 |
+| **Complexity Index** | **🟡 48%** |
+
+## Visual Types Distribution
+
+<details>
+<summary>📊 10 visual types across 235 visuals — click to expand</summary>
+
+| Visual Type | Count | Percentage |
+|---|---|---|
+| actionButton | 193 | 82.1% |
+| unknown | 12 | 5.1% |
+| shape | 9 | 3.8% |
+| textbox | 7 | 3.0% |
+| barChart | 5 | 2.1% |
+| image | 3 | 1.3% |
+| custom | 3 | 1.3% |
+| clusteredBarChart | 1 | 0.4% |
+| slicer | 1 | 0.4% |
+| lineChart | 1 | 0.4% |
+
+</details>
+
+## Custom Visuals
+
+<details>
+<summary>🔌 3 marketplace visuals — click to expand</summary>
+
+- `decompositionTreeVisual`
+- `keyDriversVisual`
+- `qnaVisual`
+
+</details>
+
+## Bookmarks
+
+<details>
+<summary>🔖 17 bookmarks — click to expand</summary>
+
+Total: 17
+
+- Sales P - Funnel 1
+- Key - Discount
+- Last 12
+- CSAT - KEY - High
+- Services - KPI - Tabular
+- Services - KPI - Chart
+- Sales P - Chart 2
+- Sales P - Tabular 2
+- Service - SLA - Key Influencers
+- Sales P - Chart 1
+- CSAT - KEY - Low
+- Key - Day to close
+- CSAT - KEY - VS
+- Services - KPI2 - Chart
+- Service - KPI2 - Ribbon
+- Last 90
+- Service - SLA -PKPI
+
+</details>
+
+## Advanced Metrics
+
+| Metric | Value |
+|---|---|
+| Pages with Drillthrough | 0 |
+| Total Filters | 0 |
+| Visuals with Mobile Layout | 37 |
+
+---
+
+*Generated by [pbi-semantic-doc](https://github.com/viciuslios/pbi-semantic-doc) · 2026-03-17 23:15 UTC*

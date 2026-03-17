@@ -5,8 +5,8 @@
 [![PyPI version](https://img.shields.io/pypi/v/pbi-semantic-doc)](https://pypi.org/project/pbi-semantic-doc/)
 [![Python 3.9+](https://img.shields.io/pypi/pyversions/pbi-semantic-doc)](https://pypi.org/project/pbi-semantic-doc/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-329%20passing-brightgreen)](#)
-[![Version](https://img.shields.io/badge/version-0.5.10-blue)](#)
+[![Tests](https://img.shields.io/badge/tests-330%20passing-brightgreen)](#)
+[![Version](https://img.shields.io/badge/version-0.5.11-blue)](#)
 
 Built with ❤️ by [ViciusLio](https://github.com/ViciusLio) in collaboration with [Claude AI](https://claude.ai) (Anthropic).
 

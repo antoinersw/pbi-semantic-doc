@@ -17,6 +17,7 @@ from .parser import (
     SemanticModel, ModelMetrics, Table, Measure, Relationship,
     Partition, Role, MQueryAnalysis,
 )
+from .lineage import ModelLineage, MeasureLineage
 
 _FOLDING_ICON = {
     "likely":   "✅",
@@ -62,6 +63,12 @@ class MarkdownGenerator:
     """
 
     def generate(self, model: SemanticModel) -> str:
+        # Build lineage map (defensive — never let it crash the generator)
+        try:
+            self._lineage_map: dict = ModelLineage(model).resolve_all()
+        except Exception:
+            self._lineage_map = {}
+
         sections: list[str] = []
 
         sections.append(self._header(model))
@@ -360,7 +367,7 @@ class MarkdownGenerator:
         if table.measures:
             content += ["", "### Measures", ""]
             for measure in sorted(table.measures, key=lambda m: m.name.lower()):
-                content.append(self._measure_block(measure))
+                content.append(self._measure_block(measure, table.name))
 
         # M expression — collapsible per partition
         for partition in table.partitions:
@@ -491,12 +498,14 @@ class MarkdownGenerator:
             f"</details>"
         )
 
-    def _measure_block(self, measure: Measure) -> str:
+    def _measure_block(self, measure: Measure, table_name: str = "",
+                       show_table: bool = False) -> str:
         lines: list[str] = []
         hidden_tag = " *(hidden)*" if measure.is_hidden else ""
         folder_tag = f" · 📁 `{measure.display_folder}`" if measure.display_folder else ""
+        table_tag  = f" · 📋 `{table_name}`" if show_table and table_name else ""
 
-        lines.append(f"#### `{measure.name}`{hidden_tag}{folder_tag}")
+        lines.append(f"#### `{measure.name}`{hidden_tag}{folder_tag}{table_tag}")
 
         if measure.description:
             lines += ["", measure.description]
@@ -511,25 +520,71 @@ class MarkdownGenerator:
         if measure.expression:
             lines += ["", "```dax", measure.expression, "```"]
 
+        # Lineage (only available after generate() has been called)
+        if table_name and hasattr(self, "_lineage_map"):
+            lin = self._lineage_map.get((table_name, measure.name))
+            if lin and lin.has_lineage_info:
+                lines += ["", self._measure_lineage_md(lin)]
+
         return "\n".join(lines)
+
+    def _measure_lineage_md(self, lin: MeasureLineage) -> str:
+        """Render a collapsible lineage block in Markdown."""
+        parts: list[str] = []
+
+        if lin.all_base_tables:
+            tables = ", ".join(f"`{t}`" for t in sorted(lin.all_base_tables))
+            parts.append(f"📊 **Aggregates:** {tables}")
+
+        if lin.all_measure_deps:
+            deps = ", ".join(f"`[{m}]`" for m in lin.all_measure_deps)
+            parts.append(f"🔗 **Depends on:** {deps}")
+
+        if lin.filter_removed_tables:
+            tables = ", ".join(f"`{t}`" for t in sorted(lin.filter_removed_tables))
+            parts.append(f"⚠️ **Filter removed (ALL/ALLEXCEPT):** {tables}")
+
+        if lin.compatible_tables:
+            tables = ", ".join(f"`{t}`" for t in sorted(lin.compatible_tables))
+            parts.append(f"✅ **Compatible slicers:** {tables}")
+
+        if lin.incompatible_tables:
+            tables = ", ".join(f"`{t}`" for t in sorted(lin.incompatible_tables))
+            parts.append(f"❌ **Non-correlated:** {tables}")
+
+        flags: list[str] = []
+        if lin.uses_time_intelligence:
+            flags.append("⏱️ Time intelligence")
+        if lin.uses_inactive_relationship:
+            flags.append("🔀 Inactive relationship")
+        if lin.has_cycle:
+            flags.append("⚠️ Circular dependency")
+        if flags:
+            parts.append(f"🏷️ **Flags:** {', '.join(flags)}")
+
+        if not parts:
+            return ""
+
+        inner = "\n\n".join(parts)
+        return (
+            f"<details>\n"
+            f"<summary>🔗 Lineage — click to expand</summary>\n\n"
+            f"{inner}\n\n"
+            f"</details>"
+        )
 
     def _measures_index(self, model: SemanticModel) -> str:
         n = len(model.all_measures)
-        summary = f"📋 {n} measure{'s' if n != 1 else ''} — click to expand"
 
-        rows = [
-            "| Measure | Table | Folder |",
-            "|---|---|---|",
-        ]
+        blocks: list[str] = []
         for table_name, measure in model.all_measures:
-            folder = measure.display_folder or ""
-            rows.append(f"| `{measure.name}` | `{table_name}` | {folder} |")
+            blocks.append(self._measure_block(measure, table_name, show_table=True))
 
-        inner = "\n".join(rows)
+        inner = "\n\n---\n\n".join(blocks)
         return (
             "## Measures Index (A–Z)\n\n"
             f"<details>\n"
-            f"<summary>{summary}</summary>\n\n"
+            f"<summary>📋 {n} measure{'s' if n != 1 else ''} — click to expand</summary>\n\n"
             f"{inner}\n\n"
             f"</details>"
         )

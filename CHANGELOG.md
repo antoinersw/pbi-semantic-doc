@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.5.11] — 2026-03-17
+
+### Added
+- **Full measure details in Markdown Measures Index** (`generator.py`):
+  The A–Z Measures Index section now renders complete per-measure information — DAX expression, auto-description, format string, and a collapsible **Lineage** block — matching the richness already available in the HTML output and in the inline table sections. Previously it only showed a flat `| Measure | Table | Folder |` lookup table.
+- **Lineage info in Markdown table sections** (`generator.py`):
+  Each measure block inside a table section now also includes a collapsible `🔗 Lineage` block (aggregates, compatible slicers, non-correlated tables, filter-removed tables, measure dependencies, and flags for time intelligence / inactive relationships).
+- **New `_measure_lineage_md` helper** renders lineage as readable Markdown `<details>` collapsible, consistent with the HTML panel.
+- **`_measures_index` uses `_measure_block`** for a DRY layout: table provenance (`· 📋 TableName`) is appended to the measure heading in index view.
+- **Combined example doc regenerated** (`examples/sample_model/DOC_Artificial_Intelligence_Sample.html`):
+  Now generated with `generate_combined()` and includes both the **Semantic Model** and **Report** sections.
+- **MD example doc regenerated** (`examples/sample_model/DOC_Artificial_Intelligence_Sample.md`):
+  Reflects the new full-detail Measures Index with DAX + lineage per measure.
+
+### Tests
+- 330 tests — all passing
+
+---
+
 ## [0.5.10] — 2026-03-17
 
 ### Fixed
