@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.5.5] — 2026-03-17
+
+### Added
+- **Measures grouped by display folder** (HTML): measures are now rendered in collapsible `<details class="folder-group">` blocks that mirror the Power BI folder hierarchy (`Economics\Baseline`, `Delivery\Actual`, etc.). Multi-level paths create nested groups. Measures without a folder remain flat. The folder badge is suppressed inside a group (already contextual). The Measures Index (A–Z) keeps folder badges for context.
+- New CSS classes `folder-group` and `badge-count` for the folder card style.
+
+### Tests
+- 329 tests — all passing
+
+---
+
 ## [0.5.4] — 2026-03-16
 
 ### Fixed

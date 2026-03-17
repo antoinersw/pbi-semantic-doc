@@ -203,6 +203,33 @@ summary::before { content: "\\25B6\\00A0"; font-size: .75em; color: var(--muted)
 details[open] > summary::before { content: "\\25BC\\00A0"; }
 .details-body { padding: .7em 1em 1em; border-top: 1px solid var(--border); }
 
+/* ── folder groups (inside Measures section) ───────────────────────────── */
+details.folder-group {
+    border: 1px solid var(--border);
+    border-left: 3px solid #8ab4f8;
+    border-radius: 6px;
+    margin: .5em 0 .7em;
+    box-shadow: none;
+    background: var(--bg);
+}
+details.folder-group[open] { background: var(--bg); }
+details.folder-group > summary {
+    font-size: .9em; font-weight: 700;
+    padding: .5em .9em;
+    display: flex; align-items: center; gap: .4em;
+    border-radius: 5px;
+    color: var(--text);
+}
+.folder-body {
+    padding: .3em .5em .5em 1.2em;
+}
+.badge-count {
+    background: var(--code-bg); color: var(--muted);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: .05em .5em; font-size: .72em; font-weight: 500;
+    margin-left: auto;
+}
+
 /* ── measure cards ─────────────────────────────────────────────────────── */
 details.measure-card {
     border-left: 3px solid var(--accent);
@@ -960,8 +987,7 @@ class HtmlGenerator:
 
         if table.measures:
             content_parts.append(_heading(3 + h, "Measures"))
-            for measure in sorted(table.measures, key=lambda m: m.name.lower()):
-                content_parts.append(self._measure_html(measure, h, table.name))
+            content_parts.append(self._measures_section_html(table.measures, h, table.name))
 
         for partition in table.partitions:
             if partition.expression and partition.type == "m":
@@ -1048,7 +1074,8 @@ class HtmlGenerator:
             ])
         return _details(summary_html, _table(headers, rows))
 
-    def _measure_html(self, measure: Measure, h: int = 0, table_name: str = "") -> str:
+    def _measure_html(self, measure: Measure, h: int = 0, table_name: str = "",
+                      show_folder: bool = True) -> str:
         # Build summary line
         hidden_badge = ' <span class="badge-hidden">hidden</span>' if measure.is_hidden else ""
         fmt_badge = (
@@ -1058,7 +1085,7 @@ class HtmlGenerator:
         )
         folder_badge = (
             f' <span class="badge-folder">📁 {_e(measure.display_folder)}</span>'
-            if measure.display_folder
+            if measure.display_folder and show_folder
             else ""
         )
         summary_html = (
@@ -1093,6 +1120,71 @@ class HtmlGenerator:
             f'<div class="details-body">\n{body_html}\n</div>\n'
             f'</details>'
         )
+
+    # ── folder-tree helpers ────────────────────────────────────────────────
+
+    @staticmethod
+    def _build_folder_tree(measures) -> dict:
+        """Build a nested dict from display_folder paths.
+
+        Tree shape: {segment: subtree_dict}
+        At each level, key None holds the list of Measure objects that live
+        directly in that folder (i.e. their display_folder ends here).
+        """
+        tree: dict = {}
+        for m in sorted(measures, key=lambda x: x.name.lower()):
+            raw = (m.display_folder or "").replace("\\", "/")
+            parts = [p for p in raw.split("/") if p]
+            node = tree
+            for part in parts:
+                if part not in node:
+                    node[part] = {}
+                node = node[part]
+            node.setdefault(None, []).append(m)
+        return tree
+
+    @staticmethod
+    def _count_tree_measures(tree: dict) -> int:
+        """Count total measures in a subtree."""
+        count = len(tree.get(None, []))
+        for k, v in tree.items():
+            if k is not None:
+                count += HtmlGenerator._count_tree_measures(v)
+        return count
+
+    def _render_folder_tree(self, tree: dict, h: int, table_name: str) -> str:
+        """Recursively render a folder tree as nested <details> groups."""
+        parts: list[str] = []
+
+        # Measures at this level (no sub-folder)
+        for m in tree.get(None, []):
+            parts.append(self._measure_html(m, h, table_name, show_folder=False))
+
+        # Sub-folders
+        for folder_name in sorted(k for k in tree if k is not None):
+            subtree = tree[folder_name]
+            count = self._count_tree_measures(subtree)
+            inner = self._render_folder_tree(subtree, h, table_name)
+            parts.append(
+                f'<details class="folder-group" open>\n'
+                f'<summary>📁 <strong>{_e(folder_name)}</strong>'
+                f' <span class="badge-count">{count}</span></summary>\n'
+                f'<div class="folder-body">{inner}</div>\n'
+                f'</details>'
+            )
+
+        return "\n".join(parts)
+
+    def _measures_section_html(self, measures, h: int, table_name: str) -> str:
+        """Render measures grouped by folder (or flat if no folders used)."""
+        has_folders = any(m.display_folder for m in measures)
+        if not has_folders:
+            return "\n".join(
+                self._measure_html(m, h, table_name)
+                for m in sorted(measures, key=lambda m: m.name.lower())
+            )
+        tree = self._build_folder_tree(measures)
+        return self._render_folder_tree(tree, h, table_name)
 
     def _measure_lineage_html(self, lin: MeasureLineage) -> str:
         """Render a collapsible lineage card for a single measure."""
