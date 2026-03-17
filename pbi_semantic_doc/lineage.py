@@ -252,11 +252,34 @@ class ModelLineage:
     # ── private helpers ───────────────────────────────────────────────────────
 
     def _build_rel_graph(self) -> dict[str, set[str]]:
-        """Build undirected table-connectivity graph from model relationships."""
+        """Build directed 'reverse-filter' graph for BFS ancestor lookup.
+
+        In Power BI a relationship FAT → DIM (many-to-one, single direction)
+        means filters flow FROM DIM TO FAT.  A slicer on DIM will affect the
+        measure; a slicer on another FAT table will NOT (no path through DIM).
+
+        We store the *reverse* of the filter-flow direction so that BFS from a
+        base table (FAT) reaches exactly the tables that CAN filter it:
+            edge  FAT → DIM  (reverse of DIM→FAT filter flow)
+
+        For bidirectional relationships both edges are added, matching Power BI
+        behaviour where slicers can flow in either direction.
+
+        Only active relationships are included.
+        """
         graph: dict[str, set[str]] = {}
         for rel in self._model.relationships:
-            graph.setdefault(rel.from_table, set()).add(rel.to_table)
-            graph.setdefault(rel.to_table, set()).add(rel.from_table)
+            if not rel.is_active:
+                continue
+            cfb = (rel.cross_filter or "").lower()
+            from_t = rel.from_table   # many-side (FAT)
+            to_t   = rel.to_table     # one-side  (DIM)
+            # Default single-direction: filter DIM→FAT.
+            # Reverse graph: FAT→DIM so BFS from FAT reaches its filtering DIM.
+            graph.setdefault(from_t, set()).add(to_t)
+            # Bidirectional: FAT can also filter DIM, so add DIM→FAT reverse too.
+            if "both" in cfb:
+                graph.setdefault(to_t, set()).add(from_t)
         return graph
 
     def _build_measure_index(self) -> dict[str, tuple[str, "Measure"]]:
@@ -268,7 +291,8 @@ class ModelLineage:
         return index
 
     def _reachable_from(self, start_tables: set[str]) -> set[str]:
-        """BFS: return all tables reachable from start_tables via relationships."""
+        """BFS on the reverse-filter graph: return start_tables + all ancestor
+        tables that can send filter context to any table in start_tables."""
         visited: set[str] = set(start_tables)
         queue: list[str] = [t for t in start_tables if t in self._rel_graph]
         while queue:

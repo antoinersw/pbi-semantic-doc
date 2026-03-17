@@ -94,11 +94,13 @@ class TestModelLineageConstruction:
         assert "LocalDateTable_abc" not in self.lineage._all_table_names
 
     def test_rel_graph_built(self):
-        # Sales is connected to DimCliente, Calendar, DimProdotto
+        # Directed reverse-filter graph: FAT → DIM edges (so BFS from FAT finds its DIM ancestors).
+        # Sales (FAT, many-side) → DimCliente/Calendar/DimProdotto (DIM, one-side)
         assert "DimCliente" in self.lineage._rel_graph.get("Sales", set())
         assert "Calendar" in self.lineage._rel_graph.get("Sales", set())
-        # Graph is undirected
-        assert "Sales" in self.lineage._rel_graph.get("DimCliente", set())
+        # DIM tables have no outgoing edges in single-direction relationships
+        # (DIM cannot be filtered by FAT in single cross-filter direction)
+        assert "Sales" not in self.lineage._rel_graph.get("DimCliente", set())
 
     def test_measure_index_built(self):
         assert "Revenue" in self.lineage._measure_index

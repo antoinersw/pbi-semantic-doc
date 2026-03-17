@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.5.10] — 2026-03-17
+
+### Fixed
+- **Lineage compatible/incompatible tables now respect filter-flow direction** (`lineage.py`):
+  The relationship graph was previously **undirected**, causing all fact tables that share a common dimension to appear "compatible" with every measure — even though they have no filter path to each other.
+  The graph is now **directed** following Power BI's actual cross-filter semantics:
+  - `single` direction: filter flows from the **one-side** (DIM) → **many-side** (FAT). A slicer on FAT_A cannot filter FAT_B through a shared DIM.
+  - `both` directions: filters flow in both directions (bidirectional cross-filter).
+  Only **active** relationships are included in the graph.
+  The BFS (`_reachable_from`) traverses the *reverse* of the filter-flow graph from each measure's base tables, returning exactly the ancestor tables (DIM + snowflake parents) that can genuinely send filter context to the measure.
+
+### Tests
+- 330 tests — all passing (updated `test_rel_graph_built` to assert directed graph semantics)
+
+---
+
 ## [0.5.9] — 2026-03-17
 
 ### Fixed
