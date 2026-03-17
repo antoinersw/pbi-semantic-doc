@@ -291,17 +291,168 @@ footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border
     body { font-size: 11pt; }
     tbody tr:hover td { background: inherit; }
 }
+
+/* ── SPA section visibility ─────────────────────────────────────────────── */
+main > section { display: none; }
+main > section.spa-active {
+    display: block;
+    animation: spaFadeIn .18s ease;
+}
+@keyframes spaFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* ── detail panel (right slide-in) ──────────────────────────────────────── */
+.detail-panel {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: 420px; max-width: 46vw;
+    background: var(--bg);
+    border-left: 2px solid var(--accent);
+    box-shadow: -4px 0 28px rgba(0,0,0,.14);
+    z-index: 400;
+    transform: translateX(100%);
+    transition: transform .22s cubic-bezier(.4,0,.2,1);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+}
+.detail-panel.open { transform: none; }
+.detail-panel-header {
+    display: flex; align-items: center; gap: .6em;
+    padding: .8rem 1rem .7rem;
+    background: var(--accent);
+    flex-shrink: 0;
+}
+.detail-title {
+    color: #fff; font-size: .92rem; font-weight: 600;
+    flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.detail-close {
+    background: transparent; border: none;
+    color: rgba(255,255,255,.80); font-size: 1.1rem;
+    cursor: pointer; padding: .15em .4em; border-radius: 3px; line-height: 1;
+    flex-shrink: 0;
+}
+.detail-close:hover { color: #fff; background: rgba(255,255,255,.18); }
+.detail-body {
+    flex: 1; overflow-y: auto;
+    padding: 1.1rem 1rem 2rem;
+}
+/* Shrink main when panel opens */
+.main-content { transition: padding-right .22s cubic-bezier(.4,0,.2,1); }
+.main-content.panel-open { padding-right: 430px; }
+/* measure card → show pointer on summary, add open-in-panel hint */
+.measure-card > summary { cursor: pointer; }
+.measure-card > summary::after {
+    content: " \\2197"; font-size: .7em; color: var(--muted);
+    float: right; margin-top: .15em;
+}
+@media (max-width: 960px) {
+    .detail-panel { width: 100vw; max-width: 100vw; }
+    .main-content.panel-open { padding-right: 0; }
+}
 """
 
 # ── embedded JS ───────────────────────────────────────────────────────────
 
 _JS = """\
-// Expand / collapse all
+// ── Expand / collapse all ────────────────────────────────────────────────
 function toggleAll(open) {
     document.querySelectorAll('details').forEach(function(d) { d.open = open; });
 }
 
-// Back-to-top button
+// ── SPA navigation ───────────────────────────────────────────────────────
+(function () {
+    function activate(id) {
+        var sections = document.querySelectorAll('main > section');
+        var found = false;
+        sections.forEach(function (s) {
+            var match = s.id === id;
+            s.classList.toggle('spa-active', match);
+            if (match) found = true;
+        });
+        // Fallback: show first section if id not found
+        if (!found && sections.length) sections[0].classList.add('spa-active');
+        // Update active sidebar link
+        document.querySelectorAll('.sidebar-nav a[href^="#"]').forEach(function (a) {
+            a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+        });
+        // Scroll to top of main on section change
+        window.scrollTo(0, 0);
+    }
+
+    // Intercept all sidebar nav clicks
+    document.querySelectorAll('.sidebar-nav a[href^="#"]').forEach(function (a) {
+        a.addEventListener('click', function (e) {
+            var href = a.getAttribute('href');
+            if (!href || !href.startsWith('#')) return;
+            e.preventDefault();
+            var id = href.slice(1);
+            activate(id);
+            history.pushState(null, '', href);
+        });
+    });
+
+    // Browser back / forward
+    window.addEventListener('popstate', function () {
+        var id = location.hash.slice(1);
+        if (id) activate(id);
+    });
+
+    // Initial load
+    var initId = location.hash.slice(1);
+    if (!initId) {
+        var first = document.querySelector('main > section');
+        initId = first ? first.id : 'overview';
+    }
+    activate(initId);
+}());
+
+// ── Detail panel (right slide-in for measure cards) ──────────────────────
+(function () {
+    var panel   = document.getElementById('detail-panel');
+    var titleEl = document.getElementById('detail-title');
+    var bodyEl  = document.getElementById('detail-body');
+    var closeBtn = document.getElementById('detail-close');
+    var mainEl  = document.getElementById('main-content');
+    if (!panel) return;
+
+    function openPanel(name, contentHtml) {
+        titleEl.textContent = name;
+        bodyEl.innerHTML = contentHtml;
+        panel.classList.add('open');
+        if (mainEl) mainEl.classList.add('panel-open');
+        // Re-highlight any <pre> code blocks copied into panel
+        bodyEl.querySelectorAll('pre').forEach(function (p) { p.style.maxHeight = 'none'; });
+    }
+
+    function closePanel() {
+        panel.classList.remove('open');
+        if (mainEl) mainEl.classList.remove('panel-open');
+    }
+
+    closeBtn.addEventListener('click', closePanel);
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closePanel();
+    });
+
+    // Click on measure-card summary → open detail panel
+    document.querySelectorAll('.measure-card > summary').forEach(function (summary) {
+        summary.addEventListener('click', function (e) {
+            e.preventDefault(); // prevent <details> toggle
+            var card = summary.closest('.measure-card');
+            var body = card ? card.querySelector('.details-body') : null;
+            // Extract measure name: look for <code> or fallback to full text
+            var nameEl = summary.querySelector('code') || summary.querySelector('strong');
+            var name = nameEl ? nameEl.textContent.trim() : summary.textContent.trim();
+            // Remove trailing arrow glyph from name
+            name = name.replace(/\\s*\\u2197\\s*$/, '').trim();
+            openPanel(name, body ? body.innerHTML : '<p><em>No details available.</em></p>');
+        });
+    });
+}());
+
+// ── Back-to-top button ───────────────────────────────────────────────────
 (function () {
     var btn = document.getElementById('back-to-top');
     if (!btn) return;
@@ -310,33 +461,7 @@ function toggleAll(open) {
     btn.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
 }());
 
-// Active section in sidebar (IntersectionObserver)
-(function () {
-    var links = document.querySelectorAll('.sidebar-nav a[href^="#"]');
-    if (!links.length || !window.IntersectionObserver) return;
-    var map = {};
-    links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
-    var current = '';
-    var observer = new IntersectionObserver(function (entries) {
-        entries.forEach(function (e) {
-            if (e.isIntersecting) {
-                current = e.target.id;
-                Object.values(map).forEach(function (a) { a.classList.remove('active'); });
-                if (map[current]) {
-                    map[current].classList.add('active');
-                    // scroll link into sidebar view
-                    map[current].scrollIntoView({ block: 'nearest' });
-                }
-            }
-        });
-    }, { rootMargin: '-8% 0px -80% 0px', threshold: 0 });
-    Object.keys(map).forEach(function (id) {
-        var el = document.getElementById(id);
-        if (el) observer.observe(el);
-    });
-}());
-
-// Sidebar search filter
+// ── Sidebar search filter ────────────────────────────────────────────────
 (function () {
     var inp = document.getElementById('sidebar-search');
     if (!inp) return;
@@ -430,7 +555,14 @@ def _html_page(title: str, sidebar: str, main: str) -> str:
         f'<aside class="sidebar no-print" aria-label="Document navigation">\n{sidebar}\n</aside>\n'
         f'<main id="main-content" class="main-content">\n{main}\n</main>\n'
         "</div>\n"
-        '<button id="back-to-top" class="back-to-top no-print" aria-label="Back to top">↑</button>\n'
+        '<div id="detail-panel" class="detail-panel no-print" role="complementary" aria-label="Detail view">\n'
+        '  <div class="detail-panel-header">\n'
+        '    <button id="detail-close" class="detail-close" aria-label="Close detail panel">&#x2715;</button>\n'
+        '    <span id="detail-title" class="detail-title"></span>\n'
+        '  </div>\n'
+        '  <div id="detail-body" class="detail-body"></div>\n'
+        '</div>\n'
+        '<button id="back-to-top" class="back-to-top no-print" aria-label="Back to top">&#x2191;</button>\n'
         f"<script>\n{_JS}</script>\n"
         "</body>\n"
         "</html>\n"

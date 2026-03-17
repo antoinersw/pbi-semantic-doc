@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.5.7] — 2026-03-17
+
+### Changed — HTML output: master-detail SPA layout
+
+- **SPA navigation**: all `<section>` elements inside `<main>` are hidden by default (`display:none`). Clicking a sidebar link shows only the target section (`.spa-active`) with a subtle fade-in animation. Browser back/forward (`popstate`) and deep-link hashes both work correctly. Scroll resets to top on every section switch. The `IntersectionObserver`-based active-link highlight has been replaced by direct click tracking.
+- **Detail panel (right slide-in)**: a new `<div id="detail-panel">` fixed on the right edge slides in (CSS `transform` + `transition`) when the user clicks on any **measure card** summary. The panel shows the measure's full content (DAX expression + lineage + badges) without inline expansion. Main content shrinks (`padding-right: 430px`) to keep content readable when the panel is open. Close with the ✕ button or the Escape key. Responsive: full-width on viewports ≤ 960 px.
+- Measure card `summary::after` shows a `↗` arrow hint to signal "opens in panel".
+- `back-to-top`, `toggleAll`, and sidebar search filter are unchanged.
+- **Zero new dependencies** — all pure CSS + vanilla JS, single self-contained file.
+
+### Tests
+- 330 tests — all passing
+
+---
+
 ## [0.5.6] — 2026-03-17
 
 ### Changed
