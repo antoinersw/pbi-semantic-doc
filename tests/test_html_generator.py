@@ -307,10 +307,11 @@ class TestHtmlGeneratorCombined:
         assert self.html.startswith("<!DOCTYPE html>")
 
     def test_semantic_model_section(self):
-        assert 'id="semantic-model"' in self.html
+        # Combined doc uses flat sm-prefixed sections (no outer wrapper)
+        assert 'id="sm-overview"' in self.html
 
     def test_report_section(self):
-        assert 'id="report"' in self.html
+        assert 'id="rpt-overview"' in self.html
 
     def test_combined_toc(self):
         assert "Semantic Model" in self.html
@@ -320,7 +321,6 @@ class TestHtmlGeneratorCombined:
         assert "CombinedModel" in self.html
 
     def test_report_content(self):
-        # The report section includes its metrics (format, pages, etc.)
         assert "PBIR" in self.html
 
     def test_toolbar_present(self):
@@ -328,13 +328,13 @@ class TestHtmlGeneratorCombined:
 
     def test_combined_model_only(self):
         html = HtmlGenerator().generate_combined(self.model, None, "ModelOnly")
-        assert 'id="semantic-model"' in html
-        assert 'id="report"' not in html
+        assert 'id="sm-overview"' in html
+        assert 'id="rpt-overview"' not in html
 
     def test_combined_report_only(self):
         html = HtmlGenerator().generate_combined(None, self.metrics, "ReportOnly")
-        assert 'id="report"' in html
-        assert 'id="semantic-model"' not in html
+        assert 'id="rpt-overview"' in html
+        assert 'id="sm-overview"' not in html
 
 
 # ── integration with real model (skips if examples not present) ────────────

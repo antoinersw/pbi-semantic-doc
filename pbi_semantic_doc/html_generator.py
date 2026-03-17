@@ -292,9 +292,13 @@ footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border
     tbody tr:hover td { background: inherit; }
 }
 
+/* ── combined doc group headers ─────────────────────────────────────────── */
+.section-group-header { padding: 2em 0 .5em; border-bottom: 2px solid var(--accent); margin-bottom: 1.5em; }
+.section-group-header h2 { color: var(--accent); font-size: 1.25rem; margin: 0; }
+
 /* ── SPA section visibility ─────────────────────────────────────────────── */
-main > section { display: none; }
-main > section.spa-active {
+main section[id] { display: none; }
+main section[id].spa-active {
     display: block;
     animation: spaFadeIn .18s ease;
 }
@@ -364,7 +368,7 @@ function toggleAll(open) {
 // ── SPA navigation ───────────────────────────────────────────────────────
 (function () {
     function activate(id) {
-        var sections = document.querySelectorAll('main > section');
+        var sections = document.querySelectorAll('main section[id]');
         var found = false;
         sections.forEach(function (s) {
             var match = s.id === id;
@@ -402,7 +406,7 @@ function toggleAll(open) {
     // Initial load
     var initId = location.hash.slice(1);
     if (!initId) {
-        var first = document.querySelector('main > section');
+        var first = document.querySelector('main section[id]');
         initId = first ? first.id : 'overview';
     }
     activate(initId);
@@ -732,20 +736,15 @@ class HtmlGenerator:
                 self._lineage_map = ModelLineage(model).resolve_all()
             except Exception:
                 self._lineage_map = {}
-            parts.append('<section id="semantic-model">')
-            parts.append('<h2>Semantic Model</h2>')
+            parts.append('<div class="section-group-header"><h2>Semantic Model</h2></div>')
             parts.append(self._model_inner_prefixed(model, prefix="sm-"))
-            parts.append("</section>")
             self._lineage_map = {}
 
         if model and report_metrics:
-            parts.append("<hr>")
+            parts.append('<div class="section-group-header"><h2>Report</h2></div>')
 
         if report_metrics:
-            parts.append('<section id="report">')
-            parts.append('<h2>Report</h2>')
             parts.append(self._report_inner_prefixed(report_metrics, prefix="rpt-"))
-            parts.append("</section>")
 
         parts.append(self._footer())
         main = "\n\n".join(parts)

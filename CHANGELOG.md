@@ -6,6 +6,15 @@ All notable changes to this project will be documented in this file.
 
 ## [0.5.7] — 2026-03-17
 
+### Fixed
+- **SPA navigation broken in combined doc**: the combined doc wrapped all model/report sections inside `<section id="semantic-model">` / `<section id="report">` outer elements, so inner sections (`sm-overview`, `sm-data-sources`, `table-*`, etc.) were NOT direct children of `<main>`. The CSS selector `main > section` hid everything but `activate()` could never find a match → blank page + broken sidebar links. Fixed by removing the outer `<section>` wrappers and replacing with a lightweight `<div class="section-group-header">` heading. The JS/CSS selector updated from `main > section` to `main section[id]` for robustness.
+- Added `.section-group-header` CSS for the "Semantic Model" / "Report" group titles in combined doc.
+
+### Tests
+- 330 tests — all passing (updated 4 combined-doc tests to reflect new DOM structure)
+
+---
+
 ### Changed — HTML output: master-detail SPA layout
 
 - **SPA navigation**: all `<section>` elements inside `<main>` are hidden by default (`display:none`). Clicking a sidebar link shows only the target section (`.spa-active`) with a subtle fade-in animation. Browser back/forward (`popstate`) and deep-link hashes both work correctly. Scroll resets to top on every section switch. The `IntersectionObserver`-based active-link highlight has been replaced by direct click tracking.
