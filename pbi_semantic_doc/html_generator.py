@@ -161,7 +161,7 @@ body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ro
 .main-content {
     flex: 1; min-width: 0;
     padding: 1.5rem 2rem 3rem;
-    max-width: 1100px;
+    max-width: 980px;
 }
 .doc-header { margin-bottom: 1rem; }
 .doc-header h1 {
@@ -310,7 +310,7 @@ main section[id].spa-active {
 /* ── detail panel (right slide-in) ──────────────────────────────────────── */
 .detail-panel {
     position: fixed; top: 0; right: 0; bottom: 0;
-    width: 560px; max-width: 55vw;
+    width: 680px; max-width: 62vw;
     background: var(--bg);
     border-left: 2px solid var(--accent);
     box-shadow: -4px 0 28px rgba(0,0,0,.14);
@@ -347,7 +347,7 @@ main section[id].spa-active {
 .detail-body pre { max-width: 100%; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
 /* Shrink main when panel opens */
 .main-content { transition: padding-right .22s cubic-bezier(.4,0,.2,1); }
-.main-content.panel-open { padding-right: 570px; }
+.main-content.panel-open { padding-right: 690px; }
 /* measure card → show pointer on summary, add open-in-panel hint */
 .measure-card > summary { cursor: pointer; }
 .measure-card > summary::after {
