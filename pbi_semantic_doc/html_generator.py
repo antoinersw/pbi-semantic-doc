@@ -345,9 +345,8 @@ main section[id].spa-active {
 }
 .detail-body .lineage-row { flex-wrap: wrap; }
 .detail-body pre { max-width: 100%; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
-/* Shrink main when panel opens */
-.main-content { transition: padding-right .22s cubic-bezier(.4,0,.2,1); }
-.main-content.panel-open { padding-right: 690px; }
+/* Panel overlays — main content does NOT shrink when panel opens */
+.main-content { transition: none; }
 /* measure card → show pointer on summary, add open-in-panel hint */
 .measure-card > summary { cursor: pointer; }
 .measure-card > summary::after {
@@ -428,14 +427,12 @@ function toggleAll(open) {
         titleEl.textContent = name;
         bodyEl.innerHTML = contentHtml;
         panel.classList.add('open');
-        if (mainEl) mainEl.classList.add('panel-open');
         // Re-highlight any <pre> code blocks copied into panel
         bodyEl.querySelectorAll('pre').forEach(function (p) { p.style.maxHeight = 'none'; });
     }
 
     function closePanel() {
         panel.classList.remove('open');
-        if (mainEl) mainEl.classList.remove('panel-open');
     }
 
     closeBtn.addEventListener('click', closePanel);
