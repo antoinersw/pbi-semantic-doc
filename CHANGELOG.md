@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.6.1] — 2026-03-18
+
+### Fixed — UX/UI improvements
+
+- **Long string overflow**: `pre`/`code` blocks now use `white-space: pre-wrap` + `word-break: break-all` to contain long M code strings (base64, binary) without overflowing card boundaries. `details` elements get `overflow: hidden` + `min-width: 0`.
+- **Detail panel overflow**: Long column names (e.g. `FAT_TABLE[Very_Long_Column_Name]`) now wrap inside the right slide-in panel via `word-break: break-word` + `overflow-wrap: anywhere` on all badge classes. `.detail-body` gets `overflow-x: hidden`.
+- **Lineage label alignment**: `align-items: flex-start` + `flex-shrink: 0` on `.lineage-label` for clean alignment when badges wrap to multiple lines.
+- **Whitespace reduction**: `h2` margin-top reduced from 2.2rem to 1.6rem; `h3`/`h4`/`p` tighter; `section-group-header` padding halved; `main-content` padding reduced; `max-width` increased from 980px to 1100px.
+
+---
+
 ## [0.6.0] — 2026-03-17
 
 ### Added — Deep Model Analysis
