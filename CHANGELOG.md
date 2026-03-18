@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.6.2] — 2026-03-18
+
+### Fixed — UX/UI panel & layout
+
+- **Detail panel no longer shrinks main content**: panel is now a pure overlay (`position: fixed`), main content width stays unchanged when panel opens/closes.
+- **Detail panel widened**: 420px → 680px / 62vw for much more readable DAX and lineage content.
+- **Main content narrowed**: max-width reduced to 720px, leaving visible breathing room alongside the panel.
+
+---
+
 ## [0.6.1] — 2026-03-18
 
 ### Fixed — UX/UI improvements
