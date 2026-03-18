@@ -31,6 +31,8 @@
   - [Owners](#table-owners) — 📥 Import · 2 cols · 1 measure
   - [Products](#table-products) — 📥 Import · 4 cols
 - [Measures Index](#measures-index-az) — 22 measures
+- [Unused Columns](#unused-columns) — 95 columns
+- [Hidden Objects](#hidden-objects) — 3 tables, 29 columns
 
 ## Overview
 
@@ -339,6 +341,8 @@ CALCULATE(
 
 📊 **Aggregates:** `Cases`
 
+🔎 **Columns:** `Cases`[`Subject`]
+
 🔗 **Depends on:** `[Case Count]`
 
 ⚠️ **Filter removed (ALL/ALLEXCEPT):** `Cases`
@@ -364,6 +368,8 @@ DIVIDE([Case Count] - __PREV_MONTH, __PREV_MONTH)
 <summary>🔗 Lineage — click to expand</summary>
 
 📊 **Aggregates:** `Cases`
+
+🔎 **Columns:** `Case Calendar`[`Date`]
 
 🔗 **Depends on:** `[Case Count]`
 
@@ -399,6 +405,8 @@ RETURN
 
 📊 **Aggregates:** `Cases`
 
+🔎 **Columns:** `Cases`[`CSAT`], `Cases`[`Topic`]
+
 ⚠️ **Filter removed (ALL/ALLEXCEPT):** `Cases`
 
 ✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
@@ -430,6 +438,8 @@ RETURN
 <summary>🔗 Lineage — click to expand</summary>
 
 📊 **Aggregates:** `Cases`
+
+🔎 **Columns:** `Cases`[`Agent`], `Cases`[`CSAT`]
 
 ⚠️ **Filter removed (ALL/ALLEXCEPT):** `Cases`
 
@@ -463,6 +473,8 @@ RETURN
 
 📊 **Aggregates:** `Cases`
 
+🔎 **Columns:** `Cases`[`CSAT`], `Cases`[`ProductSeq`]
+
 ⚠️ **Filter removed (ALL/ALLEXCEPT):** `Cases`
 
 ✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
@@ -495,6 +507,8 @@ RETURN
 
 📊 **Aggregates:** `Cases`
 
+🔎 **Columns:** `Cases`[`CSAT`], `Cases`[`Subject`]
+
 ⚠️ **Filter removed (ALL/ALLEXCEPT):** `Cases`
 
 ✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
@@ -517,6 +531,8 @@ DIVIDE(CALCULATE(COUNTROWS('Cases'),'Cases'[Is Escalated] = TRUE()) , [Case Coun
 
 📊 **Aggregates:** `Cases`
 
+🔎 **Columns:** `Cases`[`Is Escalated`]
+
 🔗 **Depends on:** `[Case Count]`
 
 ✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
@@ -538,6 +554,8 @@ DIVIDE(CALCULATE(COUNTROWS('Cases'),'Cases'[Is SLA Violation] = FALSE()) , [Case
 <summary>🔗 Lineage — click to expand</summary>
 
 📊 **Aggregates:** `Cases`
+
+🔎 **Columns:** `Cases`[`Is SLA Violation`]
 
 🔗 **Depends on:** `[Case Count]`
 
@@ -692,6 +710,8 @@ in
 
 📊 **Aggregates:** `Opportunities`
 
+🔎 **Columns:** `Opportunities`[`OpportunitySeq`], `Opportunities`[`Status`]
+
 🔗 **Depends on:** `[Count of Won]`, `[Count of Lost]`
 
 ✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
@@ -719,6 +739,8 @@ Opportunities[OpportunitySeq]
 
 📊 **Aggregates:** `Opportunities`
 
+🔎 **Columns:** `Opportunities`[`OpportunitySeq`], `Opportunities`[`Status`]
+
 ✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
 
 ❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
@@ -744,6 +766,8 @@ Opportunities[OpportunitySeq]
 
 📊 **Aggregates:** `Opportunities`
 
+🔎 **Columns:** `Opportunities`[`OpportunitySeq`], `Opportunities`[`Status`]
+
 ✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
 
 ❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
@@ -761,6 +785,8 @@ Opportunities[OpportunitySeq]
 <summary>🔗 Lineage — click to expand</summary>
 
 📊 **Aggregates:** `Opportunities`
+
+🔎 **Columns:** `Opportunities`[`PipelineStep`], `Opportunities`[`Status`], `Opportunities`[`Value`], `Opportunity Forecast Adjustment`[`Forecast Adjustment Value`]
 
 🔗 **Depends on:** `[Revenue Won]`, `[Revenue In Pipeline]`
 
@@ -783,6 +809,8 @@ Opportunities[OpportunitySeq]
 <summary>🔗 Lineage — click to expand</summary>
 
 📊 **Aggregates:** `Opportunities`
+
+🔎 **Columns:** `Opportunities`[`PipelineStep`], `Opportunities`[`Status`], `Opportunities`[`Value`], `Opportunity Forecast Adjustment`[`Forecast Adjustment Value`]
 
 🔗 **Depends on:** `[Revenue Won]`, `[Revenue In Pipeline]`, `[Rev Goal]`
 
@@ -831,6 +859,8 @@ Opportunities[Status] = "Open"
 
 📊 **Aggregates:** `Opportunities`
 
+🔎 **Columns:** `Opportunities`[`PipelineStep`], `Opportunities`[`Status`], `Opportunities`[`Value`]
+
 ✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
 
 ❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
@@ -861,6 +891,8 @@ Revenue + ( Revenue * ( 'Opportunity Forecast Adjustment'[Forecast Adjustment Va
 
 📊 **Aggregates:** `Opportunities`
 
+🔎 **Columns:** `Opportunities`[`PipelineStep`], `Opportunities`[`Status`], `Opportunities`[`Value`], `Opportunity Forecast Adjustment`[`Forecast Adjustment Value`]
+
 ✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
 
 ❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
@@ -884,6 +916,8 @@ FILTER(Opportunities, Opportunities[Status] = "Open")
 
 📊 **Aggregates:** `Opportunities`
 
+🔎 **Columns:** `Opportunities`[`Status`], `Opportunities`[`Value`]
+
 ✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
 
 ❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
@@ -906,6 +940,8 @@ FILTER(Opportunities, Opportunities[Status] = "Won")
 <summary>🔗 Lineage — click to expand</summary>
 
 📊 **Aggregates:** `Opportunities`
+
+🔎 **Columns:** `Opportunities`[`Status`], `Opportunities`[`Value`]
 
 ✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
 
@@ -1021,6 +1057,8 @@ IF(BaseGoal > 0, BaseGoal, MROUND(([Revenue Won]+ (RevenueInPipeline*.75)),10000
 <summary>🔗 Lineage — click to expand</summary>
 
 📊 **Aggregates:** `Opportunities`
+
+🔎 **Columns:** `Opportunities`[`PipelineStep`], `Opportunities`[`Status`], `Opportunities`[`Value`]
 
 🔗 **Depends on:** `[Revenue Won]`
 
@@ -1190,6 +1228,8 @@ CALCULATE(
 
 📊 **Aggregates:** `Cases`
 
+🔎 **Columns:** `Cases`[`Subject`]
+
 🔗 **Depends on:** `[Case Count]`
 
 ⚠️ **Filter removed (ALL/ALLEXCEPT):** `Cases`
@@ -1219,6 +1259,8 @@ DIVIDE([Case Count] - __PREV_MONTH, __PREV_MONTH)
 
 📊 **Aggregates:** `Cases`
 
+🔎 **Columns:** `Case Calendar`[`Date`]
+
 🔗 **Depends on:** `[Case Count]`
 
 ✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
@@ -1245,6 +1287,8 @@ DIVIDE([Case Count] - __PREV_MONTH, __PREV_MONTH)
 <summary>🔗 Lineage — click to expand</summary>
 
 📊 **Aggregates:** `Opportunities`
+
+🔎 **Columns:** `Opportunities`[`OpportunitySeq`], `Opportunities`[`Status`]
 
 🔗 **Depends on:** `[Count of Won]`, `[Count of Lost]`
 
@@ -1276,6 +1320,8 @@ Opportunities[OpportunitySeq]
 
 📊 **Aggregates:** `Opportunities`
 
+🔎 **Columns:** `Opportunities`[`OpportunitySeq`], `Opportunities`[`Status`]
+
 ✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
 
 ❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
@@ -1303,6 +1349,8 @@ Opportunities[OpportunitySeq]
 <summary>🔗 Lineage — click to expand</summary>
 
 📊 **Aggregates:** `Opportunities`
+
+🔎 **Columns:** `Opportunities`[`OpportunitySeq`], `Opportunities`[`Status`]
 
 ✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
 
@@ -1336,6 +1384,8 @@ RETURN
 <summary>🔗 Lineage — click to expand</summary>
 
 📊 **Aggregates:** `Cases`
+
+🔎 **Columns:** `Cases`[`CSAT`], `Cases`[`Topic`]
 
 ⚠️ **Filter removed (ALL/ALLEXCEPT):** `Cases`
 
@@ -1372,6 +1422,8 @@ RETURN
 
 📊 **Aggregates:** `Cases`
 
+🔎 **Columns:** `Cases`[`Agent`], `Cases`[`CSAT`]
+
 ⚠️ **Filter removed (ALL/ALLEXCEPT):** `Cases`
 
 ✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
@@ -1406,6 +1458,8 @@ RETURN
 <summary>🔗 Lineage — click to expand</summary>
 
 📊 **Aggregates:** `Cases`
+
+🔎 **Columns:** `Cases`[`CSAT`], `Cases`[`ProductSeq`]
 
 ⚠️ **Filter removed (ALL/ALLEXCEPT):** `Cases`
 
@@ -1442,6 +1496,8 @@ RETURN
 
 📊 **Aggregates:** `Cases`
 
+🔎 **Columns:** `Cases`[`CSAT`], `Cases`[`Subject`]
+
 ⚠️ **Filter removed (ALL/ALLEXCEPT):** `Cases`
 
 ✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
@@ -1467,6 +1523,8 @@ DIVIDE(CALCULATE(COUNTROWS('Cases'),'Cases'[Is Escalated] = TRUE()) , [Case Coun
 
 📊 **Aggregates:** `Cases`
 
+🔎 **Columns:** `Cases`[`Is Escalated`]
+
 🔗 **Depends on:** `[Case Count]`
 
 ✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
@@ -1489,6 +1547,8 @@ DIVIDE(CALCULATE(COUNTROWS('Cases'),'Cases'[Is Escalated] = TRUE()) , [Case Coun
 <summary>🔗 Lineage — click to expand</summary>
 
 📊 **Aggregates:** `Opportunities`
+
+🔎 **Columns:** `Opportunities`[`PipelineStep`], `Opportunities`[`Status`], `Opportunities`[`Value`], `Opportunity Forecast Adjustment`[`Forecast Adjustment Value`]
 
 🔗 **Depends on:** `[Revenue Won]`, `[Revenue In Pipeline]`
 
@@ -1515,6 +1575,8 @@ DIVIDE(CALCULATE(COUNTROWS('Cases'),'Cases'[Is Escalated] = TRUE()) , [Case Coun
 
 📊 **Aggregates:** `Opportunities`
 
+🔎 **Columns:** `Opportunities`[`PipelineStep`], `Opportunities`[`Status`], `Opportunities`[`Value`], `Opportunity Forecast Adjustment`[`Forecast Adjustment Value`]
+
 🔗 **Depends on:** `[Revenue Won]`, `[Revenue In Pipeline]`, `[Rev Goal]`
 
 ✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
@@ -1536,6 +1598,8 @@ isHidden
 <summary>🔗 Lineage — click to expand</summary>
 
 📊 **Aggregates:** `Opportunity Forecast Adjustment`
+
+🔎 **Columns:** `Opportunity Forecast Adjustment`[`Forecast Adjustment`]
 
 ❌ **Non-correlated:** `Accounts`, `Campaigns`, `Case Calendar`, `Cases`, `Contacts`, `Industries`, `Opportunities`, `Opportunity Calendar`, `Owners`, `Products`, `Territories`
 
@@ -1586,6 +1650,8 @@ Opportunities[Status] = "Open"
 
 📊 **Aggregates:** `Opportunities`
 
+🔎 **Columns:** `Opportunities`[`PipelineStep`], `Opportunities`[`Status`], `Opportunities`[`Value`]
+
 ✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
 
 ❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
@@ -1620,6 +1686,8 @@ IF(BaseGoal > 0, BaseGoal, MROUND(([Revenue Won]+ (RevenueInPipeline*.75)),10000
 <summary>🔗 Lineage — click to expand</summary>
 
 📊 **Aggregates:** `Opportunities`
+
+🔎 **Columns:** `Opportunities`[`PipelineStep`], `Opportunities`[`Status`], `Opportunities`[`Value`]
 
 🔗 **Depends on:** `[Revenue Won]`
 
@@ -1656,6 +1724,8 @@ Revenue + ( Revenue * ( 'Opportunity Forecast Adjustment'[Forecast Adjustment Va
 
 📊 **Aggregates:** `Opportunities`
 
+🔎 **Columns:** `Opportunities`[`PipelineStep`], `Opportunities`[`Status`], `Opportunities`[`Value`], `Opportunity Forecast Adjustment`[`Forecast Adjustment Value`]
+
 ✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
 
 ❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
@@ -1681,6 +1751,8 @@ FILTER(Opportunities, Opportunities[Status] = "Open")
 <summary>🔗 Lineage — click to expand</summary>
 
 📊 **Aggregates:** `Opportunities`
+
+🔎 **Columns:** `Opportunities`[`Status`], `Opportunities`[`Value`]
 
 ✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
 
@@ -1708,6 +1780,8 @@ FILTER(Opportunities, Opportunities[Status] = "Won")
 
 📊 **Aggregates:** `Opportunities`
 
+🔎 **Columns:** `Opportunities`[`Status`], `Opportunities`[`Value`]
+
 ✅ **Compatible slicers:** `Accounts`, `Campaigns`, `Industries`, `Owners`, `Products`
 
 ❌ **Non-correlated:** `Case Calendar`, `Cases`, `Contacts`, `Opportunity Calendar`, `Opportunity Forecast Adjustment`, `Territories`
@@ -1731,6 +1805,8 @@ DIVIDE(CALCULATE(COUNTROWS('Cases'),'Cases'[Is SLA Violation] = FALSE()) , [Case
 
 📊 **Aggregates:** `Cases`
 
+🔎 **Columns:** `Cases`[`Is SLA Violation`]
+
 🔗 **Depends on:** `[Case Count]`
 
 ✅ **Compatible slicers:** `Accounts`, `Industries`, `Owners`, `Products`
@@ -1741,9 +1817,163 @@ DIVIDE(CALCULATE(COUNTROWS('Cases'),'Cases'[Is SLA Violation] = FALSE()) , [Case
 
 </details>
 
+## Unused Columns
+
+<details>
+<summary>🔍 95 unreferenced columns — click to expand</summary>
+
+| Table | Column | Type |
+|-------|--------|------|
+| `Accounts` | `Account Name` | string |
+| `Accounts` | `Account Number` | string |
+| `Accounts` | `AccountID` | string |
+| `Accounts` | `AccountOwnerSeq` | int64 |
+| `Accounts` | `Annual Revenue` | int64 |
+| `Accounts` | `City` | string |
+| `Accounts` | `Country` | string |
+| `Accounts` | `Industry` | string |
+| `Accounts` | `Industry Lookup` | unknown |
+| `Accounts` | `Latitude` | double |
+| `Accounts` | `Longitude` | double |
+| `Accounts` | `Number of Employees` | int64 |
+| `Accounts` | `Phone` | string |
+| `Accounts` | `Postal Code` | string |
+| `Accounts` | `Region` | string |
+| `Accounts` | `State or Province` | string |
+| `Accounts` | `Street` | string |
+| `Accounts` | `Territory` | string |
+| `Campaigns` | `Campaign Name` | string |
+| `Campaigns` | `Factor` | int64 |
+| `Campaigns` | `Type` | string |
+| `Case Calendar` | `DAY` | unknown |
+| `Case Calendar` | `DaySeq` | unknown |
+| `Case Calendar` | `MONTH` | unknown |
+| `Case Calendar` | `RELATIVE 07 DAY PERIOD` | unknown |
+| `Case Calendar` | `RELATIVE 30 DAY PERIOD` | unknown |
+| `Case Calendar` | `RELATIVE DAY` | int64 |
+| `Case Calendar` | `RELATIVE MONTH` | unknown |
+| `Case Calendar` | `RELATIVE WEEK` | unknown |
+| `Case Calendar` | `WEEK` | unknown |
+| `Case Calendar` | `Weekday` | unknown |
+| `Case Calendar` | `YEAR` | unknown |
+| `Case Calendar` | `YEAR MONTH` | unknown |
+| `Case Calendar` | `YEAR WEEK` | unknown |
+| `Cases` | `Activities` | int64 |
+| `Cases` | `CSAT Goal` | unknown |
+| `Cases` | `CSAT Label` | string |
+| `Cases` | `CaseSeq` | int64 |
+| `Cases` | `Escalations Goal` | unknown |
+| `Cases` | `Minutes to First Contact` | int64 |
+| `Cases` | `Origin` | string |
+| `Cases` | `Resolution Minutes` | int64 |
+| `Cases` | `Resolution Minutes Goal` | unknown |
+| `Cases` | `SLA Compliance Goal` | unknown |
+| `Cases` | `Severity` | string |
+| `Cases` | `Status` | string |
+| `Cases` | `Title` | string |
+| `Contacts` | `City` | string |
+| `Contacts` | `Contact` | string |
+| `Contacts` | `ContactSeq` | int64 |
+| `Contacts` | `Country` | string |
+| `Contacts` | `FirstName` | string |
+| `Contacts` | `Job Title` | string |
+| `Contacts` | `LastName` | string |
+| `Contacts` | `Latitude` | double |
+| `Contacts` | `Longitude` | double |
+| `Contacts` | `Phone` | string |
+| `Contacts` | `Postal Code` | string |
+| `Contacts` | `State or Province` | string |
+| `Contacts` | `Street` | string |
+| `Industries` | `Industry` | string |
+| `Opportunities` | `Blank` | unknown |
+| `Opportunities` | `Budget` | int64 |
+| `Opportunities` | `Campaign Name` | string |
+| `Opportunities` | `Days Remaining In Pipeline` | unknown |
+| `Opportunities` | `DaysToClose` | int64 |
+| `Opportunities` | `Decision Maker Identified` | boolean |
+| `Opportunities` | `Discount` | double |
+| `Opportunities` | `Opportunity Owner Name` | string |
+| `Opportunities` | `Probability` | double |
+| `Opportunities` | `Probability (raw)` | double |
+| `Opportunities` | `Product Name` | string |
+| `Opportunities` | `Purchase Process` | string |
+| `Opportunities` | `Rating` | string |
+| `Opportunities` | `Topic` | string |
+| `Opportunities` | `Weeks Open` | unknown |
+| `Opportunity Calendar` | `DaySeq` | unknown |
+| `Opportunity Calendar` | `MONTH` | unknown |
+| `Opportunity Calendar` | `RELATIVE 07 DAY PERIOD` | unknown |
+| `Opportunity Calendar` | `RELATIVE 30 DAY PERIOD` | unknown |
+| `Opportunity Calendar` | `RELATIVE MONTH` | unknown |
+| `Opportunity Calendar` | `RELATIVE WEEK` | unknown |
+| `Opportunity Calendar` | `YEAR` | unknown |
+| `Opportunity Calendar` | `YEAR MONTH` | unknown |
+| `Opportunity Calendar` | `YEAR WEEK` | unknown |
+| `Owners` | `Manager` | string |
+| `Owners` | `Sales owner` | string |
+| `Products` | `MaxOppValue` | decimal |
+| `Products` | `MinOppValue` | decimal |
+| `Products` | `Product` | string |
+| `Products` | `Product category` | string |
+| `Territories` | `Country` | string |
+| `Territories` | `Region` | string |
+| `Territories` | `State Or Province Abbreviation` | string |
+| `Territories` | `Territory` | string |
+
+</details>
+
+## Hidden Objects
+
+<details>
+<summary>🙈 3 hidden tables, 29 hidden columns — click to expand</summary>
+
+### Hidden Tables
+
+| Table |
+|-------|
+| `Industries` |
+| `Opportunity Forecast Adjustment` |
+| `Territories` |
+
+### Hidden Columns
+
+| Table | Column | Type |
+|-------|--------|------|
+| `Accounts` | `Account Owner` | string |
+| `Accounts` | `AccountSeq` | int64 |
+| `Accounts` | `IndustrySeq` | int64 |
+| `Campaigns` | `CampaignSeq` | int64 |
+| `Case Calendar` | `MONTH NUMBER` | unknown |
+| `Case Calendar` | `WeekdaySeq` | unknown |
+| `Case Calendar` | `YEAR MONTH NUMBER` | unknown |
+| `Cases` | `AccountSeq` | int64 |
+| `Cases` | `Case Created On` | dateTime |
+| `Cases` | `ProductSeq` | int64 |
+| `Cases` | `SystemUserSeq` | int64 |
+| `Contacts` | `AccountSeq` | int64 |
+| `Contacts` | `ContactID` | string |
+| `Industries` | `IndustrySeq` | int64 |
+| `Opportunities` | `AccountSeq` | int64 |
+| `Opportunities` | `CampaignSeq` | string |
+| `Opportunities` | `CloseDate` | dateTime |
+| `Opportunities` | `Opportunity Created On` | dateTime |
+| `Opportunities` | `ProductSeq` | int64 |
+| `Opportunities` | `SystemUserSeq` | string |
+| `Opportunity Calendar` | `DAY` | unknown |
+| `Opportunity Calendar` | `Date` | unknown |
+| `Opportunity Calendar` | `MONTH NUMBER` | unknown |
+| `Opportunity Calendar` | `RELATIVE DAY` | unknown |
+| `Opportunity Calendar` | `WEEK` | unknown |
+| `Opportunity Calendar` | `YEAR MONTH NUMBER` | unknown |
+| `Opportunity Forecast Adjustment` | `Forecast Adjustment` | unknown |
+| `Owners` | `SystemUserSeq` | int64 |
+| `Products` | `ProductSeq` | int64 |
+
+</details>
+
 ---
 
-*Generated by [pbi-semantic-doc](https://github.com/ViciusLio/pbi-semantic-doc) · 2026-03-17 23:15 UTC*
+*Generated by [pbi-semantic-doc](https://github.com/ViciusLio/pbi-semantic-doc) · 2026-03-18 07:30 UTC*
 
 ---
 
@@ -1837,4 +2067,4 @@ Total: 17
 
 ---
 
-*Generated by [pbi-semantic-doc](https://github.com/viciuslios/pbi-semantic-doc) · 2026-03-17 23:15 UTC*
+*Generated by [pbi-semantic-doc](https://github.com/viciuslios/pbi-semantic-doc) · 2026-03-18 07:30 UTC*

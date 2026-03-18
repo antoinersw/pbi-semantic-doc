@@ -65,8 +65,10 @@ class MarkdownGenerator:
     def generate(self, model: SemanticModel) -> str:
         # Build lineage map (defensive — never let it crash the generator)
         try:
-            self._lineage_map: dict = ModelLineage(model).resolve_all()
+            self._model_lineage = ModelLineage(model)
+            self._lineage_map: dict = self._model_lineage.resolve_all()
         except Exception:
+            self._model_lineage = None
             self._lineage_map = {}
 
         sections: list[str] = []
@@ -92,6 +94,16 @@ class MarkdownGenerator:
 
         if model.all_measures:
             sections.append(self._measures_index(model))
+
+        # Unused Columns
+        unused_section = self._unused_columns_section(model)
+        if unused_section:
+            sections.append(unused_section)
+
+        # Hidden Objects
+        hidden_section = self._hidden_objects_section(model)
+        if hidden_section:
+            sections.append(hidden_section)
 
         sections.append(self._footer())
 
@@ -151,6 +163,21 @@ class MarkdownGenerator:
                 f"- [Measures Index](#measures-index-az)"
                 f" — {n} measure{'s' if n != 1 else ''}"
             )
+
+        # Unused Columns (only in TOC if we know there are some)
+        try:
+            if hasattr(self, "_model_lineage") and self._model_lineage is not None:
+                unused = self._model_lineage.unused_columns(self._lineage_map)
+                if unused:
+                    lines.append(f"- [Unused Columns](#unused-columns) — {len(unused)} column{'s' if len(unused) != 1 else ''}")
+        except Exception:
+            pass
+
+        # Hidden Objects
+        hidden_tables = [t for t in model.tables if t.is_hidden]
+        hidden_cols = [(t, c) for t in model.tables for c in t.columns if c.is_hidden]
+        if hidden_tables or hidden_cols:
+            lines.append(f"- [Hidden Objects](#hidden-objects) — {len(hidden_tables)} table{'s' if len(hidden_tables) != 1 else ''}, {len(hidden_cols)} column{'s' if len(hidden_cols) != 1 else ''}")
 
         return "\n".join(lines)
 
@@ -536,6 +563,13 @@ class MarkdownGenerator:
             tables = ", ".join(f"`{t}`" for t in sorted(lin.all_base_tables))
             parts.append(f"📊 **Aggregates:** {tables}")
 
+        if lin.referenced_columns:
+            cols = ", ".join(
+                f"`{t}`[`{c}`]"
+                for t, c in sorted(lin.referenced_columns)
+            )
+            parts.append(f"🔎 **Columns:** {cols}")
+
         if lin.all_measure_deps:
             deps = ", ".join(f"`[{m}]`" for m in lin.all_measure_deps)
             parts.append(f"🔗 **Depends on:** {deps}")
@@ -588,6 +622,93 @@ class MarkdownGenerator:
             f"{inner}\n\n"
             f"</details>"
         )
+
+    def _unused_columns_section(self, model: SemanticModel) -> str:
+        """Collapsible section listing columns never referenced in DAX or relationships."""
+        try:
+            if not hasattr(self, "_model_lineage") or self._model_lineage is None:
+                return ""
+            unused = self._model_lineage.unused_columns(self._lineage_map)
+            if not unused:
+                return ""
+
+            # Build column type lookup: (table, col_name) -> data_type
+            col_type: dict[tuple[str, str], str] = {}
+            for table in model.tables:
+                for col in table.columns:
+                    col_type[(table.name, col.name)] = col.data_type
+
+            n = len(unused)
+            summary = f"🔍 {n} unreferenced column{'s' if n != 1 else ''} — click to expand"
+            rows = [
+                "| Table | Column | Type |",
+                "|-------|--------|------|",
+            ]
+            for tbl, col in unused:
+                dtype = col_type.get((tbl, col), "")
+                rows.append(f"| `{tbl}` | `{col}` | {dtype} |")
+
+            inner = "\n".join(rows)
+            return (
+                "## Unused Columns\n\n"
+                f"<details>\n"
+                f"<summary>{summary}</summary>\n\n"
+                f"{inner}\n\n"
+                f"</details>"
+            )
+        except Exception:
+            return ""
+
+    def _hidden_objects_section(self, model: SemanticModel) -> str:
+        """Collapsible section listing all hidden tables and columns."""
+        try:
+            hidden_tables = [t for t in model.tables if t.is_hidden]
+            hidden_col_rows: list[tuple[str, str, str]] = []
+            for table in model.tables:
+                for col in table.columns:
+                    if col.is_hidden:
+                        hidden_col_rows.append((table.name, col.name, col.data_type))
+
+            if not hidden_tables and not hidden_col_rows:
+                return ""
+
+            n_tables = len(hidden_tables)
+            n_cols = len(hidden_col_rows)
+            summary = (
+                f"🙈 {n_tables} hidden table{'s' if n_tables != 1 else ''}, "
+                f"{n_cols} hidden column{'s' if n_cols != 1 else ''} — click to expand"
+            )
+
+            content: list[str] = []
+
+            if hidden_tables:
+                content.append("### Hidden Tables")
+                content.append("")
+                content.append("| Table |")
+                content.append("|-------|")
+                for t in hidden_tables:
+                    content.append(f"| `{t.name}` |")
+                content.append("")
+
+            if hidden_col_rows:
+                content.append("### Hidden Columns")
+                content.append("")
+                content.append("| Table | Column | Type |")
+                content.append("|-------|--------|------|")
+                for tbl, col, dtype in sorted(hidden_col_rows):
+                    content.append(f"| `{tbl}` | `{col}` | {dtype} |")
+                content.append("")
+
+            inner = "\n".join(content).strip()
+            return (
+                "## Hidden Objects\n\n"
+                f"<details>\n"
+                f"<summary>{summary}</summary>\n\n"
+                f"{inner}\n\n"
+                f"</details>"
+            )
+        except Exception:
+            return ""
 
     def _footer(self) -> str:
         ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")

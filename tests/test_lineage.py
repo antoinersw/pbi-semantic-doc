@@ -281,3 +281,148 @@ class TestLineageIntegration:
         html = HtmlGenerator().generate(self.model)
         assert "Lineage" in html
         assert "badge-compatible" in html or "badge-incompatible" in html
+
+
+# ── Feature 1: Column Lineage (referenced_columns) ───────────────────────────
+
+class TestReferencedColumns:
+    def setup_method(self):
+        self.model = _make_star_model()
+        self.lineage = ModelLineage(self.model)
+
+    def test_referenced_columns_direct(self):
+        """Revenue = SUM(Sales[Amount]) — should reference Sales[Amount]."""
+        lin = self.lineage.resolve_all()[("Sales", "Revenue")]
+        assert ("Sales", "Amount") in lin.referenced_columns
+
+    def test_referenced_columns_ytd_transitive(self):
+        """Revenue YTD depends on [Revenue] and references Calendar[Date] directly."""
+        lin = self.lineage.resolve_all()[("Sales", "Revenue YTD")]
+        # Calendar[Date] appears directly in the expression
+        assert ("Calendar", "Date") in lin.referenced_columns
+        # Should also carry Sales[Amount] transitively from [Revenue]
+        assert ("Sales", "Amount") in lin.referenced_columns
+
+    def test_referenced_columns_empty_expression(self):
+        """A measure with no expression should have no referenced columns."""
+        table = Table(
+            name="T",
+            columns=[Column(name="X", data_type="int64")],
+            measures=[Measure(name="Empty", expression="")],
+        )
+        model = SemanticModel(name="EmptyModel", tables=[table])
+        lin = ModelLineage(model).resolve("T", table.measures[0])
+        assert lin.referenced_columns == set()
+
+    def test_referenced_columns_excludes_nonmodel_tables(self):
+        """Columns from tables not in the model should be excluded."""
+        table = Table(
+            name="T",
+            columns=[],
+            measures=[Measure(name="X", expression="SUM(Ghost[Value])")],
+        )
+        model = SemanticModel(name="GhostModel", tables=[table])
+        lin = ModelLineage(model).resolve("T", table.measures[0])
+        # "Ghost" is not a real table in the model
+        assert all(t != "Ghost" for t, _ in lin.referenced_columns)
+
+
+# ── Feature 2: Unused Columns Detection ──────────────────────────────────────
+
+class TestUnusedColumns:
+    def setup_method(self):
+        self.model = _make_star_model()
+        self.ml = ModelLineage(self.model)
+        self.lineage_map = self.ml.resolve_all()
+
+    def test_returns_list_of_tuples(self):
+        result = self.ml.unused_columns(self.lineage_map)
+        assert isinstance(result, list)
+        for item in result:
+            assert isinstance(item, tuple) and len(item) == 2
+
+    def test_result_is_sorted(self):
+        result = self.ml.unused_columns(self.lineage_map)
+        assert result == sorted(result)
+
+    def test_relationship_columns_not_unused(self):
+        """ClienteID and OrderDate are relationship columns and must not appear."""
+        result = self.ml.unused_columns(self.lineage_map)
+        # ClienteID is used in relationship from Sales to DimCliente
+        assert ("Sales", "ClienteID") not in result
+        assert ("Sales", "OrderDate") not in result
+
+    def test_dax_referenced_columns_not_unused(self):
+        """Sales[Amount] is referenced in Revenue = SUM(Sales[Amount])."""
+        result = self.ml.unused_columns(self.lineage_map)
+        assert ("Sales", "Amount") not in result
+
+    def test_hidden_columns_excluded(self):
+        """Hidden columns should never appear in unused columns list."""
+        table = Table(
+            name="Facts",
+            columns=[
+                Column(name="Hidden", data_type="int64", is_hidden=True),
+                Column(name="Visible", data_type="int64"),
+            ],
+            measures=[],
+        )
+        model = SemanticModel(name="HiddenTest", tables=[table])
+        ml = ModelLineage(model)
+        result = ml.unused_columns(ml.resolve_all())
+        assert ("Facts", "Hidden") not in result
+        assert ("Facts", "Visible") in result
+
+    def test_unreferenced_column_detected(self):
+        """DimCliente[Region] is never referenced in any measure."""
+        result = self.ml.unused_columns(self.lineage_map)
+        assert ("DimCliente", "Region") in result
+
+    def test_empty_lineage_map_still_works(self):
+        result = self.ml.unused_columns({})
+        assert isinstance(result, list)
+
+
+# ── Feature 3: Hidden Objects (tested via generators) ────────────────────────
+
+class TestHiddenObjects:
+    def test_hidden_table_included(self):
+        """A hidden table must appear in the MD output."""
+        hidden_t = Table(name="HiddenTable", is_hidden=True, columns=[])
+        model = SemanticModel(name="Test", tables=[hidden_t])
+        from pbi_semantic_doc.generator import MarkdownGenerator
+        md = MarkdownGenerator().generate(model)
+        assert "Hidden Objects" in md
+        assert "HiddenTable" in md
+
+    def test_hidden_column_included(self):
+        """A hidden column must appear in the MD output."""
+        t = Table(
+            name="T",
+            columns=[
+                Column(name="VisCol", data_type="int64"),
+                Column(name="HidCol", data_type="int64", is_hidden=True),
+            ],
+        )
+        model = SemanticModel(name="Test", tables=[t])
+        from pbi_semantic_doc.generator import MarkdownGenerator
+        md = MarkdownGenerator().generate(model)
+        assert "Hidden Objects" in md
+        assert "HidCol" in md
+
+    def test_no_hidden_objects_no_section(self):
+        """If there are no hidden objects, the section must not appear."""
+        t = Table(name="T", columns=[Column(name="Col", data_type="int64")])
+        model = SemanticModel(name="Test", tables=[t])
+        from pbi_semantic_doc.generator import MarkdownGenerator
+        md = MarkdownGenerator().generate(model)
+        assert "Hidden Objects" not in md
+
+    def test_hidden_objects_html(self):
+        """HTML generator must also include Hidden Objects section."""
+        hidden_t = Table(name="SecretTable", is_hidden=True, columns=[])
+        model = SemanticModel(name="Test", tables=[hidden_t])
+        from pbi_semantic_doc.html_generator import HtmlGenerator
+        html = HtmlGenerator().generate(model)
+        assert "hidden-objects" in html
+        assert "SecretTable" in html

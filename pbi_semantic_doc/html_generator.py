@@ -613,8 +613,10 @@ class HtmlGenerator:
     def generate(self, model: SemanticModel) -> str:
         """Generate a self-contained HTML document for a semantic model."""
         try:
-            self._lineage_map: dict = ModelLineage(model).resolve_all()
+            self._model_lineage = ModelLineage(model)
+            self._lineage_map: dict = self._model_lineage.resolve_all()
         except Exception:
+            self._model_lineage = None
             self._lineage_map = {}
 
         # Build sidebar
@@ -633,6 +635,7 @@ class HtmlGenerator:
         parts.append(self._footer())
         main = "\n\n".join(parts)
 
+        self._model_lineage = None
         self._lineage_map = {}
         return _html_page(title=f"DOC — {model.name}", sidebar=sidebar, main=main)
 
@@ -701,6 +704,20 @@ class HtmlGenerator:
             if model.all_measures:
                 n = len(model.all_measures)
                 nav_items.append(f'<li><a href="#sm-measures-index-az">📋 Measures ({n})</a></li>')
+            # Unused Columns (need lineage — compute temporarily)
+            try:
+                _tmp_lin = ModelLineage(model)
+                _tmp_map = _tmp_lin.resolve_all()
+                _unused = _tmp_lin.unused_columns(_tmp_map)
+                if _unused:
+                    nav_items.append(f'<li><a href="#sm-unused-columns">🔍 Unused ({len(_unused)})</a></li>')
+            except Exception:
+                pass
+            # Hidden Objects
+            _h_tables = [t for t in model.tables if t.is_hidden]
+            _h_cols = [c for t in model.tables for c in t.columns if c.is_hidden]
+            if _h_tables or _h_cols:
+                nav_items.append(f'<li><a href="#sm-hidden-objects">🙈 Hidden</a></li>')
             nav_items.append('</ul></li>')
 
         if report_metrics:
@@ -732,11 +749,14 @@ class HtmlGenerator:
 
         if model:
             try:
-                self._lineage_map = ModelLineage(model).resolve_all()
+                self._model_lineage = ModelLineage(model)
+                self._lineage_map = self._model_lineage.resolve_all()
             except Exception:
+                self._model_lineage = None
                 self._lineage_map = {}
             parts.append('<div class="section-group-header"><h2>Semantic Model</h2></div>')
             parts.append(self._model_inner_prefixed(model, prefix="sm-"))
+            self._model_lineage = None
             self._lineage_map = {}
 
         if model and report_metrics:
@@ -795,6 +815,16 @@ class HtmlGenerator:
         # easier to browse alphabetically than scrolling through a table card.
         if model.all_measures:
             parts.append(self._measures_index(model, h))
+
+        # Unused Columns
+        unused_html = self._unused_columns_section_html(model, h)
+        if unused_html:
+            parts.append(unused_html)
+
+        # Hidden Objects
+        hidden_html = self._hidden_objects_section_html(model, h)
+        if hidden_html:
+            parts.append(hidden_html)
 
         return "\n\n".join(parts)
 
@@ -910,6 +940,21 @@ class HtmlGenerator:
         if model.all_measures:
             n = len(model.all_measures)
             items.append(f'<li><a href="#measures-index-az">📋 Measures Index ({n})</a></li>')
+
+        # Unused Columns
+        try:
+            if hasattr(self, "_model_lineage") and self._model_lineage is not None:
+                unused = self._model_lineage.unused_columns(self._lineage_map)
+                if unused:
+                    items.append(f'<li><a href="#unused-columns">🔍 Unused Columns ({len(unused)})</a></li>')
+        except Exception:
+            pass
+
+        # Hidden Objects
+        hidden_tables = [t for t in model.tables if t.is_hidden]
+        hidden_cols = [c for t in model.tables for c in t.columns if c.is_hidden]
+        if hidden_tables or hidden_cols:
+            items.append(f'<li><a href="#hidden-objects">🙈 Hidden Objects</a></li>')
 
         return f'<ul>\n{"".join(items)}\n</ul>'
 
@@ -1354,6 +1399,17 @@ class HtmlGenerator:
                 f'<span class="lineage-label">📊 Aggrega</span>{badges}</div>'
             )
 
+        # Referenced columns (Table[Column] pairs)
+        if lin.referenced_columns:
+            col_badges = " ".join(
+                f'<span class="badge-dep">{_e(t)}[{_e(c)}]</span>'
+                for t, c in sorted(lin.referenced_columns)
+            )
+            rows.append(
+                f'<div class="lineage-row">'
+                f'<span class="lineage-label">🔎 Colonne</span>{col_badges}</div>'
+            )
+
         # Flags
         flags: list[str] = []
         if lin.uses_time_intelligence:
@@ -1411,6 +1467,83 @@ class HtmlGenerator:
 
         body_html = "\n".join(rows)
         return _details("🔗 <strong>Lineage</strong> — click to expand", body_html)
+
+    def _unused_columns_section_html(self, model: SemanticModel, h: int = 0) -> str:
+        """HTML section listing columns never referenced in any measure or relationship."""
+        try:
+            if not hasattr(self, "_model_lineage") or self._model_lineage is None:
+                return ""
+            unused = self._model_lineage.unused_columns(self._lineage_map)
+            if not unused:
+                return ""
+
+            col_type: dict[tuple[str, str], str] = {}
+            for table in model.tables:
+                for col in table.columns:
+                    col_type[(table.name, col.name)] = col.data_type
+
+            n = len(unused)
+            summary_html = f"🔍 {n} unreferenced column{'s' if n != 1 else ''} &mdash; click to expand"
+            headers = ["Table", "Column", "Type"]
+            rows = []
+            for tbl, col in unused:
+                dtype = col_type.get((tbl, col), "")
+                rows.append([_code(tbl), _code(col), _e(dtype)])
+
+            return (
+                '<section id="unused-columns">\n'
+                + _heading(2 + h, "Unused Columns")
+                + "\n"
+                + _details(summary_html, _table(headers, rows))
+                + "\n</section>"
+            )
+        except Exception:
+            return ""
+
+    def _hidden_objects_section_html(self, model: SemanticModel, h: int = 0) -> str:
+        """HTML section listing all hidden tables and columns."""
+        try:
+            hidden_tables = [t for t in model.tables if t.is_hidden]
+            hidden_col_rows: list[tuple[str, str, str]] = []
+            for table in model.tables:
+                for col in table.columns:
+                    if col.is_hidden:
+                        hidden_col_rows.append((table.name, col.name, col.data_type))
+
+            if not hidden_tables and not hidden_col_rows:
+                return ""
+
+            n_tables = len(hidden_tables)
+            n_cols = len(hidden_col_rows)
+            summary_html = (
+                f"🙈 {n_tables} hidden table{'s' if n_tables != 1 else ''}, "
+                f"{n_cols} hidden column{'s' if n_cols != 1 else ''} &mdash; click to expand"
+            )
+
+            content_parts: list[str] = []
+
+            if hidden_tables:
+                content_parts.append(_heading(3 + h, "Hidden Tables"))
+                rows = [[_code(t.name)] for t in hidden_tables]
+                content_parts.append(_table(["Table"], rows))
+
+            if hidden_col_rows:
+                content_parts.append(_heading(3 + h, "Hidden Columns"))
+                rows = [
+                    [_code(tbl), _code(col), _e(dtype)]
+                    for tbl, col, dtype in sorted(hidden_col_rows)
+                ]
+                content_parts.append(_table(["Table", "Column", "Type"], rows))
+
+            return (
+                '<section id="hidden-objects">\n'
+                + _heading(2 + h, "Hidden Objects")
+                + "\n"
+                + _details(summary_html, "\n".join(content_parts))
+                + "\n</section>"
+            )
+        except Exception:
+            return ""
 
     def _m_expression_html(self, partition: Partition) -> str:
         qa = partition.query_analysis

@@ -77,6 +77,10 @@ class MeasureLineage:
     # Full transitive dependency chain (BFS order, deduplicated)
     all_measure_deps: list[str] = field(default_factory=list)
 
+    # All Table[Column] pairs referenced in this measure's expression
+    # (including transitive deps from nested measures)
+    referenced_columns: set[tuple[str, str]] = field(default_factory=set)
+
     # Flags
     uses_time_intelligence: bool = False
     uses_inactive_relationship: bool = False
@@ -182,6 +186,9 @@ class ModelLineage:
         referenced_tables: set[str] = set(refs.aggregated_tables)
         referenced_tables.update(t for t, _ in refs.table_column_refs)
 
+        # All Table[Column] pairs directly referenced in this expression
+        referenced_columns: set[tuple[str, str]] = set(refs.table_column_refs)
+
         # Base tables start from direct aggregations
         all_base_tables: set[str] = set(refs.aggregated_tables)
 
@@ -205,6 +212,7 @@ class ModelLineage:
                     _has_cycle = True
                 all_base_tables |= dep_lineage.all_base_tables
                 referenced_tables |= dep_lineage.referenced_tables
+                referenced_columns |= dep_lineage.referenced_columns
                 for further_dep in dep_lineage.direct_measure_deps:
                     if further_dep not in visited_measures:
                         queue.append(further_dep)
@@ -232,6 +240,12 @@ class ModelLineage:
         # ALL-removed: only include tables that actually exist in the model
         filter_removed = refs.all_removed_tables & self._all_table_names
 
+        # Filter referenced_columns to only include tables that exist in the model
+        valid_referenced_columns: set[tuple[str, str]] = {
+            (t, c) for t, c in referenced_columns
+            if t in self._all_table_names
+        }
+
         return MeasureLineage(
             measure_name=measure.name,
             home_table=home_table,
@@ -243,6 +257,7 @@ class ModelLineage:
             filter_removed_tables=filter_removed,
             direct_measure_deps=list(refs.nested_measure_names),
             all_measure_deps=all_measure_deps,
+            referenced_columns=valid_referenced_columns,
             uses_time_intelligence=refs.uses_time_intelligence,
             uses_inactive_relationship=refs.uses_inactive_relationship,
             uses_treatas=refs.uses_treatas,
@@ -289,6 +304,45 @@ class ModelLineage:
             for measure in table.measures:
                 index[measure.name] = (table.name, measure)
         return index
+
+    def unused_columns(
+        self,
+        lineage_map: dict,
+    ) -> list[tuple[str, str]]:
+        """Return (table_name, column_name) pairs for columns that are never
+        referenced by any measure DAX expression or any relationship.
+
+        Excludes hidden columns and calculated columns (those without a
+        data_type or whose data_type indicates they are computed).
+        Returns a sorted list of (table_name, column_name) tuples.
+        """
+        # Collect all referenced columns from lineage
+        used_columns: set[tuple[str, str]] = set()
+        for lin in lineage_map.values():
+            used_columns |= lin.referenced_columns
+
+        # Collect all relationship columns
+        for rel in self._model.relationships:
+            used_columns.add((rel.from_table, rel.from_column))
+            used_columns.add((rel.to_table, rel.to_column))
+
+        # Find model columns not in used set
+        unused: list[tuple[str, str]] = []
+        for table in self._model.tables:
+            if _is_system_table(table.name):
+                continue
+            for col in table.columns:
+                # Skip hidden columns
+                if col.is_hidden:
+                    continue
+                # Skip calculated columns (data_type == "calculated")
+                if col.data_type == "calculated":
+                    continue
+                key = (table.name, col.name)
+                if key not in used_columns:
+                    unused.append(key)
+
+        return sorted(unused)
 
     def _reachable_from(self, start_tables: set[str]) -> set[str]:
         """BFS on the reverse-filter graph: return start_tables + all ancestor

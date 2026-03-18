@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [0.6.0] — 2026-03-17
+
+### Added — Deep Model Analysis
+
+- **Column Lineage** (`lineage.py`, `generator.py`, `html_generator.py`):
+  Each measure's lineage now includes the specific `Table[Column]` pairs referenced in its DAX expression (including transitive dependencies from nested measures). Stored as `referenced_columns: set[tuple[str, str]]` on `MeasureLineage`. Rendered in Markdown as `🔎 **Columns:** \`Table\`[\`Column\`], ...` and in HTML as a new `🔎 Colonne` lineage row.
+
+- **Unused Columns Detection** (`lineage.py`, `generator.py`, `html_generator.py`):
+  New `ModelLineage.unused_columns(model, lineage_map)` method detects columns that are never referenced in any measure DAX expression or relationship (excluding hidden and calculated columns). Rendered as a collapsible `## Unused Columns` section in both Markdown and HTML output. Added to sidebar navigation and Table of Contents.
+
+- **Hidden Object Inventory** (`generator.py`, `html_generator.py`):
+  New collapsible `## Hidden Objects` section inventories all hidden tables and hidden columns across the model, grouped with counts. Rendered in both Markdown and HTML output. Added to sidebar navigation and Table of Contents.
+
+### Tests
+- 345 tests — all passing (+15 new tests covering all three features)
+
+---
+
 ## [0.5.11] — 2026-03-17
 
 ### Added
