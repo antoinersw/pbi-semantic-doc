@@ -141,7 +141,7 @@ Each generated Markdown document includes:
 - **Relationships** — collapsible table with cardinality, cross-filter direction, and active/inactive status
 - **Row Level Security** — always visible; DAX filter expression per role
 - **Tables** — one collapsible section per table: columns (type, hidden, description), measures (DAX + auto description)
-- **Measures Index** — collapsible A–Z index of all measures with their home table
+- **Measures Index** — collapsible A–Z index of all measures with full DAX, auto-description, format string and lineage
 
 ---
 
@@ -288,12 +288,12 @@ Manual descriptions in Power BI Desktop always take precedence over auto-generat
 - **Navigable docs**: Table of Contents + collapsible sections + `DOC_<name>.md` naming
 - **Unified combined document**: single file with Semantic Model + Report sections
 
-### v0.6 — Deep Model Analysis
+### v0.6 ✅ — Deep Model Analysis
 - **Column lineage**: trace which measures reference which columns across tables
 - **Unused columns**: detect columns not referenced in any measure, relationship, or visual
 - **Hidden object inventory**: report on all hidden tables and columns
 
-### v0.6 — Report Deep Dive
+### v0.7 — Report Deep Dive
 - **Visual-to-measure mapping**: detect which measures each visual uses (from `prototypeQuery`)
 - **Filter analysis**: page-level and visual-level filters with target fields and values
 - **Theme extraction**: color palette and font settings from theme files
@@ -311,7 +311,7 @@ Issues and pull requests are welcome at [github.com/ViciusLio/pbi-semantic-doc](
 
 ```bash
 pip install pytest
-pytest tests/ -v   # 259 tests
+pytest tests/ -v   # 345 tests
 ```
 
 ---
