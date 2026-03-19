@@ -50,5 +50,5 @@ examples/**/*.md
 examples/**/*.json
 !examples/**/README.md
 
-# docs build output
-docs/
+# docs build output (keep presentations)
+docs/_build/
