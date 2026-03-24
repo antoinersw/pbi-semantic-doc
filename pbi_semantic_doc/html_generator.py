@@ -161,7 +161,7 @@ body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ro
 .main-content {
     flex: 1; min-width: 0;
     padding: 1.5rem 2rem 3rem;
-    max-width: 720px;
+    max-width: 980px;
 }
 .doc-header { margin-bottom: 1rem; }
 .doc-header h1 {
