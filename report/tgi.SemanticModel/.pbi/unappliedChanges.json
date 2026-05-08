@@ -1,0 +1,93 @@
+{
+  "version": "1.0",
+  "conceptualSchemaSettings": {},
+  "queries": [
+    {
+      "name": "tribunaux-judiciaires",
+      "lineageTag": "7375e063-4a57-4c6b-8231-8a83dae6a1c9",
+      "navigationStepName": "Navigation",
+      "text": [
+        "let",
+        "    Source = Csv.Document(File.Contents(\"C:\\Users\\aroschewitz\\Downloads\\tribunaux-judiciaires.csv\"),1077,\"\",ExtraValues.Ignore,65001)",
+        "in",
+        "    Source"
+      ],
+      "isDirectQuery": false,
+      "lastLoadedAsTableFormulaText": "{\"IncludesReferencedQueries\":false,\"RootFormulaText\":\"let\\n    Source = Csv.Document(File.Contents(\\\"C:\\\\Users\\\\aroschewitz\\\\Downloads\\\\tribunaux-judiciaires.csv\\\"),1077,\\\"\\\",ExtraValues.Ignore,65001)\\nin\\n    Source\",\"ReferencedQueriesFormulaText\":{}}",
+      "loadAsTableDisabled": false,
+      "resultType": "Exception",
+      "isHidden": false
+    },
+    {
+      "name": "resultats-vente-2006-2023",
+      "lineageTag": "78b4bdd2-f978-4f84-b5d6-76fb4fd840d0",
+      "navigationStepName": "Navigation",
+      "text": [
+        "let",
+        "    Source = Csv.Document(File.Contents(\"C:\\Users\\malchik\\Downloads\\resultats-vente-2006-2023.csv\"),[Delimiter=\",\", Columns=8, Encoding=65001, QuoteStyle=QuoteStyle.None]),",
+        "    #\"En-têtes promus\" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),",
+        "    #\"Valeur remplacée\" = Table.ReplaceValue(#\"En-têtes promus\",\"Tribunal Judiciaire de \",\"\",Replacer.ReplaceText,{\"Organisateur_nom\"}),",
+        "    #\"Valeur remplacée1\" = Table.ReplaceValue(#\"Valeur remplacée\",\"Tribunal Judiciaire d'\",\"\",Replacer.ReplaceText,{\"Organisateur_nom\"}),",
+        "    #\"Valeur remplacée2\" = Table.ReplaceValue(#\"Valeur remplacée1\",\"Tribunal judiciaire de \",\"\",Replacer.ReplaceText,{\"Organisateur_nom\"}),",
+        "    #\"Date analysée\" = Table.TransformColumns(#\"Valeur remplacée2\",{{\"Date de vente\", each Date.From(DateTimeZone.From(_)), type date}}),",
+        "    #\"Valeur remplacée3\" = Table.ReplaceValue(#\"Date analysée\",\".\",\",\",Replacer.ReplaceText,{\"Resultat\",\"Superficie en m²\"}),",
+        "    #\"Type modifié\" = Table.TransformColumnTypes(#\"Valeur remplacée3\",{{\"Resultat\", Int64.Type}, {\"Superficie en m²\", type number}}),",
+        "    #\"Fractionner la colonne par délimiteur\" = Table.SplitColumn(#\"Type modifié\", \"Adresse\", Splitter.SplitTextByDelimiter(\",\", QuoteStyle.Csv), {\"Rue\", \"CP ET VILLE\", \"PAYS\", \"Adresse.4\", \"Adresse.5\"}),",
+        "    #\"Diviser la colonne selon les transitions de caractères\" = Table.SplitColumn(#\"Fractionner la colonne par délimiteur\", \"CP ET VILLE\", Splitter.SplitTextByCharacterTransition({\"0\"..\"9\"}, (c) => not List.Contains({\"0\"..\"9\"}, c)), {\"CODE POSTAL\", \"VILLE\"}),",
+        "    #\"Espaces supprimés\" = Table.TransformColumns(#\"Diviser la colonne selon les transitions de caractères\",{{\"Rue\", Text.Trim, type text}, {\"CODE POSTAL\", Text.Trim, type text}, {\"VILLE\", Text.Trim, type text}, {\"PAYS\", Text.Trim, type text}}),",
+        "    #\"Autres colonnes supprimées\" = Table.SelectColumns(#\"Espaces supprimés\",{\"Date de vente\", \"Organisateur_id\", \"Organisateur_nom\", \"Categorie\", \"Rue\", \"CODE POSTAL\", \"VILLE\", \"PAYS\", \"Superficie en m²\", \"Resultat\", \"Url\"}),",
+        "    #\"Colonnes renommées\" = Table.RenameColumns(#\"Autres colonnes supprimées\",{{\"Organisateur_nom\", \"VILLE TRIBUNAL\"}}),",
+        "    #\"Texte en majuscules\" = Table.TransformColumns(#\"Colonnes renommées\",{{\"VILLE\", Text.Upper, type text}}),",
+        "    #\"Lignes filtrées\" = Table.SelectRows(#\"Texte en majuscules\", each ([Categorie] = \"appartements\" or [Categorie] = \"maisons\") and ([#\"Superficie en m²\"] <> null)),",
+        "    #\"Année insérée\" = Table.AddColumn(#\"Lignes filtrées\", \"Année\", each Date.Year([Date de vente]), Int64.Type),",
+        "    #\"Colonnes renommées1\" = Table.RenameColumns(#\"Année insérée\",{{\"Resultat\", \"RESULTAT VENTE\"}})",
+        "in",
+        "    #\"Colonnes renommées1\""
+      ],
+      "isDirectQuery": false,
+      "lastLoadedAsTableFormulaText": "{\"IncludesReferencedQueries\":false,\"RootFormulaText\":\"let\\n    Source = Csv.Document(File.Contents(\\\"C:\\\\Users\\\\aroschewitz\\\\Downloads\\\\resultats-vente-2006-2023.csv\\\"),[Delimiter=\\\",\\\", Columns=8, Encoding=65001, QuoteStyle=QuoteStyle.None]),\\n    #\\\"En-têtes promus\\\" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),\\n    #\\\"Valeur remplacée\\\" = Table.ReplaceValue(#\\\"En-têtes promus\\\",\\\"Tribunal Judiciaire de \\\",\\\"\\\",Replacer.ReplaceText,{\\\"Organisateur_nom\\\"}),\\n    #\\\"Valeur remplacée1\\\" = Table.ReplaceValue(#\\\"Valeur remplacée\\\",\\\"Tribunal Judiciaire d'\\\",\\\"\\\",Replacer.ReplaceText,{\\\"Organisateur_nom\\\"}),\\n    #\\\"Valeur remplacée2\\\" = Table.ReplaceValue(#\\\"Valeur remplacée1\\\",\\\"Tribunal judiciaire de \\\",\\\"\\\",Replacer.ReplaceText,{\\\"Organisateur_nom\\\"}),\\n    #\\\"Date analysée\\\" = Table.TransformColumns(#\\\"Valeur remplacée2\\\",{{\\\"Date de vente\\\", each Date.From(DateTimeZone.From(_)), type date}}),\\n    #\\\"Valeur remplacée3\\\" = Table.ReplaceValue(#\\\"Date analysée\\\",\\\".\\\",\\\",\\\",Replacer.ReplaceText,{\\\"Resultat\\\",\\\"Superficie en m²\\\"}),\\n    #\\\"Type modifié\\\" = Table.TransformColumnTypes(#\\\"Valeur remplacée3\\\",{{\\\"Resultat\\\", Int64.Type}, {\\\"Superficie en m²\\\", type number}}),\\n    #\\\"Fractionner la colonne par délimiteur\\\" = Table.SplitColumn(#\\\"Type modifié\\\", \\\"Adresse\\\", Splitter.SplitTextByDelimiter(\\\",\\\", QuoteStyle.Csv), {\\\"Rue\\\", \\\"CP ET VILLE\\\", \\\"PAYS\\\", \\\"Adresse.4\\\", \\\"Adresse.5\\\"}),\\n    #\\\"Diviser la colonne selon les transitions de caractères\\\" = Table.SplitColumn(#\\\"Fractionner la colonne par délimiteur\\\", \\\"CP ET VILLE\\\", Splitter.SplitTextByCharacterTransition({\\\"0\\\"..\\\"9\\\"}, (c) => not List.Contains({\\\"0\\\"..\\\"9\\\"}, c)), {\\\"CODE POSTAL\\\", \\\"VILLE\\\"}),\\n    #\\\"Espaces supprimés\\\" = Table.TransformColumns(#\\\"Diviser la colonne selon les transitions de caractères\\\",{{\\\"Rue\\\", Text.Trim, type text}, {\\\"CODE POSTAL\\\", Text.Trim, type text}, {\\\"VILLE\\\", Text.Trim, type text}, {\\\"PAYS\\\", Text.Trim, type text}}),\\n    #\\\"Autres colonnes supprimées\\\" = Table.SelectColumns(#\\\"Espaces supprimés\\\",{\\\"Date de vente\\\", \\\"Organisateur_id\\\", \\\"Organisateur_nom\\\", \\\"Categorie\\\", \\\"Rue\\\", \\\"CODE POSTAL\\\", \\\"VILLE\\\", \\\"PAYS\\\", \\\"Superficie en m²\\\", \\\"Resultat\\\", \\\"Url\\\"}),\\n    #\\\"Colonnes renommées\\\" = Table.RenameColumns(#\\\"Autres colonnes supprimées\\\",{{\\\"Organisateur_nom\\\", \\\"VILLE TRIBUNAL\\\"}}),\\n    #\\\"Texte en majuscules\\\" = Table.TransformColumns(#\\\"Colonnes renommées\\\",{{\\\"VILLE\\\", Text.Upper, type text}}),\\n    #\\\"Lignes filtrées\\\" = Table.SelectRows(#\\\"Texte en majuscules\\\", each ([Categorie] = \\\"appartements\\\" or [Categorie] = \\\"maisons\\\") and ([#\\\"Superficie en m²\\\"] <> null)),\\n    #\\\"Année insérée\\\" = Table.AddColumn(#\\\"Lignes filtrées\\\", \\\"Année\\\", each Date.Year([Date de vente]), Int64.Type),\\n    #\\\"Colonnes renommées1\\\" = Table.RenameColumns(#\\\"Année insérée\\\",{{\\\"Resultat\\\", \\\"RESULTAT VENTE\\\"}})\\nin\\n    #\\\"Colonnes renommées1\\\"\",\"ReferencedQueriesFormulaText\":{}}",
+      "loadAsTableDisabled": false,
+      "resultType": "Table",
+      "isHidden": false
+    },
+    {
+      "name": "dvf2023",
+      "lineageTag": "8e58e7b3-ee20-4f1e-8204-6d539a1d4a84",
+      "text": [
+        "let",
+        "    Source = Csv.Document(File.Contents(\"C:\\Users\\aroschewitz\\Downloads\\dvf2023.csv\"),[Delimiter=\",\", Columns=11, Encoding=1252, QuoteStyle=QuoteStyle.None]),",
+        "    #\"En-têtes promus\" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),",
+        "    #\"Valeur remplacée\" = Table.ReplaceValue(#\"En-têtes promus\",\".\",\",\",Replacer.ReplaceText,{\"Nb_mutations\", \"NbMaisons\", \"NbApparts\", \"propmaison\", \"propappart\", \"PrixMoyen\", \"Prixm2Moyen\", \"SurfaceMoy\"}),",
+        "    #\"Type modifié\" = Table.TransformColumnTypes(#\"Valeur remplacée\",{{\"Nb_mutations\", Int64.Type}, {\"NbMaisons\", Int64.Type}, {\"NbApparts\", Int64.Type}, {\"propmaison\", type number}, {\"propappart\", type number}, {\"PrixMoyen\", type number}, {\"Prixm2Moyen\", type number}, {\"SurfaceMoy\", type number}})",
+        "in",
+        "    #\"Type modifié\""
+      ],
+      "isDirectQuery": false,
+      "lastLoadedAsTableFormulaText": "{\"IncludesReferencedQueries\":false,\"RootFormulaText\":\"let\\n    Source = Csv.Document(File.Contents(\\\"C:\\\\Users\\\\aroschewitz\\\\Downloads\\\\dvf2023.csv\\\"),[Delimiter=\\\",\\\", Columns=11, Encoding=1252, QuoteStyle=QuoteStyle.None]),\\n    #\\\"En-têtes promus\\\" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),\\n    #\\\"Valeur remplacée\\\" = Table.ReplaceValue(#\\\"En-têtes promus\\\",\\\".\\\",\\\",\\\",Replacer.ReplaceText,{\\\"Nb_mutations\\\", \\\"NbMaisons\\\", \\\"NbApparts\\\", \\\"propmaison\\\", \\\"propappart\\\", \\\"PrixMoyen\\\", \\\"Prixm2Moyen\\\", \\\"SurfaceMoy\\\"}),\\n    #\\\"Type modifié\\\" = Table.TransformColumnTypes(#\\\"Valeur remplacée\\\",{{\\\"Nb_mutations\\\", Int64.Type}, {\\\"NbMaisons\\\", Int64.Type}, {\\\"NbApparts\\\", Int64.Type}, {\\\"propmaison\\\", type number}, {\\\"propappart\\\", type number}, {\\\"PrixMoyen\\\", type number}, {\\\"Prixm2Moyen\\\", type number}, {\\\"SurfaceMoy\\\", type number}})\\nin\\n    #\\\"Type modifié\\\"\",\"ReferencedQueriesFormulaText\":{}}",
+      "loadAsTableDisabled": false,
+      "resultType": "Exception",
+      "isHidden": false
+    },
+    {
+      "name": "Table Décisionnelle INSEE",
+      "lineageTag": "1e81b301-2113-458d-b939-ef309d1b23e9",
+      "text": [
+        "let",
+        "    Source = Excel.Workbook(File.Contents(\"C:\\Users\\aroschewitz\\Downloads\\MDB-INSEE-V2.xls\"), null, true),",
+        "    #\"Table Décisionnelle INSEE1\" = Source{[Name=\"Table Décisionnelle INSEE\"]}[Data],",
+        "    #\"En-têtes promus\" = Table.PromoteHeaders(#\"Table Décisionnelle INSEE1\", [PromoteAllScalars=true]),",
+        "    #\"Texte en majuscules\" = Table.TransformColumns(#\"En-têtes promus\",{{\"LIBGEO\", Text.Upper, type text}})",
+        "in",
+        "    #\"Texte en majuscules\""
+      ],
+      "isDirectQuery": false,
+      "lastLoadedAsTableFormulaText": "{\"IncludesReferencedQueries\":false,\"RootFormulaText\":\"let\\n    Source = Excel.Workbook(File.Contents(\\\"C:\\\\Users\\\\aroschewitz\\\\Downloads\\\\MDB-INSEE-V2.xls\\\"), null, true),\\n    #\\\"Table Décisionnelle INSEE1\\\" = Source{[Name=\\\"Table Décisionnelle INSEE\\\"]}[Data],\\n    #\\\"En-têtes promus\\\" = Table.PromoteHeaders(#\\\"Table Décisionnelle INSEE1\\\", [PromoteAllScalars=true]),\\n    #\\\"Texte en majuscules\\\" = Table.TransformColumns(#\\\"En-têtes promus\\\",{{\\\"LIBGEO\\\", Text.Upper, type text}})\\nin\\n    #\\\"Texte en majuscules\\\"\",\"ReferencedQueriesFormulaText\":{}}",
+      "loadAsTableDisabled": false,
+      "resultType": "Exception",
+      "isHidden": false
+    }
+  ],
+  "queryGroups": [],
+  "culture": "fr-FR",
+  "firewallEnabled": true
+}

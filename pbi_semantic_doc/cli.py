@@ -7,6 +7,8 @@ Usage:
 Examples:
     pbi-semantic-doc ./MyReport.SemanticModel
     pbi-semantic-doc ./MyReport.SemanticModel --output ./docs/MODEL.md
+    pbi-semantic-doc ./MyReport.SemanticModel --output ./docs/MODEL.json  # → JSON (.json sets format)
+    pbi-semantic-doc ./MyReport.SemanticModel --format json --output ./docs/out.md
     pbi-semantic-doc . --output DOC.md
     pbi-semantic-doc ./MyProject --combined --output ./docs/FULL.md
 """
@@ -25,6 +27,7 @@ from .generator import MarkdownGenerator
 from .html_generator import HtmlGenerator
 from .report_parser import ReportParser
 from .report_generator import ReportGenerator
+from .json_generator import combined_project_document, semantic_model_document
 
 
 def _safe_name(name: str) -> str:
@@ -137,7 +140,9 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help=(
             "Where to write the output file. "
-            "Defaults to DOC_<name>.md in the parent of the input folder."
+            "Defaults to DOC_<name>.md in the parent of the input folder. "
+            "If the path ends with .json or .html and --format is omitted (default md), "
+            "json or html is used automatically."
         ),
     )
     p.add_argument(
@@ -154,12 +159,28 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
+def _sync_format_with_output_extension(args: argparse.Namespace) -> None:
+    """If format is still the default (md), infer json/html from the output extension.
+
+    Avoids writing Markdown into a *.json path (common mistake: omitting --format json).
+    Explicit ``-f html`` / ``-f json`` is left unchanged.
+    """
+    if not args.output or args.format != "md":
+        return
+    suf = Path(args.output).suffix.lower()
+    if suf == ".json":
+        args.format = "json"
+    elif suf in (".html", ".htm"):
+        args.format = "html"
+
+
 def main(argv: list[str] | None = None) -> int:
     # Ensure stdout can handle Unicode on Windows (cp1252 terminals)
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
     args = build_parser().parse_args(argv)
+    _sync_format_with_output_extension(args)
 
     if args.combined:
         return analyze_combined(args)
@@ -191,13 +212,20 @@ def analyze_semantic_model(args) -> int:
     if args.output:
         output_path = Path(args.output).resolve()
     else:
-        ext = ".html" if args.format == "html" else ".md"
+        if args.format == "html":
+            ext = ".html"
+        elif args.format == "json":
+            ext = ".json"
+        else:
+            ext = ".md"
         output_path = model_path.parent / f"DOC_{_safe_name(model.name)}{ext}"
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     if args.format == "html":
         content = HtmlGenerator().generate(model)
+    elif args.format == "json":
+        content = json.dumps(semantic_model_document(model), indent=2, ensure_ascii=False)
     else:
         content = MarkdownGenerator().generate(model)
     output_path.write_text(content, encoding="utf-8")
@@ -350,17 +378,9 @@ def analyze_combined(args) -> int:
     )
 
     if args.format == "json":
-        combined: dict = {}
-        if model:
-            combined["semantic_model"] = {
-                "name": model.name,
-                "tables": len(model.visible_tables),
-                "measures": sum(len(t.measures) for t in model.visible_tables),
-                "relationships": len(model.relationships),
-            }
-        if report_metrics:
-            combined["report"] = report_metrics.to_dict()
-        content = json.dumps(combined, indent=2, ensure_ascii=False)
+        report_dict = report_metrics.to_dict() if report_metrics else None
+        doc = combined_project_document(project_name, model, report_dict)
+        content = json.dumps(doc, indent=2, ensure_ascii=False)
     elif args.format == "html":
         content = HtmlGenerator().generate_combined(model, report_metrics, project_name)
     else:  # markdown — unified single document

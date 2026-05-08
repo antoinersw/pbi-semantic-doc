@@ -1,0 +1,840 @@
+table 'Table Décisionnelle INSEE'
+	lineageTag: 1e81b301-2113-458d-b939-ef309d1b23e9
+
+	measure prix_acquisition =
+			
+			sum('resultats-vente-2006-2023'[RESULTAT VENTE]) *1.1
+		lineageTag: 8d35fbba-5679-41e2-b472-9f1bb719a06d
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure prix_avec_travaux =
+			
+			[prix_acquisition] + sum('resultats-vente-2006-2023'[Superficie en m²])*300
+		lineageTag: cda45198-2c8d-49fc-ac69-6688a1e7cb2e
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column CODGEO
+		dataType: string
+		lineageTag: aa74c64b-c11b-4c98-9503-11c31685e03c
+		summarizeBy: none
+		sourceColumn: CODGEO
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Pharmacies et parfumerie'
+		dataType: string
+		lineageTag: cc055058-698c-43e0-8015-b35f5642eeb8
+		summarizeBy: none
+		sourceColumn: Nb Pharmacies et parfumerie
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Dynamique Entrepreneuriale'
+		dataType: string
+		lineageTag: 57be850b-6d73-46fb-b83a-b7c1c7cbd94b
+		summarizeBy: none
+		sourceColumn: Dynamique Entrepreneuriale
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Dynamique Entrepreneuriale Service et Commerce'
+		dataType: string
+		lineageTag: 27a31353-8095-4c24-8dd3-c31dbb1e8843
+		summarizeBy: none
+		sourceColumn: Dynamique Entrepreneuriale Service et Commerce
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Synergie Médicale COMMUNE'
+		dataType: string
+		lineageTag: 1dfe1a97-c3f7-43e5-8522-9e175157331d
+		summarizeBy: none
+		sourceColumn: Synergie Médicale COMMUNE
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Orientation Economique'
+		dataType: string
+		lineageTag: 7b2c0a2b-8e80-43cf-9289-f99bebe070f4
+		summarizeBy: none
+		sourceColumn: Orientation Economique
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Indice Fiscal Partiel'
+		dataType: string
+		lineageTag: 1a00dfc2-b11c-4dc2-a9d6-847bd03187e3
+		summarizeBy: none
+		sourceColumn: Indice Fiscal Partiel
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Score Fiscal'
+		dataType: string
+		lineageTag: 1a066147-7ac7-44f1-abed-faf59b95710b
+		summarizeBy: none
+		sourceColumn: Score Fiscal
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Indice Evasion Client'
+		dataType: string
+		lineageTag: 2fe84107-8366-40cb-8515-79edb8ba7c2d
+		summarizeBy: none
+		sourceColumn: Indice Evasion Client
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Score Evasion Client'
+		dataType: string
+		lineageTag: 3f11d40d-b7bb-4fc7-afdd-29172564560a
+		summarizeBy: none
+		sourceColumn: Score Evasion Client
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Indice Synergie Médicale'
+		dataType: string
+		lineageTag: faa8a472-e735-4f3c-8c9f-4e536e77c409
+		summarizeBy: none
+		sourceColumn: Indice Synergie Médicale
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Score Synergie Médicale'
+		dataType: string
+		lineageTag: 1d464c8e-a557-4aaa-a213-a2d29f4201e3
+		summarizeBy: none
+		sourceColumn: Score Synergie Médicale
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'SEG Croissance POP'
+		dataType: string
+		lineageTag: a815c698-4aa9-43b0-b5ff-36ca037b10a5
+		summarizeBy: none
+		sourceColumn: SEG Croissance POP
+
+		annotation SummarizationSetBy = Automatic
+
+	column LIBGEO
+		dataType: string
+		lineageTag: 8b000faf-fc5a-4dcb-b7c7-8452094da0ce
+		summarizeBy: none
+		sourceColumn: LIBGEO
+
+		annotation SummarizationSetBy = Automatic
+
+	column REG
+		dataType: string
+		lineageTag: cf48771d-8177-479f-9776-59234c57c8ad
+		summarizeBy: none
+		sourceColumn: REG
+
+		annotation SummarizationSetBy = Automatic
+
+	column DEP
+		dataType: string
+		lineageTag: 606a69f7-568d-4eb7-aa23-0e85a436a6e0
+		summarizeBy: none
+		sourceColumn: DEP
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Omnipraticiens BV'
+		dataType: string
+		lineageTag: 0d9a7430-b4ed-43d4-9e1f-528ea4cae8d8
+		summarizeBy: none
+		sourceColumn: Nb Omnipraticiens BV
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Infirmiers Libéraux BV'
+		dataType: string
+		lineageTag: 2fe7be98-7cde-4999-bd79-f0e3e8c49569
+		summarizeBy: none
+		sourceColumn: Nb Infirmiers Libéraux BV
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb dentistes Libéraux BV'
+		dataType: string
+		lineageTag: 46d42e7d-6428-4a2a-a2e9-beb44f9fb73c
+		summarizeBy: none
+		sourceColumn: Nb dentistes Libéraux BV
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb pharmaciens Libéraux BV'
+		dataType: string
+		lineageTag: d30f0b24-b7b0-40a3-92a6-c07d3448815c
+		summarizeBy: none
+		sourceColumn: Nb pharmaciens Libéraux BV
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Densité Médicale BV'
+		dataType: string
+		lineageTag: c1e561d7-7e88-4fb8-a14d-7389dab71f7a
+		summarizeBy: none
+		sourceColumn: Densité Médicale BV
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Score équipement de santé BV'
+		dataType: string
+		lineageTag: 2168eecd-3fbb-4307-9382-8cb8c75e4029
+		summarizeBy: none
+		sourceColumn: Score équipement de santé BV
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Indice Démographique'
+		dataType: string
+		lineageTag: 94d518b0-c7fa-4ca4-87c3-a8fd3395a05b
+		summarizeBy: none
+		sourceColumn: Indice Démographique
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Score Démographique'
+		dataType: string
+		lineageTag: aa17a003-2893-44f9-92fe-f13734304a3b
+		summarizeBy: none
+		sourceColumn: Score Démographique
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Indice Ménages'
+		dataType: string
+		lineageTag: 628f5e86-3b77-4d85-a88d-0821e1db6d33
+		summarizeBy: none
+		sourceColumn: Indice Ménages
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Score Ménages'
+		dataType: string
+		lineageTag: 488386e5-e7b2-4ed0-895c-5fe9e6fbbbe4
+		summarizeBy: none
+		sourceColumn: Score Ménages
+
+		annotation SummarizationSetBy = Automatic
+
+	column Population
+		dataType: string
+		lineageTag: 0007bb31-1b60-4b95-80c0-4f638f0065cd
+		summarizeBy: none
+		sourceColumn: Population
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Evolution Population'
+		dataType: string
+		lineageTag: 6bd3afac-11b5-4f75-9a80-a69661abd053
+		summarizeBy: none
+		sourceColumn: Evolution Population
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Evolution Pop %'
+		dataType: string
+		lineageTag: 7270c30d-c343-4678-a602-19bcd6ac8c17
+		summarizeBy: none
+		sourceColumn: Evolution Pop %
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Ménages'
+		dataType: string
+		lineageTag: 8b94fee4-c0bf-4170-924e-bdaf6eb8d759
+		summarizeBy: none
+		sourceColumn: Nb Ménages
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Résidences Principales'
+		dataType: string
+		lineageTag: f94bc50a-a66b-423a-900b-a35bf961bda7
+		summarizeBy: none
+		sourceColumn: Nb Résidences Principales
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb propriétaire'
+		dataType: string
+		lineageTag: ddc37fcc-d1da-4340-8600-ffeea50fd051
+		summarizeBy: none
+		sourceColumn: Nb propriétaire
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Logement'
+		dataType: string
+		lineageTag: f41a689b-5597-4181-a271-10477e0075a2
+		summarizeBy: none
+		sourceColumn: Nb Logement
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Résidences Secondaires'
+		dataType: string
+		lineageTag: fcff70c4-6843-4f12-ae17-b4ec9a7e74a8
+		summarizeBy: none
+		sourceColumn: Nb Résidences Secondaires
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Log Vacants'
+		dataType: string
+		lineageTag: 21d68628-dab1-4b59-85d3-77610bc350d8
+		summarizeBy: none
+		sourceColumn: Nb Log Vacants
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Occupants Résidence Principale'
+		dataType: string
+		lineageTag: eefd7565-ba41-4c10-89cd-48b7517831a0
+		summarizeBy: none
+		sourceColumn: Nb Occupants Résidence Principale
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Femme'
+		dataType: string
+		lineageTag: c20cc44c-c382-4478-9d14-96b9e72d749e
+		summarizeBy: none
+		sourceColumn: Nb Femme
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Homme'
+		dataType: string
+		lineageTag: 0721ecf4-31ac-4f0b-8ded-369c47534a01
+		summarizeBy: none
+		sourceColumn: Nb Homme
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Mineurs'
+		dataType: string
+		lineageTag: c168639f-2550-4d7c-a216-b46c1b0c39a7
+		summarizeBy: none
+		sourceColumn: Nb Mineurs
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Majeurs'
+		dataType: string
+		lineageTag: e23d681b-645f-4d23-b118-036d43fabe32
+		summarizeBy: none
+		sourceColumn: Nb Majeurs
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Etudiants'
+		dataType: string
+		lineageTag: a5bd323c-4720-4a9f-959a-21a1ca27596e
+		summarizeBy: none
+		sourceColumn: Nb Etudiants
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Entreprises Secteur Services'
+		dataType: string
+		lineageTag: e1d46312-9778-4e6a-afc8-b3cc9ac9ed17
+		summarizeBy: none
+		sourceColumn: Nb Entreprises Secteur Services
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Entreprises Secteur Commerce'
+		dataType: string
+		lineageTag: 9d5c0280-4bbf-4140-a5c6-e115b9af555b
+		summarizeBy: none
+		sourceColumn: Nb Entreprises Secteur Commerce
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Entreprises Secteur Construction'
+		dataType: string
+		lineageTag: 9623cdaf-edca-4260-80da-d564f9295dfe
+		summarizeBy: none
+		sourceColumn: Nb Entreprises Secteur Construction
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Entreprises Secteur Industrie'
+		dataType: string
+		lineageTag: 1161b525-14ef-4a36-b237-0dfbc3b8b060
+		summarizeBy: none
+		sourceColumn: Nb Entreprises Secteur Industrie
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Création Enteprises'
+		dataType: string
+		lineageTag: 92bfe93a-2549-4c40-b4c4-0a7340efcc15
+		summarizeBy: none
+		sourceColumn: Nb Création Enteprises
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Création Industrielles'
+		dataType: string
+		lineageTag: 097a9bc3-2677-45c6-b30f-a181ff697984
+		summarizeBy: none
+		sourceColumn: Nb Création Industrielles
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Création Construction'
+		dataType: string
+		lineageTag: d3031230-67ef-4ab7-b64a-a270f4f48c7a
+		summarizeBy: none
+		sourceColumn: Nb Création Construction
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Création Commerces'
+		dataType: string
+		lineageTag: 66479c3e-7a25-44cf-88c5-ed69c400d7a2
+		summarizeBy: none
+		sourceColumn: Nb Création Commerces
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Création Services'
+		dataType: string
+		lineageTag: c9eb532a-3099-41ab-bada-a8afb6a43539
+		summarizeBy: none
+		sourceColumn: Nb Création Services
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Moyenne Revenus Fiscaux Départementaux'
+		dataType: string
+		lineageTag: 690ce079-1b2d-4755-9ab3-321b96031361
+		summarizeBy: none
+		sourceColumn: Moyenne Revenus Fiscaux Départementaux
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Moyenne Revenus Fiscaux Régionaux'
+		dataType: string
+		lineageTag: 417f7dcd-095f-4435-8404-8f6318db00f1
+		summarizeBy: none
+		sourceColumn: Moyenne Revenus Fiscaux Régionaux
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Dep Moyenne Salaires Horaires'
+		dataType: string
+		lineageTag: 426ea55c-45da-4786-a2dd-7da9691f3284
+		summarizeBy: none
+		sourceColumn: Dep Moyenne Salaires Horaires
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Dep Moyenne Salaires Cadre Horaires'
+		dataType: string
+		lineageTag: 97e83056-65db-4b44-b832-3c7cbbf040a7
+		summarizeBy: none
+		sourceColumn: Dep Moyenne Salaires Cadre Horaires
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Dep Moyenne Salaires Prof Intermédiaire Horaires'
+		dataType: string
+		lineageTag: a01ed312-198f-4b26-befa-724289523bbc
+		summarizeBy: none
+		sourceColumn: Dep Moyenne Salaires Prof Intermédiaire Horaires
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Dep Moyenne Salaires Employé Horaires'
+		dataType: string
+		lineageTag: f3aa84c8-f3d8-470a-9824-40f58873fdc7
+		summarizeBy: none
+		sourceColumn: Dep Moyenne Salaires Employé Horaires
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Dep Moyenne Salaires Ouvrié Horaires'
+		dataType: string
+		lineageTag: 90b495eb-396b-4c86-a952-ecc85c05c460
+		summarizeBy: none
+		sourceColumn: Dep Moyenne Salaires Ouvrié Horaires
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Reg Moyenne Salaires Horaires'
+		dataType: string
+		lineageTag: 4646a84d-c894-4ef8-a65b-678f2986864f
+		summarizeBy: none
+		sourceColumn: Reg Moyenne Salaires Horaires
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Reg Moyenne Salaires Cadre Horaires'
+		dataType: string
+		lineageTag: 0d980319-b1ad-4a25-b02e-d9d7a8654db2
+		summarizeBy: none
+		sourceColumn: Reg Moyenne Salaires Cadre Horaires
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Reg Moyenne Salaires Prof Intermédiaire Horaires'
+		dataType: string
+		lineageTag: 4d37d406-409e-4208-afdb-dd95db0c4a43
+		summarizeBy: none
+		sourceColumn: Reg Moyenne Salaires Prof Intermédiaire Horaires
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Reg Moyenne Salaires Employé Horaires'
+		dataType: string
+		lineageTag: 16c1d6c5-630e-4131-9cb4-56c7faad197c
+		summarizeBy: none
+		sourceColumn: Reg Moyenne Salaires Employé Horaires
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Reg Moyenne Salaires Ouvrié Horaires'
+		dataType: string
+		lineageTag: a0fdb68d-aa1b-4c56-88b5-e1eb1d3e395d
+		summarizeBy: none
+		sourceColumn: Reg Moyenne Salaires Ouvrié Horaires
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Valeur ajoutée régionale'
+		dataType: string
+		lineageTag: 9f95ddd2-8a9b-4489-9310-cb0f22abe5c5
+		summarizeBy: none
+		sourceColumn: Valeur ajoutée régionale
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Urbanité Ruralité'
+		dataType: string
+		lineageTag: 0d5fdf67-767f-4443-a816-d32e5320ebad
+		summarizeBy: none
+		sourceColumn: Urbanité Ruralité
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Score Urbanité'
+		dataType: string
+		lineageTag: b0e9765b-7d94-48d7-9a11-6757ea02c7a4
+		summarizeBy: none
+		sourceColumn: Score Urbanité
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Atifs'
+		dataType: string
+		lineageTag: d88f5682-8987-46ef-bf6d-f2b61bf2a71c
+		summarizeBy: none
+		sourceColumn: Nb Atifs
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Actifs Salariés'
+		dataType: string
+		lineageTag: 38b6aa2e-6737-43fa-a484-a93595efa995
+		summarizeBy: none
+		sourceColumn: Nb Actifs Salariés
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Actifs Non Salariés'
+		dataType: string
+		lineageTag: 1e5caac7-8d73-4a3c-b3c8-f0c7a2b732a5
+		summarizeBy: none
+		sourceColumn: Nb Actifs Non Salariés
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Logement Secondaire et Occasionnel'
+		dataType: string
+		lineageTag: ce7c3a9f-d06a-4721-9ca5-258b1e518ddb
+		summarizeBy: none
+		sourceColumn: Nb Logement Secondaire et Occasionnel
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Hotel'
+		dataType: string
+		lineageTag: 89dd2054-304e-4c24-9155-4b4e7ed94790
+		summarizeBy: none
+		sourceColumn: Nb Hotel
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Capacité Hotel'
+		dataType: string
+		lineageTag: bcf16ed7-8272-4941-8d39-db43a356c4e3
+		summarizeBy: none
+		sourceColumn: Capacité Hotel
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Camping'
+		dataType: string
+		lineageTag: be0c3631-0123-4bd7-b869-7a2a7a8dab55
+		summarizeBy: none
+		sourceColumn: Nb Camping
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Capacité Camping'
+		dataType: string
+		lineageTag: eb444822-7566-49ee-95f4-e819eb84551e
+		summarizeBy: none
+		sourceColumn: Capacité Camping
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Dynamique Démographique BV'
+		dataType: string
+		lineageTag: f1faef2c-7755-4ab8-806d-d8a3ab7770be
+		summarizeBy: none
+		sourceColumn: Dynamique Démographique BV
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Taux étudiants'
+		dataType: string
+		lineageTag: aa6ec8c6-6668-43bc-a373-28c89e237da5
+		summarizeBy: none
+		sourceColumn: Taux étudiants
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Taux Propriété'
+		dataType: string
+		lineageTag: 3ff3dde6-fb73-40b6-8690-5133500f53ee
+		summarizeBy: none
+		sourceColumn: Taux Propriété
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Dynamique Démographique INSEE'
+		dataType: string
+		lineageTag: 3932a536-caf5-47eb-a8ab-4983347a2799
+		summarizeBy: none
+		sourceColumn: Dynamique Démographique INSEE
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Capacité Fisc'
+		dataType: string
+		lineageTag: add431c6-041b-4dec-ab6f-551a1af304cc
+		summarizeBy: none
+		sourceColumn: Capacité Fisc
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Capacité Fiscale'
+		dataType: string
+		lineageTag: 4189848a-8802-40b6-b8a1-023e7f6e075f
+		summarizeBy: none
+		sourceColumn: Capacité Fiscale
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Moyenne Revnus fiscaux'
+		dataType: string
+		lineageTag: 49acb1ad-e5f9-46c9-b2c6-2eed539d2061
+		summarizeBy: none
+		sourceColumn: Moyenne Revnus fiscaux
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Taux Evasion Client'
+		dataType: string
+		lineageTag: 56a1373f-1233-4a79-b0f5-1f81668dcba9
+		summarizeBy: none
+		sourceColumn: Taux Evasion Client
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Education, santé, action sociale'
+		dataType: string
+		lineageTag: 944cf3f5-96f8-4ba0-8426-cde39f6f0a6c
+		summarizeBy: none
+		sourceColumn: Nb Education, santé, action sociale
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Services personnels et domestiques'
+		dataType: string
+		lineageTag: 375e4c1c-23bc-41e3-a46b-c3e7994c1480
+		summarizeBy: none
+		sourceColumn: Nb Services personnels et domestiques
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Santé, action sociale'
+		dataType: string
+		lineageTag: 10a7ece8-a754-4cb9-9b42-4f6a2f7de800
+		summarizeBy: none
+		sourceColumn: Nb Santé, action sociale
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb Industries des biens intermédiaires'
+		dataType: string
+		lineageTag: ae282554-0373-4fed-96b9-9c3d69489b32
+		summarizeBy: none
+		sourceColumn: Nb Industries des biens intermédiaires
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb de Commerce'
+		dataType: string
+		lineageTag: 18a500c6-ed1b-43f9-8fb4-29928ce91222
+		summarizeBy: none
+		sourceColumn: Nb de Commerce
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb de Services aux particuliers'
+		dataType: string
+		lineageTag: 947b2ece-61e8-4802-b64e-1a529875b64f
+		summarizeBy: none
+		sourceColumn: Nb de Services aux particuliers
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nb institution de Education, santé, action sociale, administration'
+		dataType: string
+		lineageTag: 362dd292-436f-4e9b-87a3-1ef6c7e1d7b0
+		summarizeBy: none
+		sourceColumn: Nb institution de Education, santé, action sociale, administration
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'PIB Régionnal'
+		dataType: string
+		lineageTag: 34b03ca2-990c-4b72-adbf-d6719734ed71
+		summarizeBy: none
+		sourceColumn: PIB Régionnal
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'SEG Environnement Démographique Obsolète'
+		dataType: string
+		lineageTag: be1beb36-15b3-4391-8b2e-494836b21828
+		summarizeBy: none
+		sourceColumn: SEG Environnement Démographique Obsolète
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Score Croissance Population'
+		dataType: string
+		lineageTag: b1a5c2ca-4f9d-43ab-9bd4-37c522a6acb1
+		summarizeBy: none
+		sourceColumn: Score Croissance Population
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Score Croissance Entrepreneuriale'
+		dataType: string
+		lineageTag: 6ea62984-e38b-4e47-862c-f11903c27e9b
+		summarizeBy: none
+		sourceColumn: Score Croissance Entrepreneuriale
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Score VA Région'
+		dataType: string
+		lineageTag: 7b74b5e2-5795-4c11-82d6-1ebd1645fc57
+		summarizeBy: none
+		sourceColumn: Score VA Région
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Score PIB'
+		dataType: string
+		lineageTag: 7c7d74e6-183c-4d48-a951-c4f4a16d247a
+		summarizeBy: none
+		sourceColumn: Score PIB
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Environnement Démographique'
+		dataType: string
+		lineageTag: 9ba24844-5478-49b3-ac2d-74456c13bd4a
+		summarizeBy: none
+		sourceColumn: Environnement Démographique
+
+		annotation SummarizationSetBy = Automatic
+
+	column Fidélité
+		dataType: string
+		lineageTag: 2e1397d2-bf32-4b15-b9fa-85fbb303520f
+		summarizeBy: none
+		sourceColumn: Fidélité
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'SYN MEDICAL'
+		dataType: string
+		lineageTag: 9aa034d2-2bf1-4f4c-bc93-396e38b93812
+		summarizeBy: none
+		sourceColumn: SYN MEDICAL
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Seg Cap Fiscale'
+		dataType: string
+		lineageTag: e924cd8a-dc14-4b43-a6e5-86c2c2069700
+		summarizeBy: none
+		sourceColumn: Seg Cap Fiscale
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Seg Dyn Entre'
+		dataType: string
+		lineageTag: 53b29317-be64-4073-be2d-76992423c0f8
+		summarizeBy: none
+		sourceColumn: Seg Dyn Entre
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'DYN SetC'
+		dataType: string
+		lineageTag: a7ce4149-5001-4633-8df4-b79d18025c20
+		summarizeBy: none
+		sourceColumn: DYN SetC
+
+		annotation SummarizationSetBy = Automatic
+
+	column CP
+		dataType: string
+		lineageTag: 3ab7de64-6d0a-4951-81da-ced36bbd0be5
+		summarizeBy: none
+		sourceColumn: CP
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Table Décisionnelle INSEE' = m
+		mode: import
+		source =
+				let
+				    Source = Excel.Workbook(File.Contents("C:\Users\aroschewitz\Downloads\MDB-INSEE-V2.xls"), null, true),
+				    #"Table Décisionnelle INSEE1" = Source{[Name="Table Décisionnelle INSEE"]}[Data],
+				    #"En-têtes promus" = Table.PromoteHeaders(#"Table Décisionnelle INSEE1", [PromoteAllScalars=true]),
+				    #"Texte en majuscules" = Table.TransformColumns(#"En-têtes promus",{{"LIBGEO", Text.Upper, type text}})
+				in
+				    #"Texte en majuscules"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

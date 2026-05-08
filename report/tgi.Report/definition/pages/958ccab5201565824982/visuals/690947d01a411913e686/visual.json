@@ -1,0 +1,63 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "690947d01a411913e686",
+  "position": {
+    "x": 1113.8461538461538,
+    "y": 0,
+    "z": 2000,
+    "width": 166.15384615384616,
+    "height": 282.30769230769232
+  },
+  "visual": {
+    "visualType": "slicer",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Table Décisionnelle INSEE"
+                    }
+                  },
+                  "Property": "LIBGEO"
+                }
+              },
+              "queryRef": "Table Décisionnelle INSEE.LIBGEO",
+              "nativeQueryRef": "LIBGEO",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    "objects": {
+      "data": [
+        {
+          "properties": {
+            "mode": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Basic'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "general": [
+        {
+          "properties": {}
+        }
+      ]
+    },
+    "syncGroup": {
+      "groupName": "LIBGEO",
+      "fieldChanges": true,
+      "filterChanges": true
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

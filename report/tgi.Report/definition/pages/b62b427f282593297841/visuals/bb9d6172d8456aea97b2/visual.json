@@ -1,0 +1,71 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "bb9d6172d8456aea97b2",
+  "position": {
+    "x": 209.44162898397767,
+    "y": 39.503225395554509,
+    "z": 0,
+    "width": 1008.4502633997216,
+    "height": 544.10102903310917,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Table Décisionnelle INSEE"
+                    }
+                  },
+                  "Property": "Dynamique Démographique BV"
+                }
+              },
+              "queryRef": "Table Décisionnelle INSEE.Dynamique Démographique BV",
+              "nativeQueryRef": "Dynamique Démographique BV"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Table Décisionnelle INSEE"
+                    }
+                  },
+                  "Property": "CODGEO"
+                }
+              },
+              "queryRef": "Table Décisionnelle INSEE.CODGEO",
+              "nativeQueryRef": "CODGEO"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "dvf2023"
+                        }
+                      },
+                      "Property": "Nb_mutations"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(dvf2023.Nb_mutations)",
+              "nativeQueryRef": "Sum of Nb_mutations"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

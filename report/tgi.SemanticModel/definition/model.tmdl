@@ -1,0 +1,23 @@
+model Model
+	culture: fr-FR
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: fr-FR
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBIDesktopVersion = 2.130.930.0 (24.06)
+
+annotation PBI_QueryOrder = ["tribunaux-judiciaires","resultats-vente-2006-2023","dvf2023","Table Décisionnelle INSEE"]
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table tribunaux-judiciaires
+ref table resultats-vente-2006-2023
+ref table dvf2023
+ref table 'Table Décisionnelle INSEE'
+
+ref cultureInfo fr-FR
+

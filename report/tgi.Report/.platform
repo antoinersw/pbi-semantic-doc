@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "tgi"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "3dd338b9-60c3-4170-adf5-e5da379a0de0"
+  }
+}

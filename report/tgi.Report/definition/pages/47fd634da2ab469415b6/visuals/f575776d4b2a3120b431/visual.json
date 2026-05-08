@@ -1,0 +1,85 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "f575776d4b2a3120b431",
+  "position": {
+    "x": 10,
+    "y": 0,
+    "width": 280,
+    "height": 280,
+    "z": 0,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "clusteredColumnChart",
+    "query": {
+      "queryState": {
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "dvf2023"
+                        }
+                      },
+                      "Property": "SurfaceMoy"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(dvf2023.SurfaceMoy)",
+              "nativeQueryRef": "Sum of SurfaceMoy"
+            },
+            {
+              "field": {
+                "Aggregation": {
+                  "Expression": {
+                    "Column": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "dvf2023"
+                        }
+                      },
+                      "Property": "propmaison"
+                    }
+                  },
+                  "Function": 0
+                }
+              },
+              "queryRef": "Sum(dvf2023.propmaison)",
+              "nativeQueryRef": "Sum of propmaison"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Aggregation": {
+                "Expression": {
+                  "Column": {
+                    "Expression": {
+                      "SourceRef": {
+                        "Entity": "dvf2023"
+                      }
+                    },
+                    "Property": "SurfaceMoy"
+                  }
+                },
+                "Function": 0
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

@@ -1,0 +1,131 @@
+table dvf2023
+	lineageTag: 8e58e7b3-ee20-4f1e-8204-6d539a1d4a84
+
+	measure dvf_prix_m2 = sum(dvf2023[Prixm2Moyen])
+		lineageTag: 284fc9c3-a8ae-44a3-8f78-630fb3ae97af
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure delta_prix_m2 =
+			
+			[TJ_prix_m2] -dvf2023[dvf_prix_m2]
+		lineageTag: 3860df5f-5e15-4723-b34a-4a123a9f385a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Column1
+		dataType: string
+		lineageTag: bc67c81f-f129-4432-b374-3c343bb93c84
+		summarizeBy: none
+		sourceColumn: Column1
+
+		annotation SummarizationSetBy = Automatic
+
+	column INSEE_COM
+		dataType: string
+		lineageTag: d9167afd-0fa9-44a0-b5b3-a36b25ebb9f4
+		summarizeBy: none
+		sourceColumn: INSEE_COM
+
+		annotation SummarizationSetBy = Automatic
+
+	column Annee
+		dataType: string
+		lineageTag: 49334fb5-f06d-4325-a763-6412627f1b14
+		summarizeBy: none
+		sourceColumn: Annee
+
+		annotation SummarizationSetBy = Automatic
+
+	column Nb_mutations
+		dataType: int64
+		formatString: 0
+		lineageTag: 4b6581d7-6dc4-4634-8454-5171e06664e5
+		summarizeBy: sum
+		sourceColumn: Nb_mutations
+
+		annotation SummarizationSetBy = Automatic
+
+	column NbMaisons
+		dataType: int64
+		formatString: 0
+		lineageTag: b82fe0c9-b103-4be9-938a-10ea20bc3411
+		summarizeBy: sum
+		sourceColumn: NbMaisons
+
+		annotation SummarizationSetBy = Automatic
+
+	column NbApparts
+		dataType: int64
+		formatString: 0
+		lineageTag: 3cee4498-23ea-4f8f-974d-64e7917dfcec
+		summarizeBy: sum
+		sourceColumn: NbApparts
+
+		annotation SummarizationSetBy = Automatic
+
+	column propmaison
+		dataType: double
+		lineageTag: 61a646a2-6d58-44bb-a6b8-a7582541d995
+		summarizeBy: sum
+		sourceColumn: propmaison
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column propappart
+		dataType: double
+		lineageTag: 7eb8398d-ad54-4b4f-8ed9-6820c49979c6
+		summarizeBy: sum
+		sourceColumn: propappart
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column PrixMoyen
+		dataType: double
+		lineageTag: faf404dd-7e7c-4302-ad38-69d328483be6
+		summarizeBy: sum
+		sourceColumn: PrixMoyen
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Prixm2Moyen
+		dataType: double
+		lineageTag: a6c3310a-e1cf-4106-85e9-e4c5b74c8ad4
+		summarizeBy: sum
+		sourceColumn: Prixm2Moyen
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column SurfaceMoy
+		dataType: double
+		lineageTag: e3acffef-e29a-4c71-a572-0c323f22d21b
+		summarizeBy: sum
+		sourceColumn: SurfaceMoy
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition dvf2023 = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\Users\aroschewitz\Downloads\dvf2023.csv"),[Delimiter=",", Columns=11, Encoding=1252, QuoteStyle=QuoteStyle.None]),
+				    #"En-têtes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Valeur remplacée" = Table.ReplaceValue(#"En-têtes promus",".",",",Replacer.ReplaceText,{"Nb_mutations", "NbMaisons", "NbApparts", "propmaison", "propappart", "PrixMoyen", "Prixm2Moyen", "SurfaceMoy"}),
+				    #"Type modifié" = Table.TransformColumnTypes(#"Valeur remplacée",{{"Nb_mutations", Int64.Type}, {"NbMaisons", Int64.Type}, {"NbApparts", Int64.Type}, {"propmaison", type number}, {"propappart", type number}, {"PrixMoyen", type number}, {"Prixm2Moyen", type number}, {"SurfaceMoy", type number}})
+				in
+				    #"Type modifié"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

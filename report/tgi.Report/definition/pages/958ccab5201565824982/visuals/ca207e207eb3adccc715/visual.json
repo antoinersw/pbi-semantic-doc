@@ -1,0 +1,173 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "ca207e207eb3adccc715",
+  "position": {
+    "x": 48.39249934141727,
+    "y": 91.553377132411057,
+    "z": 0,
+    "width": 991.39228380525117,
+    "height": 578.74813401559845
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Table Décisionnelle INSEE"
+                    }
+                  },
+                  "Property": "LIBGEO"
+                }
+              },
+              "queryRef": "Table Décisionnelle INSEE.LIBGEO",
+              "nativeQueryRef": "LIBGEO"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "resultats-vente-2006-2023"
+                    }
+                  },
+                  "Property": "Date de vente"
+                }
+              },
+              "queryRef": "resultats-vente-2006-2023.Date de vente",
+              "nativeQueryRef": "Date de vente"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "resultats-vente-2006-2023"
+                    }
+                  },
+                  "Property": "TJ_prix_m2"
+                }
+              },
+              "queryRef": "resultats-vente-2006-2023.TJ_prix_m2",
+              "nativeQueryRef": "TJ_prix_m2"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "resultats-vente-2006-2023"
+                    }
+                  },
+                  "Property": "Superficie en m²"
+                }
+              },
+              "queryRef": "Sum(resultats-vente-2006-2023.Superficie en m²)",
+              "nativeQueryRef": "Superficie en m²"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "resultats-vente-2006-2023"
+                    }
+                  },
+                  "Property": "RESULTAT VENTE"
+                }
+              },
+              "queryRef": "Sum(resultats-vente-2006-2023.RESULTAT VENTE)",
+              "nativeQueryRef": "RESULTAT VENTE"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Table Décisionnelle INSEE"
+                    }
+                  },
+                  "Property": "prix_acquisition"
+                }
+              },
+              "queryRef": "Table Décisionnelle INSEE.prix_acquisition",
+              "nativeQueryRef": "prix_acquisition"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Table Décisionnelle INSEE"
+                    }
+                  },
+                  "Property": "prix_avec_travaux"
+                }
+              },
+              "queryRef": "Table Décisionnelle INSEE.prix_avec_travaux",
+              "nativeQueryRef": "prix_avec_travaux"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "dvf2023"
+                    }
+                  },
+                  "Property": "dvf_prix_m2"
+                }
+              },
+              "queryRef": "dvf2023.dvf_prix_m2",
+              "nativeQueryRef": "dvf_prix_m2"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "resultats-vente-2006-2023"
+                  }
+                },
+                "Property": "Date de vente"
+              }
+            },
+            "direction": "Descending"
+          }
+        ]
+      }
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "Filtere8b45b46207e481a7468",
+        "ordinal": 6,
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Table Décisionnelle INSEE"
+              }
+            },
+            "Property": "prix_avec_travaux"
+          }
+        },
+        "type": "Advanced",
+        "howCreated": "User"
+      }
+    ],
+    "filterSortOrder": "Custom"
+  }
+}

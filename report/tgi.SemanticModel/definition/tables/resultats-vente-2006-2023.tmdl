@@ -1,0 +1,144 @@
+table resultats-vente-2006-2023
+	lineageTag: 78b4bdd2-f978-4f84-b5d6-76fb4fd840d0
+
+	measure TJ_prix_m2 =
+			
+			var a = sum('resultats-vente-2006-2023'[RESULTAT VENTE])
+			var b = sum('resultats-vente-2006-2023'[Superficie en m²])
+			
+			return DIVIDE(a,b,BLANK())
+		lineageTag: d5bfc78d-88d6-4830-8997-8e359bd973a9
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Date de vente'
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 695335db-b6bc-4cc8-9a44-a1e5314efdbd
+		summarizeBy: none
+		sourceColumn: Date de vente
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Organisateur_id
+		dataType: string
+		lineageTag: fef1949c-7a4c-4dff-a014-c8bfdfac9dc0
+		summarizeBy: none
+		sourceColumn: Organisateur_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'VILLE TRIBUNAL'
+		dataType: string
+		lineageTag: efd0fd0b-5fea-4e73-8e7e-823e752ae375
+		summarizeBy: none
+		sourceColumn: VILLE TRIBUNAL
+
+		annotation SummarizationSetBy = Automatic
+
+	column Categorie
+		dataType: string
+		lineageTag: 28f3a859-9c54-4dcc-9d4a-fd3b3240e214
+		summarizeBy: none
+		sourceColumn: Categorie
+
+		annotation SummarizationSetBy = Automatic
+
+	column Rue
+		dataType: string
+		lineageTag: b5b15ac5-58e6-4a76-8856-ca3dd99391c8
+		summarizeBy: none
+		sourceColumn: Rue
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'CODE POSTAL'
+		dataType: string
+		lineageTag: c3bb2d1c-8111-457a-ae78-6503245bbe83
+		summarizeBy: none
+		sourceColumn: CODE POSTAL
+
+		annotation SummarizationSetBy = Automatic
+
+	column VILLE
+		dataType: string
+		lineageTag: 5c0eb47e-c923-4514-918a-bda6b9f5747d
+		summarizeBy: none
+		sourceColumn: VILLE
+
+		annotation SummarizationSetBy = Automatic
+
+	column PAYS
+		dataType: string
+		lineageTag: 30c269cd-dd42-44d0-a316-0b0e679f8959
+		summarizeBy: none
+		sourceColumn: PAYS
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Superficie en m²'
+		dataType: double
+		lineageTag: b0f3ef4e-d4d7-4013-9232-e2279f31adbe
+		summarizeBy: sum
+		sourceColumn: Superficie en m²
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'RESULTAT VENTE'
+		dataType: int64
+		formatString: #,0\ "€";-#,0\ "€";#,0\ "€"
+		lineageTag: 1b6f6562-b302-45b5-ba2a-9c5487a85015
+		summarizeBy: sum
+		sourceColumn: RESULTAT VENTE
+
+		annotation SummarizationSetBy = Automatic
+
+	column Url
+		dataType: string
+		lineageTag: 5946afe8-a2e5-4c3a-b80f-a892fabde86e
+		summarizeBy: none
+		sourceColumn: Url
+
+		annotation SummarizationSetBy = Automatic
+
+	column Année
+		dataType: int64
+		formatString: 0
+		lineageTag: e6c4af68-cc1e-4080-ab32-34fac8d4a2b0
+		summarizeBy: sum
+		sourceColumn: Année
+
+		annotation SummarizationSetBy = Automatic
+
+	partition resultats-vente-2006-2023 = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\Users\aroschewitz\Downloads\resultats-vente-2006-2023.csv"),[Delimiter=",", Columns=8, Encoding=65001, QuoteStyle=QuoteStyle.None]),
+				    #"En-têtes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Valeur remplacée" = Table.ReplaceValue(#"En-têtes promus","Tribunal Judiciaire de ","",Replacer.ReplaceText,{"Organisateur_nom"}),
+				    #"Valeur remplacée1" = Table.ReplaceValue(#"Valeur remplacée","Tribunal Judiciaire d'","",Replacer.ReplaceText,{"Organisateur_nom"}),
+				    #"Valeur remplacée2" = Table.ReplaceValue(#"Valeur remplacée1","Tribunal judiciaire de ","",Replacer.ReplaceText,{"Organisateur_nom"}),
+				    #"Date analysée" = Table.TransformColumns(#"Valeur remplacée2",{{"Date de vente", each Date.From(DateTimeZone.From(_)), type date}}),
+				    #"Valeur remplacée3" = Table.ReplaceValue(#"Date analysée",".",",",Replacer.ReplaceText,{"Resultat","Superficie en m²"}),
+				    #"Type modifié" = Table.TransformColumnTypes(#"Valeur remplacée3",{{"Resultat", Int64.Type}, {"Superficie en m²", type number}}),
+				    #"Fractionner la colonne par délimiteur" = Table.SplitColumn(#"Type modifié", "Adresse", Splitter.SplitTextByDelimiter(",", QuoteStyle.Csv), {"Rue", "CP ET VILLE", "PAYS", "Adresse.4", "Adresse.5"}),
+				    #"Diviser la colonne selon les transitions de caractères" = Table.SplitColumn(#"Fractionner la colonne par délimiteur", "CP ET VILLE", Splitter.SplitTextByCharacterTransition({"0".."9"}, (c) => not List.Contains({"0".."9"}, c)), {"CODE POSTAL", "VILLE"}),
+				    #"Espaces supprimés" = Table.TransformColumns(#"Diviser la colonne selon les transitions de caractères",{{"Rue", Text.Trim, type text}, {"CODE POSTAL", Text.Trim, type text}, {"VILLE", Text.Trim, type text}, {"PAYS", Text.Trim, type text}}),
+				    #"Autres colonnes supprimées" = Table.SelectColumns(#"Espaces supprimés",{"Date de vente", "Organisateur_id", "Organisateur_nom", "Categorie", "Rue", "CODE POSTAL", "VILLE", "PAYS", "Superficie en m²", "Resultat", "Url"}),
+				    #"Colonnes renommées" = Table.RenameColumns(#"Autres colonnes supprimées",{{"Organisateur_nom", "VILLE TRIBUNAL"}}),
+				    #"Texte en majuscules" = Table.TransformColumns(#"Colonnes renommées",{{"VILLE", Text.Upper, type text}}),
+				    #"Lignes filtrées" = Table.SelectRows(#"Texte en majuscules", each ([Categorie] = "appartements" or [Categorie] = "maisons") and ([#"Superficie en m²"] <> null)),
+				    #"Année insérée" = Table.AddColumn(#"Lignes filtrées", "Année", each Date.Year([Date de vente]), Int64.Type),
+				    #"Colonnes renommées1" = Table.RenameColumns(#"Année insérée",{{"Resultat", "RESULTAT VENTE"}})
+				in
+				    #"Colonnes renommées1"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

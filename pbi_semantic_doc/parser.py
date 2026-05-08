@@ -441,6 +441,30 @@ class ModelMetrics:
             complexity_index=ci,
         )
 
+    def to_dict(self) -> dict:
+        """Serialize computed model metrics for JSON / programmatic consumers."""
+        visible = self.total_tables - self.hidden_tables
+        return {
+            "model_name": self.model_name,
+            "tables": {
+                "total": self.total_tables,
+                "visible": visible,
+                "hidden": self.hidden_tables,
+            },
+            "columns": {
+                "total": self.total_columns,
+                "visible": self.total_columns - self.hidden_columns,
+                "hidden": self.hidden_columns,
+            },
+            "measures": {"total": self.total_measures},
+            "relationships": {
+                "total": self.total_relationships,
+                "inactive": self.inactive_relationships,
+            },
+            "avg_measure_complexity": self.avg_measure_complexity,
+            "complexity_index": round(self.complexity_index, 4),
+        }
+
 
 @dataclass
 class SemanticModel:

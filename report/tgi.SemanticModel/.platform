@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "tgi"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "61e18613-dd84-49a6-9757-1798c7810c1f"
+  }
+}

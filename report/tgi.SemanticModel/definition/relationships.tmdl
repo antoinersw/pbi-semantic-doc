@@ -1,0 +1,9 @@
+relationship 48c9a157-754b-49f8-9bf4-7bf3ded7b5b6
+	toCardinality: many
+	fromColumn: resultats-vente-2006-2023.VILLE
+	toColumn: 'Table Décisionnelle INSEE'.LIBGEO
+
+relationship bf07549a-c605-4a60-8bdb-32e3001e4fc0
+	fromColumn: dvf2023.INSEE_COM
+	toColumn: 'Table Décisionnelle INSEE'.CODGEO
+
